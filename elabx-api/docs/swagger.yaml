@@ -1,0 +1,37 @@
+info:
+  contact: {}
+paths:
+  /api/user/userInfo:
+    get:
+      consumes:
+      - application/json
+      description: Get All todoList by creator (base or vip)
+      parameters:
+      - description: Creator
+        in: query
+        name: creator
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: ok
+          schema:
+            type: string
+        "400":
+          description: bad request
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+        "505":
+          description: User does not exist or is unavailable.
+          schema:
+            type: string
+      summary: Get user info
+      tags:
+      - UserInfo
+swagger: "2.0"
