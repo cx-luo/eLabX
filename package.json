@@ -1,5 +1,5 @@
 {
-  "name": "greasyx-admin-monorepo",
+  "name": "elabx",
   "version": "5.5.3",
   "private": true,
   "homepage": "https://github.com/vbenjs/vue-vben-admin",
@@ -70,7 +70,7 @@
     "vue-tsc": "catalog:"
   },
   "engines": {
-    "node": ">=20.10.0",
+    "node": ">=18.10.0",
     "pnpm": ">=9.12.0"
   },
   "packageManager": "pnpm@9.15.5",
