@@ -41,7 +41,6 @@ export const updateUserApi = async (id: number, param: any) => {
  * 删除用户信息
  *
  * @param id ID
- * @param param 数据
  * @returns
  */
 export const deleteUserApi = async (id: number) => {
