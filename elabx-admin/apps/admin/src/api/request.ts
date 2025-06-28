@@ -74,7 +74,7 @@ function createRequestClient(baseURL: string, options?: RequestClientOptions) {
   // 处理返回的响应数据格式
   client.addResponseInterceptor(
     defaultResponseInterceptor({
-      codeField: 'code',
+      codeField: 'statusCode',
       dataField: 'data',
       successCode: 200,
     }),
