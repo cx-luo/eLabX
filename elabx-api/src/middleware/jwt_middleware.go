@@ -3,7 +3,7 @@
 // @Time    : 2024/1/8 10:23
 // @Author  : chengxiang.luo
 // @Email   : chengxiang.luo@foxmail.com
-// @File    : jwt.go
+// @File    : jwt_middleware.go
 // @Software: GoLand
 package middleware
 

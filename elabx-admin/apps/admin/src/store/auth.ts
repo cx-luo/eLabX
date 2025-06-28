@@ -1,16 +1,16 @@
-import type { Recordable, UserInfo } from '@vben/types';
+import type {Recordable, UserInfo} from '@vben/types';
 
-import { ref } from 'vue';
-import { useRouter } from 'vue-router';
+import {ref} from 'vue';
+import {useRouter} from 'vue-router';
 
-import { DEFAULT_HOME_PATH, LOGIN_PATH } from '@vben/constants';
-import { resetAllStores, useAccessStore, useUserStore } from '@vben/stores';
+import {DEFAULT_HOME_PATH, LOGIN_PATH} from '@vben/constants';
+import {resetAllStores, useAccessStore, useUserStore} from '@vben/stores';
 
-import { ElNotification } from 'element-plus';
-import { defineStore } from 'pinia';
-
-import { getAccessCodesApi, getUserInfoApi, loginApi, logoutApi } from '#/api';
-import { $t } from '#/locales';
+import {ElNotification} from 'element-plus';
+import {defineStore} from 'pinia';
+import {md5} from 'js-md5'
+import {getAccessCodesApi, getUserInfoApi, loginApi, logoutApi} from '#/api';
+import {$t} from '#/locales';
 
 export const useAuthStore = defineStore('auth', () => {
   const accessStore = useAccessStore();
@@ -33,40 +33,46 @@ export const useAuthStore = defineStore('auth', () => {
     let userInfo: null | UserInfo = null;
     try {
       loginLoading.value = true;
-      const { accessToken } = await loginApi(params);
+      const user = {
+        username: params.username,
+        password: md5(params.password)
+      };
 
-      // 如果成功获取到 accessToken
-      if (accessToken) {
-        // 将 accessToken 存储到 accessStore 中
-        accessStore.setAccessToken(accessToken);
+      await loginApi(user).then(async (response) => {
+        // 如果成功获取到 accessToken
+        if (response) {
+          // 将 accessToken 存储到 accessStore 中
+          accessStore.setAccessToken(response.accessToken);
+          // 获取用户信息并存储到 accessStore 中
+          const [fetchUserInfoResult, accessCodes] = await Promise.all([
+            fetchUserInfo(),
+            getAccessCodesApi(),
+          ]);
 
-        // 获取用户信息并存储到 accessStore 中
-        const [fetchUserInfoResult, accessCodes] = await Promise.all([
-          fetchUserInfo(),
-          getAccessCodesApi(),
-        ]);
+          userInfo = fetchUserInfoResult;
 
-        userInfo = fetchUserInfoResult;
+          userStore.setUserInfo(userInfo);
+          accessStore.setAccessCodes(accessCodes);
 
-        userStore.setUserInfo(userInfo);
-        accessStore.setAccessCodes(accessCodes);
+          if (accessStore.loginExpired) {
+            accessStore.setLoginExpired(false);
+          } else {
+            onSuccess
+              ? await onSuccess?.()
+              : await router.push(userInfo.homePath || DEFAULT_HOME_PATH);
+          }
 
-        if (accessStore.loginExpired) {
-          accessStore.setLoginExpired(false);
-        } else {
-          onSuccess
-            ? await onSuccess?.()
-            : await router.push(userInfo.homePath || DEFAULT_HOME_PATH);
+          if (userInfo?.realName) {
+            ElNotification({
+              message: `${$t('authentication.loginSuccessDesc')}:${userInfo?.realName}`,
+              title: $t('authentication.loginSuccess'),
+              type: 'success',
+            });
+          }
         }
-
-        if (userInfo?.realName) {
-          ElNotification({
-            message: `${$t('authentication.loginSuccessDesc')}:${userInfo?.realName}`,
-            title: $t('authentication.loginSuccess'),
-            type: 'success',
-          });
-        }
-      }
+      }).catch(e => {
+        console.log('login error', e)
+      })
     } finally {
       loginLoading.value = false;
     }
@@ -90,8 +96,8 @@ export const useAuthStore = defineStore('auth', () => {
       path: LOGIN_PATH,
       query: redirect
         ? {
-            redirect: encodeURIComponent(router.currentRoute.value.fullPath),
-          }
+          redirect: encodeURIComponent(router.currentRoute.value.fullPath),
+        }
         : {},
     });
 
@@ -100,7 +106,7 @@ export const useAuthStore = defineStore('auth', () => {
 
   async function fetchUserInfo() {
     let userInfo: null | UserInfo = null;
-    userInfo = await getUserInfoApi();
+    userInfo = await getUserInfoApi({username: 46306});
     userStore.setUserInfo(userInfo);
     return userInfo;
   }

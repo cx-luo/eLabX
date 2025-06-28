@@ -32,6 +32,7 @@
     "@vueuse/core": "catalog:",
     "dayjs": "catalog:",
     "element-plus": "catalog:",
+    "js-md5": "catalog:",
     "lucide-vue-next": "0.465.0",
     "pinia": "catalog:",
     "vue": "catalog:",

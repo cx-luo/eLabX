@@ -1,10 +1,11 @@
+/elabx-api/log/elabx_svr.log
 node_modules
 .DS_Store
-dist
-dist-ssr
-dist.zip
-dist.tar
-dist.war
+/elabx-admin/dist
+/elabx-admin/dist-ssr
+/elabx-admin/dist.zip
+/elabx-admin/dist.tar
+/elabx-admin/dist.war
 .nitro
 .output
 *-dist.zip
@@ -29,7 +30,7 @@ package-lock.json
 .eslintcache
 
 logs
-*.log
+/*/*.log
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
