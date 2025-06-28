@@ -10,16 +10,15 @@ package dao
 import (
 	"context"
 	"fmt"
-	"github.com/go-sql-driver/mysql"
-	_ "github.com/go-sql-driver/mysql"
-	"github.com/jmoiron/sqlx"
+	localMysql "github.com/go-sql-driver/mysql"
 	"github.com/redis/go-redis/v9"
-	"log"
+	"gorm.io/driver/mysql"
+	"gorm.io/gorm"
 	"time"
 )
 
-func GetMysqlCursor(host string, port int, username string, passwd string, dbname string) *sqlx.DB {
-	conf := mysql.Config{
+func GetMysqlCursor(host string, port int, username string, passwd string, dbname string) *gorm.DB {
+	conf := localMysql.Config{
 		User:                 username,
 		Passwd:               passwd,
 		Net:                  "tcp",
@@ -31,23 +30,22 @@ func GetMysqlCursor(host string, port int, username string, passwd string, dbnam
 		ParseTime:            true,
 		AllowNativePasswords: true,
 	}
-	db, err := sqlx.Connect("mysql", conf.FormatDSN())
-	if err != nil {
-		log.Fatal(err)
-	}
+	db, err := gorm.Open(mysql.Open(conf.FormatDSN()), &gorm.Config{})
+
+	gormMysql, _ := db.DB()
 
 	//尝试与数据库进行连接
-	err = db.Ping()
+	err = gormMysql.Ping()
 	if err != nil {
 		fmt.Println("数据库连接失败", err)
 		panic("Ping db failed!")
 	}
-	db.SetMaxOpenConns(30)
-	db.SetMaxIdleConns(4)
+	gormMysql.SetMaxOpenConns(30)
+	gormMysql.SetMaxIdleConns(4)
 	return db
 }
 
-var OBCursor *sqlx.DB
+var OBCursor *gorm.DB
 
 func GetRedisClusterClient() *redis.Client {
 	redisDb := redis.NewClient(&redis.Options{
