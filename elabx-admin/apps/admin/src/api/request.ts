@@ -56,15 +56,11 @@ function createRequestClient(baseURL: string, options?: RequestClientOptions) {
     return newToken;
   }
 
-  function formatToken(token: null | string) {
-    return token ? `${token}` : null;
-  }
-
   // 请求头处理
   client.addRequestInterceptor({
     fulfilled: async (config) => {
       const accessStore = useAccessStore();
-      config.headers.Authorization = formatToken(accessStore.accessToken);
+      config.headers.Authorization = accessStore.accessToken;
       config.headers['Accept-Language'] = preferences.app.locale;
       return config;
     },
@@ -85,8 +81,7 @@ function createRequestClient(baseURL: string, options?: RequestClientOptions) {
       client,
       doReAuthenticate,
       doRefreshToken,
-      enableRefreshToken: preferences.app.enableRefreshToken,
-      formatToken,
+      enableRefreshToken: preferences.app.enableRefreshToken
     }),
   );
 
