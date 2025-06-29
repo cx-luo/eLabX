@@ -36,11 +36,14 @@ func NewRouter(outputPath string, loglevel string) *gin.Engine {
 	// 为需要中间件的路由组注册中间件
 
 	// 使用 Zap 中间件
-	router.Use(utils.GinLogger(logger), utils.GinRecovery(logger, true))
+	router.Use(middleware.GinLogger(logger), middleware.GinRecovery(logger, true))
 
-	//router.Use(middleware.JwtAuth())
 	// 注册其他中间件
 	router.Use(middleware.CORS())
+
+	router.Use(middleware.JwtAuth())
+
+	router.Use(middleware.CasbinMiddleware())
 
 	registerAuthRoutes(router)
 	// 注册用户相关路由
