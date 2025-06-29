@@ -30,7 +30,13 @@ func GetMysqlCursor(host string, port int, username string, passwd string, dbnam
 		ParseTime:            true,
 		AllowNativePasswords: true,
 	}
-	db, err := gorm.Open(mysql.Open(conf.FormatDSN()), &gorm.Config{})
+	db, err := gorm.Open(mysql.Open(conf.FormatDSN()), &gorm.Config{
+		PrepareStmt:            true, // 可以改为 false，全局禁用预编译
+		SkipDefaultTransaction: true,
+		AllowGlobalUpdate:      false, // 添加：禁止全局更新
+		QueryFields:            true,  // 添加：显式指定查询字段
+		DisableAutomaticPing:   false, // 启用自动 ping，及时发现连接问题
+	})
 
 	gormMysql, _ := db.DB()
 

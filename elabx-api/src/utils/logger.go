@@ -13,13 +13,6 @@ import (
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 	"gopkg.in/natefinch/lumberjack.v2"
-	"io"
-	"net"
-	"net/http"
-	"net/http/httputil"
-	"os"
-	"runtime/debug"
-	"strings"
 	"time"
 )
 
@@ -32,88 +25,6 @@ type CustomResponseWriter struct {
 func (w CustomResponseWriter) Write(b []byte) (int, error) {
 	w.body.Write(b)
 	return w.ResponseWriter.Write(b)
-}
-
-// GinLogger 接收gin框架默认的日志
-func GinLogger(logger *zap.Logger) gin.HandlerFunc {
-	return func(c *gin.Context) {
-		start := time.Now()
-		path := c.Request.URL.Path
-
-		// 使用自定义 ResponseWriter
-		crw := &CustomResponseWriter{
-			body:           bytes.NewBufferString(""),
-			ResponseWriter: c.Writer,
-		}
-		c.Writer = crw
-		// 打印请求信息
-		reqBody, _ := c.GetRawData()
-		// 请求包体写回。
-		if len(reqBody) > 0 {
-			c.Request.Body = io.NopCloser(bytes.NewBuffer(reqBody))
-		}
-		c.Next()
-
-		cost := time.Since(start)
-		logger.Info(path,
-			zap.String("method", c.Request.Method), // 请求方法类型 eg: GET
-			zap.String("path", path),               // 请求路径 eg: /test
-			zap.Int("status", c.Writer.Status()),   // 状态码 eg: 200
-			zap.Duration("duration", cost),         // 返回花费时间
-			zap.String("query", string(reqBody)),   // 请求参数 eg: name=1&password=2
-			zap.String("ip", c.ClientIP()),         // 返回真实的客户端IP eg: ::1（这个就是本机IP，ipv6地址）
-			//zap.String("user-agent", c.Request.UserAgent()),                      // 返回客户端的用户代理。 eg: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/102.0.0.0 Safari/537.36
-			zap.String("errors", c.Errors.ByType(gin.ErrorTypePrivate).String()), // 返回Errors 切片中ErrorTypePrivate类型的错误
-
-		)
-	}
-}
-
-// GinRecovery recover掉项目可能出现的panic
-func GinRecovery(logger *zap.Logger, stack bool) gin.HandlerFunc {
-	return func(c *gin.Context) {
-		defer func() {
-			if err := recover(); err != nil {
-				// Check for a broken connection, as it is not really a
-				// condition that warrants a panic stack trace.
-				var brokenPipe bool
-				if ne, ok := err.(*net.OpError); ok {
-					if se, ok := ne.Err.(*os.SyscallError); ok {
-						if strings.Contains(strings.ToLower(se.Error()), "broken pipe") || strings.Contains(strings.ToLower(se.Error()), "connection reset by peer") {
-							brokenPipe = true
-						}
-					}
-				}
-
-				httpRequest, _ := httputil.DumpRequest(c.Request, false)
-				if brokenPipe {
-					logger.Error(c.Request.URL.Path,
-						zap.Any("error", err),
-						zap.String("request", string(httpRequest)),
-					)
-					// If the connection is dead, we can't write a status to it.
-					c.Error(err.(error)) // nolint: errcheck
-					c.Abort()
-					return
-				}
-
-				if stack {
-					logger.Error("[Recovery from panic]",
-						zap.Any("error", err),
-						zap.String("request", string(httpRequest)),
-						zap.String("stack", string(debug.Stack())),
-					)
-				} else {
-					logger.Error("[Recovery from panic]",
-						zap.Any("error", err),
-						zap.String("request", string(httpRequest)),
-					)
-				}
-				c.AbortWithStatus(http.StatusInternalServerError)
-			}
-		}()
-		c.Next()
-	}
 }
 
 func SetupLogger(outputPath string, loglevel string) *zap.Logger {
@@ -151,10 +62,10 @@ func SetupLogger(outputPath string, loglevel string) *zap.Logger {
 	}
 
 	encoderConfig := zapcore.EncoderConfig{
-		TimeKey:  "ts",
-		LevelKey: "level",
-		NameKey:  "logger",
-		//CallerKey:   "caller",
+		TimeKey:       "ts",
+		LevelKey:      "level",
+		NameKey:       "logger",
+		CallerKey:     "caller",
 		FunctionKey:   zapcore.OmitKey,
 		MessageKey:    "msg",
 		StacktraceKey: "stacktrace",

@@ -67,9 +67,10 @@ func ParseToken(tokenString string) (*MyClaims, error) {
 
 // 白名单,列表里的路径不进行jwt验证
 var wightList = []string{
-	"/api/user/login",
+	"/api/auth/login",
 	"/api/user/register",
-	"/api/user/logout",
+	//"/api/user/info",
+	"/api/auth/logout",
 	"/api/user/genVerifCode",
 	"/api/user/forgetPwd",
 	"/api/user/sentCodeOnly",
@@ -85,7 +86,6 @@ func JwtAuth() gin.HandlerFunc {
 			}
 		}
 		tokenHeader := c.Request.Header.Get("Authorization")
-		//
 		//tokenHeader := c.Request.Header.Get("accessToken")
 		if tokenHeader == "" {
 			utils2.BadRequestErr(c, errors.New("token not exist"))
