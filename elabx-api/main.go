@@ -44,7 +44,6 @@ func main() {
 	utils.GlobalConfig = config
 	//utils.Logger = utils.InitMyLogger(&config.Output.ServiceLog)
 	dao.OBCursor = dao.GetMysqlCursor(utils.GlobalConfig.Mysql.Host, utils.GlobalConfig.Mysql.Port, utils.GlobalConfig.Mysql.User, utils.GlobalConfig.Mysql.Passwd, utils.GlobalConfig.Mysql.Database)
-	utils.Logger.Info("Server started")
 	r := router.NewRouter(config.Output.Logfile, config.Output.Loglevel)
 	utils.GetAllRoutes(r)
 	err = r.Run(fmt.Sprintf(":%d", utils.GlobalConfig.Service.Port))
