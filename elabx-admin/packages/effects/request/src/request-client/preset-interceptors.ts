@@ -49,13 +49,11 @@ export const authenticateResponseInterceptor = ({
   doReAuthenticate,
   doRefreshToken,
   enableRefreshToken,
-  formatToken,
 }: {
   client: RequestClient;
   doReAuthenticate: () => Promise<void>;
   doRefreshToken: () => Promise<string>;
   enableRefreshToken: boolean;
-  formatToken: (token: string) => null | string;
 }): ResponseInterceptorConfig => {
   return {
     rejected: async (error) => {
@@ -74,7 +72,7 @@ export const authenticateResponseInterceptor = ({
       if (client.isRefreshing) {
         return new Promise((resolve) => {
           client.refreshTokenQueue.push((newToken: string) => {
-            config.headers.Authorization = formatToken(newToken);
+            config.headers.Authorization = newToken;
             resolve(client.request(config.url, { ...config }));
           });
         });
