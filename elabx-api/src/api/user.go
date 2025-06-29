@@ -3,7 +3,7 @@
 // @Time    : 2024/1/8 10:15
 // @Author  : chengxiang.luo
 // @Email   : chengxiang.luo@foxmail.com
-// @File    : user.go
+// @File    : elabx_user.go
 // @Software: GoLand
 package api
 

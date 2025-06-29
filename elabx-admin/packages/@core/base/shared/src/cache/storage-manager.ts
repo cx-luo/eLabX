@@ -11,7 +11,7 @@ interface StorageItem<T> {
 }
 
 class StorageManager {
-  private prefix: string;
+  private readonly prefix: string;
   private storage: Storage;
 
   constructor({
