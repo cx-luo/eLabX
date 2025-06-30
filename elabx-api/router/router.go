@@ -11,32 +11,30 @@ import (
 	_ "eLabX/docs"
 	"eLabX/src/api"
 	"eLabX/src/middleware"
-	"eLabX/src/utils"
 	"github.com/gin-gonic/gin"
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
-	"go.uber.org/zap"
 )
 
 // NewRouter returns a new router.
 func NewRouter(outputPath string, loglevel string) *gin.Engine {
 	// 设置全局 Logger
-	logger := utils.SetupLogger(outputPath, loglevel)
-
-	// 延迟关闭 logger
-	defer func(logger *zap.Logger) {
-		err := logger.Sync()
-		if err != nil {
-			utils.Logger.Error(err.Error())
-		}
-	}(logger)
+	//logger := middleware.SetupLogger(outputPath, loglevel)
+	//
+	//// 延迟关闭 logger
+	//defer func(logger *zap.Logger) {
+	//	err := logger.Sync()
+	//	if err != nil {
+	//		middleware.Logger.Error(err.Error())
+	//	}
+	//}(logger)
 
 	router := gin.New()
 
 	// 为需要中间件的路由组注册中间件
 
 	// 使用 Zap 中间件
-	router.Use(middleware.GinLogger(logger), middleware.GinRecovery(logger, true))
+	router.Use(middleware.GinLogger(), middleware.GinRecovery(true))
 
 	// 注册其他中间件
 	router.Use(middleware.CORS())
@@ -69,7 +67,7 @@ func registerAuthRoutes(r *gin.Engine) {
 func registerUserRoutes(r *gin.Engine) {
 	userGroup := r.Group("/api/user")
 	{
-		userGroup.POST("/info", api.UserInfo)
+		userGroup.GET("/info", api.UserInfo)
 		userGroup.POST("/fetchUserName", api.FetchUserName)
 		userGroup.GET("/getUserList", api.GetUserList)
 		userGroup.POST("/changePwd", api.ChangePwd)
@@ -83,7 +81,7 @@ func registerRouteRoutes(r *gin.Engine) {
 	routeGroup := r.Group("/api/route")
 	{
 		routeGroup.POST("/all", api.UserLogin)
-		routeGroup.POST("/list", api.UserLogout)
+		routeGroup.GET("/list", api.GetUserRouteList)
 	}
 }
 

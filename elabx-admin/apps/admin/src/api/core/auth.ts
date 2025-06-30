@@ -47,6 +47,6 @@ export async function logoutApi() {
  * 获取用户权限码
  */
 export async function getAccessCodesApi() {
-  return ['super'];
+  return ['superadmin'];
   return requestClient.get<string[]>('/auth/codes');
 }

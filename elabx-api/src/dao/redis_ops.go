@@ -9,12 +9,10 @@ package dao
 
 import (
 	"context"
-	"eLabX/src/utils"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"github.com/redis/go-redis/v9"
-	"go.uber.org/zap"
 	"time"
 )
 
@@ -54,11 +52,12 @@ func GetRSearchResult(key string) (error, string) {
 
 func WriteSearchResult(key string, val interface{}) error {
 	// 序列化结构体为JSON
-	utils.Logger.Info("Processing and writing to Redis", zap.String("searchKey", key))
+	//middleware.Logger.Info("Processing and writing to Redis", zap.String("searchKey", key))
 	startTime := time.Now()
 	defer func() {
 		duration := time.Since(startTime)
-		utils.Logger.Info("Processing completed", zap.Duration("duration", duration))
+		fmt.Println(duration)
+		//middleware.Logger.Info("Processing completed", zap.Duration("duration", duration))
 	}()
 
 	jsonData, err := json.Marshal(val)
@@ -105,7 +104,7 @@ func CleanUpKeys(rdb *redis.Client) error {
 				if err := rdb.Del(ctx, key).Err(); err != nil {
 					return fmt.Errorf("error deleting key %s: %v", key, err)
 				}
-				utils.Logger.Info(fmt.Sprintf("Deleted key: %s\n", key))
+				//middleware.Logger.Info(fmt.Sprintf("Deleted key: %s\n", key))
 			}
 		}
 

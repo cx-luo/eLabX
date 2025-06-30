@@ -66,9 +66,9 @@ func CasbinMiddleware() gin.HandlerFunc {
 		user, _ := c.Get("username") // 假设你通过 JWT 或 Session 获取了用户信息
 		//roles := user.(map[string]interface{})["roles"].([]string)
 		var permissions string
-		err := dao.OBCursor.Table("eln_users").Select("permissions").Where("userid = ?", user).Find(&permissions).Error
+		err := dao.OBCursor.Table("eln_users").Select("permissions").Where("user_id = ?", user).Find(&permissions).Error
 		if errors.Is(err, sql.ErrNoRows) {
-			c.AbortWithStatusJSON(http.StatusForbidden, gin.H{"error": "No access permission."})
+			c.AbortWithStatusJSON(http.StatusForbidden, gin.H{"error": "Not find permission."})
 			return
 		}
 		roles := strings.Split(permissions, ",")
