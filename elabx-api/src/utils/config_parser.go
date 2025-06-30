@@ -40,6 +40,9 @@ type Output struct {
 	Logfile  string `json:"logfile" yaml:"logfile"`
 	//ErrFile    string `json:"errFile" yaml:"errFile"`
 	ServiceLog string `json:"serviceLog" yaml:"serviceLog"`
+	MaxSize    int    `json:"maxSize" yaml:"maxSize"`
+	MaxBackups int    `yaml:"maxBackups"`
+	MaxAge     int    `yaml:"maxAge"`
 }
 
 type Indigo struct {
