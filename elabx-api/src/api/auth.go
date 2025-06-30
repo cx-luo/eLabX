@@ -12,6 +12,7 @@ import (
 	"eLabX/src/middleware"
 	"eLabX/src/utils"
 	"github.com/gin-gonic/gin"
+	"go.uber.org/zap"
 	"net/http"
 )
 
@@ -29,10 +30,10 @@ func UserLogin(c *gin.Context) {
 
 	var passwordHash string
 	err = dao.OBCursor.Table("eln_users").Select("password_hash").
-		Where(`status = 1 AND userid = ?`, u.Username).Find(&passwordHash).Error
+		Where(`status = 1 AND user_id = ?`, u.Username).Find(&passwordHash).Error
 
 	if err != nil {
-		utils.Logger.Error(err.Error())
+		zap.L().Error(err.Error())
 		c.JSON(http.StatusNetworkAuthenticationRequired, gin.H{"msg": "User authentication failed, username or password incorrect."})
 		return
 	}
@@ -53,7 +54,7 @@ func UserLogout(c *gin.Context) {
 
 func SetUserAuthorities(c *gin.Context) {
 	var roles struct {
-		Userid       int    `json:"userid,omitempty" db:"userid"`
+		Userid       int    `json:"userid,omitempty" db:"user_id"`
 		AuthorityIds string `json:"authorityIds,omitempty" db:"permissions"`
 	}
 	err := c.ShouldBind(&roles)
@@ -61,7 +62,7 @@ func SetUserAuthorities(c *gin.Context) {
 		utils.InternalRequestErr(c, err)
 		return
 	}
-	err = dao.OBCursor.Exec(`update eln_users set permissions = ? where userid = ?`, roles.AuthorityIds, roles.Userid).Error
+	err = dao.OBCursor.Exec(`update eln_users set permissions = ? where user_id = ?`, roles.AuthorityIds, roles.Userid).Error
 	if err != nil {
 		utils.InternalRequestErr(c, err)
 		return

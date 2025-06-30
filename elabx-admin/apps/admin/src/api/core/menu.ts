@@ -110,7 +110,7 @@ export namespace MenuApi {
  * 获取用户所有菜单
  */
 export const getMenusRouterApi = async (param: any) => {
-  return await requestClient.get<MenuApi.ListMenuResp>('/menu/router', {
+  return await requestClient.get<MenuApi.ListMenuResp>('/route/list', {
     params: param,
   });
 };
@@ -204,7 +204,7 @@ export const getApiTreeApi = async () => {
 
 /**
  * 构建 API 树形结构
- * 
+ *
  * @param apis API 列表
  * @returns 树形结构的 API 列表
  */
@@ -251,7 +251,7 @@ export function buildApiTree(apis: ApiTreeApi.ApiTreeNode[]): ApiTreeApi.ApiTree
 
 /**
  * 递归遍历 API 树，将子节点添加到对应的父节点
- * 
+ *
  * @param nodes 当前遍历的节点列表
  * @param child 要添加的子节点
  * @returns 是否成功添加

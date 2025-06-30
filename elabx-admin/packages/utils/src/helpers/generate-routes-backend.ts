@@ -1,4 +1,4 @@
-import type { RouteRecordRaw } from 'vue-router';
+import type {RouteRecordRaw} from 'vue-router';
 
 import type {
   ComponentRecordType,
@@ -6,7 +6,7 @@ import type {
   RouteRecordStringComponent,
 } from '@vben-core/typings';
 
-import { mapTree } from '@vben-core/shared/utils';
+import {mapTree} from '@vben-core/shared/utils';
 
 /**
  * 动态生成路由 - 后端方式
@@ -28,9 +28,7 @@ async function generateRoutesByBackend(
       normalizePageMap[normalizeViewPath(key)] = value;
     }
 
-    const routes = convertRoutes(menuRoutes, layoutMap, normalizePageMap);
-
-    return routes;
+    return convertRoutes(menuRoutes, layoutMap, normalizePageMap);
   } catch (error) {
     console.error(error);
     return [];

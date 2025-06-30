@@ -1,12 +1,13 @@
-import type { Router, RouteRecordRaw } from 'vue-router';
+import type {Router, RouteRecordRaw} from 'vue-router';
 
-import type { ExRouteRecordRaw, MenuRecordRaw } from '@vben-core/typings';
+import type {ExRouteRecordRaw, MenuRecordRaw} from '@vben-core/typings';
 
-import { filterTree, mapTree } from '@vben-core/shared/utils';
+import {filterTree, mapTree} from '@vben-core/shared/utils';
 
 /**
  * 根据 routes 生成菜单列表
  * @param routes
+ * @param router
  */
 async function generateMenus(
   routes: RouteRecordRaw[],
@@ -72,10 +73,9 @@ async function generateMenus(
   // 对菜单进行排序
   menus = menus.sort((a, b) => (a.order || 999) - (b.order || 999));
 
-  const finalMenus = filterTree(menus, (menu) => {
+  return filterTree(menus, (menu) => {
     return !!menu.show;
   });
-  return finalMenus;
 }
 
 export { generateMenus };
