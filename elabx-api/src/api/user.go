@@ -3,7 +3,7 @@
 // @Time    : 2024/1/8 10:15
 // @Author  : chengxiang.luo
 // @Email   : chengxiang.luo@foxmail.com
-// @File    : elabx_user.go
+// @File    : tables.go
 // @Software: GoLand
 package api
 
@@ -24,9 +24,8 @@ import (
 var sema = goTools.NewSemaphore(32)
 
 type Users struct {
-	Email    string `json:"email" db:"email" gorm:"email"`
 	Username string `json:"username" db:"username" gorm:"username"`
-	GroupId  int64  `json:"group_id" db:"group_id" gorm:"group_id"`
+	Roles    string `json:"roles" db:"roles" gorm:"roles"`
 	//Avatar      string         `json:"avatar" db:"avatar" gorm:"avatar"`
 	Permissions sql.NullString `json:"permissions" db:"permissions" gorm:"permissions"`
 }
@@ -74,17 +73,10 @@ type route struct {
 }
 
 func UserInfo(c *gin.Context) {
-	var uid struct {
-		Username int `json:"username"`
-	}
-	err := c.ShouldBind(&uid)
-	if err != nil {
-		utils.BadRequestErr(c, err)
-		return
-	}
+	username, _ := c.Get("username")
 	var user Users
-	err = dao.OBCursor.Table("eln_users").Select("username", "email", "group_id", "permissions").
-		Where("status = 1 and userid = ?", uid.Username).Find(&user).Error
+	err := dao.OBCursor.Table("eln_users").Select("username", "roles", "permissions").
+		Where("status = 1 and user_id = ?", username).Find(&user).Error
 	if err != nil {
 		u := fmt.Sprintf("User does not exist or is unavailable.")
 		response := utils.BaseResponse{
@@ -94,7 +86,7 @@ func UserInfo(c *gin.Context) {
 		return
 	}
 
-	err, elnRoutes, authorityRoutes := userRouter(utils.GetInterfaceToInt(uid.Username))
+	err, elnRoutes, authorityRoutes := userRouter(utils.GetInterfaceToInt(username))
 	if err != nil {
 		utils.InternalRequestErr(c, err)
 		return
@@ -112,21 +104,6 @@ func userRouter(userId int) (error, []route, []route) {
 	var authorityRoutes []route
 	return nil, subRoutes, authorityRoutes
 }
-
-//
-//func GetAuthorities(c *gin.Context) {
-//	var x []struct {
-//		AuthorityId   int64  `json:"authorityId" db:"authority_id"`
-//		AuthorityName string `json:"authorityName" db:"authority_name"`
-//	}
-//	err := dao.OBCursor.Select(&x, `select authority_id,authority_name from eln_user_authority where status = 1`)
-//	if err != nil {
-//		utils.InternalRequestErr(c, err)
-//		return
-//	}
-//	utils.SuccessWithData(c, "", gin.H{"authorities": x})
-//	return
-//}
 
 type userId struct {
 	WitnessId int `json:"witnessId"`

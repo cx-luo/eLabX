@@ -43,7 +43,6 @@ export const useAuthStore = defineStore('auth', () => {
         if (response) {
           // 将 accessToken 存储到 accessStore 中
           accessStore.setAccessToken(response.accessToken);
-          console.log(accessStore.accessToken)
           // 获取用户信息并存储到 accessStore 中
           const [fetchUserInfoResult, accessCodes] = await Promise.all([
             fetchUserInfo(),
@@ -107,7 +106,7 @@ export const useAuthStore = defineStore('auth', () => {
 
   async function fetchUserInfo() {
     let userInfo: null | UserInfo = null;
-    userInfo = await getUserInfoApi({username: 46306});
+    userInfo = await getUserInfoApi();
     userStore.setUserInfo(userInfo);
     return userInfo;
   }

@@ -97,7 +97,7 @@ const quickNavItems: WorkbenchQuickNavItem[] = [
     color: '#bf0c2c',
     icon: 'ion:grid-outline',
     title: '仪表盘',
-    url: '/dashboard',
+    url: '/dashboard/dashboard',
   },
   {
     color: '#e18525',
@@ -121,7 +121,7 @@ const quickNavItems: WorkbenchQuickNavItem[] = [
     color: '#00d8ff',
     icon: 'ion:bar-chart-outline',
     title: '图表',
-    url: '/analytics',
+    url: '/dashboard/analytics',
   },
 ];
 

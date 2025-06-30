@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import {Page} from "@vben/common-ui";
+import { Page } from '@vben/common-ui';
 </script>
 
 <template>
@@ -17,6 +17,4 @@ import {Page} from "@vben/common-ui";
   </Page>
 </template>
 
-<style scoped>
-
-</style>
+<style scoped></style>

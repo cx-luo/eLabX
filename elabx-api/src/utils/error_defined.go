@@ -32,12 +32,12 @@ func Success(c *gin.Context, msg string) {
 }
 
 func BadRequestErr(c *gin.Context, err error) {
-	Logger.Error("BadRequest: " + err.Error())
+	//middleware.Logger.Error("BadRequest: " + err.Error())
 	Error(c, http.StatusBadRequest, http.StatusBadRequest, err.Error())
 }
 
 func InternalRequestErr(c *gin.Context, err error) {
-	Logger.Error("InternalServerError: " + err.Error())
+	//Logger.Error("InternalServerError: " + err.Error())
 	Error(c, http.StatusInternalServerError, http.StatusInternalServerError, err.Error())
 }
 
@@ -48,6 +48,6 @@ func SuccessWithData(c *gin.Context, msg string, data interface{}) {
 }
 
 func NotFoundError(c *gin.Context, err error) {
-	Logger.Error("NotFound: " + err.Error())
+	//Logger.Error("NotFound: " + err.Error())
 	Error(c, http.StatusNotFound, http.StatusNotFound, err.Error())
 }
