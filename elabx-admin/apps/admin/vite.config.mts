@@ -22,6 +22,9 @@ export default defineConfig(async () => {
           },
         },
       },
+      define: {
+        'process.env': {}
+      }
     },
   };
 });

@@ -20,6 +20,8 @@ import (
 	"strings"
 )
 
+var GlobalCasBin *casbin.Enforcer
+
 func setupCasbin(db *gorm.DB) (*casbin.Enforcer, error) {
 	m, err := model.NewModelFromString(`
 [request_definition]
@@ -52,6 +54,7 @@ m = g(r.sub, p.sub) && keyMatch(r.act, p.act) && keyMatch(r.obj, p.obj)
 		return nil, err
 	}
 
+	GlobalCasBin = e
 	return e, nil
 }
 

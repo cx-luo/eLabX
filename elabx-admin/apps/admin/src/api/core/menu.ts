@@ -208,7 +208,9 @@ export const getApiTreeApi = async () => {
  * @param apis API 列表
  * @returns 树形结构的 API 列表
  */
-export function buildApiTree(apis: ApiTreeApi.ApiTreeNode[]): ApiTreeApi.ApiTreeNode[] {
+export function buildApiTree(
+  apis: ApiTreeApi.ApiTreeNode[],
+): ApiTreeApi.ApiTreeNode[] {
   const tree: ApiTreeApi.ApiTreeNode[] = [];
 
   // 首先添加所有根节点（parentId 为 0 的节点）
@@ -258,7 +260,7 @@ export function buildApiTree(apis: ApiTreeApi.ApiTreeNode[]): ApiTreeApi.ApiTree
  */
 export function travelApiChild(
   nodes: ApiTreeApi.ApiTreeNode[],
-  child: ApiTreeApi.ApiTreeNode
+  child: ApiTreeApi.ApiTreeNode,
 ): boolean {
   if (!Array.isArray(nodes)) {
     return false;

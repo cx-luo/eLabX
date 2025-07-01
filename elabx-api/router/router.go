@@ -47,6 +47,8 @@ func NewRouter(outputPath string, loglevel string) *gin.Engine {
 	// 注册用户相关路由
 	registerUserRoutes(router)
 
+	registerCasbinRoutes(router)
+
 	registerRouteRoutes(router)
 	// 注册其他路由
 	registerOtherRoutes(router)
@@ -74,6 +76,13 @@ func registerUserRoutes(r *gin.Engine) {
 		userGroup.POST("/changeUsername", api.ChangeUserName)
 		userGroup.POST("/forgetPwd", api.ForgetPwd)
 		userGroup.POST("/resetPwd", api.ResetPwd)
+	}
+}
+
+func registerCasbinRoutes(r *gin.Engine) {
+	casbinGroup := r.Group("/api/casbin")
+	{
+		casbinGroup.POST("/add", api.CasbinAddPolicy)
 	}
 }
 

@@ -1,6 +1,6 @@
 {
   "name": "elabx",
-  "version": "5.5.3",
+  "version": "0.0.3",
   "private": true,
   "homepage": "https://github.com/vbenjs/vue-vben-admin",
   "bugs": "https://github.com/vbenjs/vue-vben-admin/issues",
@@ -21,8 +21,9 @@
     "clean": "node ./scripts/clean.mjs",
     "commit": "czg",
     "dev": "pnpm -F @elabx/admin run dev",
-    "format": "vsh lint --format",
-    "lint": "vsh lint",
+    "format": "node ./scripts/vsh/bin/vsh.mjs lint --format",
+    "lint": "node ./scripts/vsh/bin/vsh.mjs lint",
+    "lint:prettier": "prettier --write  \"apps/admin/src/**/*.{js,json,tsx,css,less,scss,vue,html,md,ts}\"",
     "postinstall": "pnpm -r run stub --if-present",
     "preinstall": "npx only-allow pnpm",
     "prepare": "is-ci || husky",
@@ -92,5 +93,9 @@
       "canvas",
       "node-gyp"
     ]
+  },
+  "dependencies": {
+    "ketcher-core": "v3.2.0",
+    "util": "^0.12.1"
   }
 }
