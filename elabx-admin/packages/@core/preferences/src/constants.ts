@@ -9,12 +9,16 @@ interface BuiltinThemePreset {
 
 const BUILT_IN_THEME_PRESETS: BuiltinThemePreset[] = [
   {
-    color: 'hsl(212 100% 45%)',
+    color: 'hsl(161 90% 43%)',
     type: 'default',
   },
   {
     color: 'hsl(245 82% 67%)',
     type: 'violet',
+  },
+  {
+    color: 'hsl(212 100% 45%)',
+    type: 'blue',
   },
   {
     color: 'hsl(347 77% 60%)',
@@ -27,10 +31,6 @@ const BUILT_IN_THEME_PRESETS: BuiltinThemePreset[] = [
   {
     color: 'hsl(231 98% 65%)',
     type: 'sky-blue',
-  },
-  {
-    color: 'hsl(161 90% 43%)',
-    type: 'green',
   },
   {
     color: 'hsl(240 5% 26%)',
