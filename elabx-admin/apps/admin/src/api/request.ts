@@ -81,7 +81,7 @@ function createRequestClient(baseURL: string, options?: RequestClientOptions) {
       client,
       doReAuthenticate,
       doRefreshToken,
-      enableRefreshToken: preferences.app.enableRefreshToken
+      enableRefreshToken: preferences.app.enableRefreshToken,
     }),
   );
 

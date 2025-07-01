@@ -79,7 +79,7 @@ func getParentRoutes(db *gorm.DB) ([]Route, error) {
 func getChildrenRoutes(db *gorm.DB, parentId int64) ([]Route, error) {
 	var children []types.ElnRoutes
 	err := db.Table("eln_routes").Select("id", "name", "path", "component", "meta_icon", "meta_order",
-		"meta_title", "meta_affix_tab").Where(`parent_id = ?`, parentId).Find(&children).Error
+		"meta_title", "meta_affix_tab", "parent_id").Where(`parent_id = ?`, parentId).Find(&children).Error
 	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
 		return nil, err
 	}
