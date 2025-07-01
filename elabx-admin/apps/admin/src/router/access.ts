@@ -6,7 +6,7 @@ import type {
 import { generateAccessible } from '@vben/access';
 import { preferences } from '@vben/preferences';
 import { BasicLayout, IFrameView } from '#/layouts';
-import {getMenusRouterApi} from "#/api";
+import { getMenusRouterApi } from '#/api';
 
 const forbiddenComponent = () => import('#/views/_core/fallback/forbidden.vue');
 
