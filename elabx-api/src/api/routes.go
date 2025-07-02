@@ -107,6 +107,18 @@ func defaultRoute() []Route {
 	return parentRoutes
 }
 
+func GetRouteTree(c *gin.Context) {
+	var routes []types.ElnRoutes
+	err := dao.OBCursor.Table("eln_routes").Find(&routes).Error
+	if err != nil {
+		zap.L().Error(fmt.Sprintf("failed to get all route: %s", err.Error()))
+		utils.InternalRequestErr(c, err)
+		return
+	}
+	utils.SuccessWithData(c, "", gin.H{"items": routes, "total": len(routes)})
+	return
+}
+
 func GetUserRouteList(c *gin.Context) {
 	var roles struct {
 		Userid       int    `json:"userid,omitempty" db:"userid"`
