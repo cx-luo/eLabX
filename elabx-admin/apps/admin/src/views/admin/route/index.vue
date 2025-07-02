@@ -148,7 +148,7 @@ async function handleStatusChanged(row: any, checked: boolean) {
     // });
   } finally {
     row.pending = false;
-    await gridApi.query();
+    gridApi.query();
   }
 }
 
@@ -198,7 +198,7 @@ async function handleDelete(row: any) {
     // });
   } finally {
     row.pending = false;
-    await gridApi.query();
+    gridApi.query();
   }
 }
 </script>
