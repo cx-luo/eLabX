@@ -89,7 +89,7 @@ func registerCasbinRoutes(r *gin.Engine) {
 func registerRouteRoutes(r *gin.Engine) {
 	routeGroup := r.Group("/api/route")
 	{
-		routeGroup.POST("/all", api.UserLogin)
+		routeGroup.POST("/tree", api.GetRouteTree)
 		routeGroup.GET("/list", api.GetUserRouteList)
 	}
 }

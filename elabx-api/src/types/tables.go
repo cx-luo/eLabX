@@ -33,11 +33,12 @@ type ElnRoutes struct {
 	Name         string `json:"name" db:"name" gorm:"name"`
 	Path         string `json:"path" db:"path" gorm:"path"`
 	Component    string `json:"component" db:"component" gorm:"component"`
-	MetaIcon     string `json:"meta_icon" db:"meta_icon" gorm:"meta_icon"`
-	MetaOrder    int64  `json:"meta_order" db:"meta_order" gorm:"meta_order"`
-	MetaTitle    string `json:"meta_title" db:"meta_title" gorm:"meta_title"`
-	MetaAffixTab int8   `json:"meta_affix_tab" db:"meta_affix_tab" gorm:"meta_affix_tab"`
-	ParentId     int64  `json:"parent_id" db:"parent_id" gorm:"parent_id"`
+	MetaIcon     string `json:"metaIcon" db:"meta_icon" gorm:"meta_icon"`
+	MetaOrder    int64  `json:"metaOrder" db:"meta_order" gorm:"meta_order"`
+	MetaTitle    string `json:"metaTitle" db:"meta_title" gorm:"meta_title"`
+	MetaAffixTab int8   `json:"metaAffixTab" db:"meta_affix_tab" gorm:"meta_affix_tab"`
+	ParentId     int64  `json:"parentId" db:"parent_id" gorm:"parent_id"`
+	Status       int64  `json:"status" db:"status" gorm:"status"`
 }
 
 // TableName 表名称
