@@ -52,7 +52,7 @@ async function saveNewReactionNoteToDatabase(formEl: FormInstance | undefined) {
     ElNotification.success('结构已成功获取');
   } catch (error) {
     console.error('获取 SMILES 失败:', error);
-    ElNotification.error('获取结构失败，请重试' + error.toString());
+    ElNotification.error('获取结构失败，请重试');
   } finally {
     isLoading.value = false;
   }
