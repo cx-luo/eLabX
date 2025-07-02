@@ -167,7 +167,7 @@ async function handleStatusChanged(row: any, checked: boolean) {
     // });
   } finally {
     row.pending = false;
-    gridApi.query();
+    await gridApi.query();
   }
 }
 
@@ -217,7 +217,7 @@ async function handleDelete(row: any) {
     // });
   } finally {
     row.pending = false;
-    gridApi.query();
+    await gridApi.query();
   }
 }
 </script>
@@ -243,7 +243,7 @@ async function handleDelete(row: any) {
       </template>
 
       <template #title="{ row }">
-        <span :style="{ marginRight: '15px' }">{{ $t(row.meta.name) }}</span>
+        <span :style="{ marginRight: '15px' }">{{ $t(row.name) }}</span>
       </template>
 
       <template #type="{ row }">
@@ -259,8 +259,8 @@ async function handleDelete(row: any) {
       <template #icon="{ row }">
         <div class="flex h-full items-center justify-center">
           <Icon
-            v-if="row.meta.icon !== undefined"
-            :icon="row.meta.icon"
+            v-if="row.metaIcon !== undefined"
+            :icon="row.metaIcon"
             class="size-4"
           />
         </div>
