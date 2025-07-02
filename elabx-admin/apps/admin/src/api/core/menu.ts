@@ -122,8 +122,8 @@ export const getMenusRouterApi = async (param: any) => {
  * @returns
  */
 export const getMenuTreeApi = async (param: any) => {
-  return await requestClient.getWithParams<MenuApi.ListMenuResp>(
-    '/menu/tree',
+  return await requestClient.post<MenuApi.ListMenuResp>(
+    '/route/tree',
     param,
   );
 };
