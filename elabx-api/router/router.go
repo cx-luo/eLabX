@@ -10,6 +10,7 @@ package router
 import (
 	_ "eLabX/docs"
 	"eLabX/src/api"
+	"eLabX/src/api/system"
 	"eLabX/src/middleware"
 	"github.com/gin-gonic/gin"
 	swaggerFiles "github.com/swaggo/files"
@@ -51,6 +52,8 @@ func NewRouter(outputPath string, loglevel string) *gin.Engine {
 
 	registerRouteRoutes(router)
 	// 注册其他路由
+	registerSystemRoutes(router)
+
 	registerOtherRoutes(router)
 
 	return router
@@ -91,6 +94,17 @@ func registerRouteRoutes(r *gin.Engine) {
 	{
 		routeGroup.POST("/tree", api.GetRouteTree)
 		routeGroup.GET("/list", api.GetUserRouteList)
+	}
+}
+
+func registerSystemRoutes(r *gin.Engine) {
+	routeGroup := r.Group("/api")
+	{
+		routeGroup.GET("api/list", system.GetApiList)
+		routeGroup.POST("api/add", system.AddApi)
+		routeGroup.POST("api/delete", system.DeleteAPi)
+		routeGroup.POST("api/update", system.UpdateAPi)
+		routeGroup.GET("api/refresh", system.RefreshApis)
 	}
 }
 

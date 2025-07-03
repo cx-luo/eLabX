@@ -45,3 +45,21 @@ type ElnRoutes struct {
 func (*ElnRoutes) TableName() string {
 	return "eln_routes"
 }
+
+// ElnApis undefined
+type ElnApis struct {
+	ID          int64     `json:"id" db:"id" gorm:"id"`
+	ApiName     string    `json:"apiName" db:"api_name" gorm:"api_name"`
+	ApiPath     string    `json:"apiPath" db:"api_path" gorm:"api_path"`
+	Method      string    `json:"method" db:"method" gorm:"method"`
+	ApiGroup    string    `json:"apiGroup" db:"api_group" gorm:"api_group"`
+	ParentId    int64     `json:"parentId" db:"parent_id" gorm:"parent_id"`
+	Description string    `json:"description" db:"description" gorm:"description"`
+	CreateAt    time.Time `json:"createAt" db:"create_at" gorm:"create_at"` // 创建时间
+	UpdateAt    time.Time `json:"updateAt" db:"update_at" gorm:"update_at"` // 更新时间
+}
+
+// TableName 表名称
+func (*ElnApis) TableName() string {
+	return "eln_apis"
+}
