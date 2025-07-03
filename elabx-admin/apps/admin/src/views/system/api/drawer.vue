@@ -69,7 +69,7 @@ const [BaseForm, baseFormApi] = useVbenForm({
     },
     {
       component: 'Input',
-      fieldName: 'path',
+      fieldName: 'apiPath',
       label: $t('page.system.api.path'),
       componentProps: {
         placeholder: $t('ui.placeholder.input'),
@@ -105,7 +105,7 @@ const [Drawer, drawerApi] = useVbenDrawer({
     try {
       await (data.value?.create
         ? createApiApi(values)
-        : updateApiApi(data.value.row.id, values));
+        : updateApiApi({ id: data.value.row.id, param: values }));
 
       toast.success(
         data.value?.create

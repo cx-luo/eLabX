@@ -59,7 +59,7 @@ func SetUserAuthorities(c *gin.Context) {
 	}
 	err := c.ShouldBind(&roles)
 	if err != nil {
-		utils.InternalRequestErr(c, err)
+		utils.BadRequestErr(c, err)
 		return
 	}
 	err = dao.OBCursor.Exec(`update eln_users set permissions = ? where user_id = ?`, roles.AuthorityIds, roles.Userid).Error

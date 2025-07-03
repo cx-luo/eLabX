@@ -92,6 +92,10 @@ const gridOptions: VxeGridProps = {
       treeNode: true,
     },
     {
+      title: $t('page.system.api.module'),
+      field: 'apiName',
+    },
+    {
       title: $t('page.system.api.description'),
       field: 'description',
     },
@@ -101,7 +105,7 @@ const gridOptions: VxeGridProps = {
     },
     {
       title: $t('page.system.api.path'),
-      field: 'path',
+      field: 'apiPath',
     },
     {
       title: $t('ui.table.createTime'),
@@ -160,7 +164,7 @@ function handleEdit(row: any) {
 async function handleDelete(row: any) {
   row.pending = true;
   try {
-    await deleteApiApi(row.id);
+    await deleteApiApi({ id: row.id });
 
     toast.success($t('ui.notification.delete_success'), {
       timeout: 1000,
@@ -174,7 +178,7 @@ async function handleDelete(row: any) {
     // });
   } finally {
     row.pending = false;
-    gridApi.query();
+    await gridApi.query();
   }
 }
 </script>
