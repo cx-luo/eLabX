@@ -122,10 +122,7 @@ export const getMenusRouterApi = async (param: any) => {
  * @returns
  */
 export const getMenuTreeApi = async (param: any) => {
-  return await requestClient.post<MenuApi.ListMenuResp>(
-    '/route/tree',
-    param,
-  );
+  return await requestClient.post<MenuApi.ListMenuResp>('/route/tree', param);
 };
 
 /**
@@ -175,7 +172,7 @@ export namespace ApiTreeApi {
     /** API ID */
     id: number;
     /** 父节点 ID */
-    parentId: number;
+    parentId: number | string;
     /** API 描述 */
     description: string;
     /** 请求方法 */

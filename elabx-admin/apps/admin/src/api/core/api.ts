@@ -20,20 +20,19 @@ export const createApiApi = async (param: any) => {
 /**
  * 修改API信息
  *
- * @param id ID
  * @param param 数据
  * @returns
  */
-export const updateApiApi = async (id: number, param: any) => {
-  return await requestClient.put(`/api/update/${id}`, param);
+export const updateApiApi = async (param: any) => {
+  return await requestClient.post(`/api/update`, param);
 };
 
 /**
  * 删除API信息
  *
- * @param id ID
  * @returns
+ * @param param
  */
-export const deleteApiApi = async (id: number) => {
-  return await requestClient.delete(`/api/delete/${id}`);
+export const deleteApiApi = async (param: any) => {
+  return await requestClient.post(`/api/delete`, param);
 };
