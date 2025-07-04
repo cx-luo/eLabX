@@ -105,7 +105,7 @@ const [Drawer, drawerApi] = useVbenDrawer({
     try {
       await (data.value?.create
         ? createApiApi(values)
-        : updateApiApi({ id: data.value.row.id, param: values }));
+        : updateApiApi({ id: data.value.row.id, ...values }));
 
       toast.success(
         data.value?.create

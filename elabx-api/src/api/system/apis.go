@@ -17,6 +17,7 @@ import (
 	"go.uber.org/zap"
 	"gorm.io/gorm/clause"
 	"hash/crc32"
+	"path"
 	"strings"
 )
 
@@ -28,11 +29,7 @@ func letterToNumber(s string) int64 {
 func RefreshApis(c *gin.Context) {
 	for _, a := range utils.Apis {
 		segments := strings.Split(a.Path, "/") // 最多切分为3段
-		group := "default"
-		if len(segments) > 2 {
-			group = segments[2]
-		}
-
+		group := path.Dir(a.Path)
 		funcSegments := strings.Split(a.Handler, "/")
 		node, _ := snowflake.NewNode(1)
 		id := node.Generate().Time() % 10000
@@ -41,8 +38,8 @@ func RefreshApis(c *gin.Context) {
 			ApiName:     funcSegments[len(funcSegments)-1],
 			ApiPath:     a.Path,
 			Method:      a.Method,
-			Description: segments[len(segments)-1],
-			ApiGroup:    group,
+			Description: strings.TrimSpace(strings.Join(segments, " ")),
+			ApiGroup:    strings.TrimSpace(strings.Join(segments[1:len(segments)-1], ":")),
 			ParentId:    letterToNumber(group),
 		}
 
@@ -50,7 +47,7 @@ func RefreshApis(c *gin.Context) {
 		result := dao.OBCursor.Select("api_path", "api_name", "id", "method", "description", "api_group", "parent_id").Clauses(clause.OnConflict{
 			Columns: []clause.Column{{Name: "api_path"}}, // key colume
 			// 也可以用 map [ string ] interface {} { "role" : "user" }
-			DoUpdates: clause.AssignmentColumns([]string{"id", "api_name", "api_group"}), // column needed to be updated
+			DoUpdates: clause.AssignmentColumns([]string{"id", "api_name", "api_group", "description"}), // column needed to be updated
 		}).Create(&api)
 
 		if result.Error != nil {
@@ -66,7 +63,7 @@ func GetApiList(c *gin.Context) {
 	//RefreshApis(c)
 	err := dao.OBCursor.Model(&types.ElnApis{}).Find(&apiList).Error
 	if err != nil {
-		zap.L().Error(fmt.Sprintf("failed to update apis: %v\n", err))
+		zap.L().Error(fmt.Sprintf("failed to get apis: %v\n", err))
 	}
 
 	utils.SuccessWithData(c, "", gin.H{"items": apiList, "total": len(apiList)})
@@ -74,7 +71,7 @@ func GetApiList(c *gin.Context) {
 }
 
 func AddApi(c *gin.Context) {
-	var apiData types.Param
+	var apiData types.SystemApiParam
 	err := c.ShouldBind(&apiData)
 	if err != nil {
 		utils.BadRequestErr(c, err)
@@ -102,7 +99,7 @@ func AddApi(c *gin.Context) {
 }
 
 func UpdateAPi(c *gin.Context) {
-	var apiData types.ApiParam
+	var apiData types.SystemApiParam
 	err := c.ShouldBind(&apiData)
 	if err != nil {
 		utils.BadRequestErr(c, err)
@@ -110,10 +107,10 @@ func UpdateAPi(c *gin.Context) {
 	}
 
 	err = dao.OBCursor.Where(`id = ?`, apiData.ID).Updates(&types.ElnApis{
-		ApiPath:     apiData.Value.Path,
-		ParentId:    apiData.Value.ParentID,
-		Description: apiData.Value.Description,
-		Method:      apiData.Value.Method,
+		ApiPath:     apiData.Path,
+		ParentId:    apiData.ParentID,
+		Description: apiData.Description,
+		Method:      apiData.Method,
 	}).Error
 
 	if err != nil {

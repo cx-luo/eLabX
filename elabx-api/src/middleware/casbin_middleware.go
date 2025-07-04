@@ -11,6 +11,7 @@ import (
 	"database/sql"
 	"eLabX/src/dao"
 	"errors"
+	"fmt"
 	"github.com/casbin/casbin/v2"
 	"github.com/casbin/casbin/v2/model"
 	gormadapter "github.com/casbin/gorm-adapter/v3"
@@ -78,7 +79,7 @@ func CasbinMiddleware() gin.HandlerFunc {
 		enforcer, err := setupCasbin(dao.OBCursor)
 
 		if err != nil {
-			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": fmt.Sprintf("setupCasbin error: %s", err.Error())})
 			return
 		}
 		for _, role := range roles {

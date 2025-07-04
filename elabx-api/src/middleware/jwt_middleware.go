@@ -8,7 +8,7 @@
 package middleware
 
 import (
-	utils2 "eLabX/src/utils"
+	"eLabX/src/utils"
 	"errors"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
@@ -88,13 +88,13 @@ func JwtAuth() gin.HandlerFunc {
 		tokenHeader := c.Request.Header.Get("Authorization")
 		//tokenHeader := c.Request.Header.Get("accessToken")
 		if tokenHeader == "" {
-			utils2.BadRequestErr(c, errors.New("token not exist"))
+			utils.BadRequestErr(c, errors.New("token not exist"))
 			return
 		}
 
 		claims, err := ParseToken(tokenHeader)
 		if err != nil {
-			c.JSON(http.StatusBadRequest, utils2.BaseResponse{
+			c.JSON(http.StatusBadRequest, utils.BaseResponse{
 				StatusCode: -2, Msg: "inactivity timeout, please close browser and re-login", Data: gin.H{},
 			})
 			c.Abort()
@@ -103,7 +103,7 @@ func JwtAuth() gin.HandlerFunc {
 
 		//判断token是否过期
 		if time.Now().Unix() > claims.ExpiresAt.Unix() {
-			c.JSON(http.StatusBadRequest, utils2.BaseResponse{
+			c.JSON(http.StatusBadRequest, utils.BaseResponse{
 				StatusCode: -2, Msg: "inactivity timeout, please close browser and re-login", Data: gin.H{},
 			})
 			c.Abort()
