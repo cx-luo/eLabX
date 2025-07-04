@@ -153,7 +153,7 @@ async function handleStatusChanged(row: any, checked: boolean) {
   row.pending = true;
   row.status = checked ? 1 : 2;
   try {
-    await updateMenuApi(row.id, row);
+    await updateMenuApi({ id: row.id, ...row });
 
     toast.success($t('ui.notification.update_success'), {
       timeout: 1000,

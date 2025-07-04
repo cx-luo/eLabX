@@ -3,7 +3,7 @@
 // @Time    : 2025/6/28 13:20
 // @Author  : chengxiang.luo
 // @Email   : chengxiang.luo@foxmail.com
-// @File    : routes.go
+// @File    : menu.go
 // @Software: GoLand
 package api
 
@@ -125,6 +125,24 @@ func GetUserRouteList(c *gin.Context) {
 		AuthorityIds string `json:"authorityIds,omitempty" db:"permissions"`
 	}
 	err := c.ShouldBind(&roles)
+	if err != nil {
+		utils.InternalRequestErr(c, err)
+		return
+	}
+
+	utils.SuccessWithData(c, "", gin.H{"items": defaultRoute()})
+	return
+}
+
+func UpdateMenu(c *gin.Context) {
+	var menu types.SystemMenuParam
+	err := c.ShouldBind(&menu)
+	if err != nil {
+		utils.BadRequestErr(c, err)
+		return
+	}
+
+	err = dao.OBCursor.Model(&types.ElnRouteMenus{}).Where(`id = ?`, menu.ID).Updates(menu).Error
 	if err != nil {
 		utils.InternalRequestErr(c, err)
 		return
