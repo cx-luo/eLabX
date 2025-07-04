@@ -4,14 +4,14 @@ import { requestClient } from '#/api/request';
  * 获取角色列表
  */
 export const getRoleListApi = async (params: any) => {
-  return requestClient.getWithParams('/role/list', params);
+  return requestClient.getWithParams('/system/role/list', params);
 };
 
 /**
  * 获取角色信息
  */
 export const getRoleInfoApi = async (id: number) => {
-  return requestClient.get(`/role/info/${id}`);
+  return requestClient.get(`/system/role/info/${id}`);
 };
 
 /**
@@ -21,18 +21,17 @@ export const getRoleInfoApi = async (id: number) => {
  * @returns
  */
 export const createRoleApi = async (param: any) => {
-  return await requestClient.post('/role/add', param);
+  return await requestClient.post('/system/role/add', param);
 };
 
 /**
  * 修改角色信息
  *
- * @param id ID
  * @param param 数据
  * @returns
  */
-export const updateRoleApi = async (id: number, param: any) => {
-  return await requestClient.put(`/role/update/${id}`, param);
+export const updateRoleApi = async (param: any) => {
+  return await requestClient.post(`/system/role/update`, param);
 };
 
 /**
@@ -42,16 +41,15 @@ export const updateRoleApi = async (id: number, param: any) => {
  * @returns
  */
 export const deleteRoleApi = async (id: number) => {
-  return await requestClient.delete(`/role/delete/${id}`);
+  return await requestClient.delete(`/system/role/delete/${id}`);
 };
 
 /**
  * 分配权限
  *
- * @param id ID
  * @param param 数据
  * @returns
  */
-export const updateRoleAuthApi = async (id: number, param: any) => {
-  return await requestClient.put(`/role/assign/${id}`, param);
+export const updateRoleAuthApi = async (param: any) => {
+  return await requestClient.post(`/system/role/assign`, param);
 };
