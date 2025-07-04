@@ -16,6 +16,7 @@ import {
 } from '#/api';
 import { MenuType, statusList } from '#/store';
 import { useToast, POSITION } from 'vue-toastification';
+
 const toast = useToast();
 
 const isMenu = (type: string) => type === MenuType.MENU;
@@ -288,7 +289,7 @@ const [Drawer, drawerApi] = useVbenDrawer({
     try {
       await (data.value?.create
         ? createMenuApi(values)
-        : updateMenuApi(data.value.row.id, values));
+        : updateMenuApi({ id: data.value.row.id, ...values }));
 
       toast.success(
         data.value?.create

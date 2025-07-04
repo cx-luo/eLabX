@@ -46,6 +46,36 @@ func (*ElnRoutes) TableName() string {
 	return "eln_routes"
 }
 
+// ElnRouteMenus undefined
+type ElnRouteMenus struct {
+	ID        int64     `json:"id" db:"id" gorm:"id"`
+	RouteName string    `json:"routeName" db:"route_name" gorm:"route_name"`
+	Path      string    `json:"path" db:"path" gorm:"path"`
+	Type      string    `json:"type" db:"type" gorm:"type"`
+	Component string    `json:"component" db:"component" gorm:"component"`
+	Status    int8      `json:"status" db:"status" gorm:"status"`
+	Meta      Meta      `json:"meta,omitempty" gorm:"embedded"`
+	ParentId  int64     `json:"parentId" db:"parent_id" gorm:"parent_id"`
+	CreateAt  time.Time `json:"createAt" db:"create_at" gorm:"create_at"` // 创建时间
+	UpdateAt  time.Time `json:"updateAt" db:"update_at" gorm:"update_at"` // 更新时间
+}
+
+type Meta struct {
+	Name               string `json:"name,omitempty" db:"name" gorm:"name"`
+	Icon               string `json:"icon,omitempty" db:"icon" gorm:"icon"`
+	AffixTab           int8   `json:"affixTab,omitempty" db:"affix_tab" gorm:"affix_tab"`
+	HideChildrenInMenu int8   `json:"hideChildrenInMenu,omitempty" db:"hide_children_in_menu" gorm:"hide_children_in_menu"`
+	HideInBreadcrumb   int8   `json:"hideInBreadcrumb,omitempty" db:"hide_in_breadcrumb" gorm:"hide_in_breadcrumb"`
+	HideInMenu         int8   `json:"hideInMenu,omitempty" db:"hide_in_menu" gorm:"hide_in_menu"`
+	HideInTab          int8   `json:"hideInTab" db:"hide_in_tab" gorm:"hide_in_tab"`
+	KeepAlive          int8   `json:"keepAlive,omitempty" db:"keep_alive" gorm:"keep_alive"`
+}
+
+// TableName 表名称
+func (*ElnRouteMenus) TableName() string {
+	return "eln_route_menus"
+}
+
 // ElnApis undefined
 type ElnApis struct {
 	ID          int64     `json:"id" db:"id" gorm:"id"`

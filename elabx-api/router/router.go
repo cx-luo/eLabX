@@ -20,16 +20,6 @@ import (
 // NewRouter returns a new router.
 func NewRouter(outputPath string, loglevel string) *gin.Engine {
 	// 设置全局 Logger
-	//logger := middleware.SetupLogger(outputPath, loglevel)
-	//
-	//// 延迟关闭 logger
-	//defer func(logger *zap.Logger) {
-	//	err := logger.Sync()
-	//	if err != nil {
-	//		middleware.Logger.Error(err.Error())
-	//	}
-	//}(logger)
-
 	router := gin.New()
 
 	// 为需要中间件的路由组注册中间件
@@ -50,7 +40,6 @@ func NewRouter(outputPath string, loglevel string) *gin.Engine {
 
 	registerCasbinRoutes(router)
 
-	registerRouteRoutes(router)
 	// 注册其他路由
 	registerSystemRoutes(router)
 
@@ -73,12 +62,11 @@ func registerUserRoutes(r *gin.Engine) {
 	userGroup := r.Group("/api/user")
 	{
 		userGroup.GET("/info", api.UserInfo)
-		userGroup.POST("/fetchUserName", api.FetchUserName)
-		userGroup.GET("/getUserList", api.GetUserList)
-		userGroup.POST("/changePwd", api.ChangePwd)
-		userGroup.POST("/changeUsername", api.ChangeUserName)
-		userGroup.POST("/forgetPwd", api.ForgetPwd)
-		userGroup.POST("/resetPwd", api.ResetPwd)
+		userGroup.POST("/name", api.FetchUserName)
+		userGroup.GET("/list", api.GetUserList)
+		userGroup.POST("/modify/pwd", api.ChangePwd)
+		userGroup.POST("/modify/name", api.ModifyUserInfo)
+		userGroup.POST("/forget/pwd", api.ForgetPwd)
 	}
 }
 
@@ -89,22 +77,27 @@ func registerCasbinRoutes(r *gin.Engine) {
 	}
 }
 
-func registerRouteRoutes(r *gin.Engine) {
-	routeGroup := r.Group("/api/route")
-	{
-		routeGroup.POST("/tree", api.GetRouteTree)
-		routeGroup.GET("/list", api.GetUserRouteList)
-	}
-}
-
 func registerSystemRoutes(r *gin.Engine) {
-	routeGroup := r.Group("/api")
+	systemGroup := r.Group("/api/system")
+	menuGroup := systemGroup.Group("/menu")
 	{
-		routeGroup.GET("api/list", system.GetApiList)
-		routeGroup.POST("api/add", system.AddApi)
-		routeGroup.POST("api/delete", system.DeleteAPi)
-		routeGroup.POST("api/update", system.UpdateAPi)
-		routeGroup.GET("api/refresh", system.RefreshApis)
+		menuGroup.POST("/tree", api.GetRouteTree)
+		menuGroup.POST("/update", api.UpdateMenu)
+		menuGroup.GET("/list", api.GetUserRouteList)
+	}
+
+	apiGroup := systemGroup.Group("/api")
+	{
+		apiGroup.GET("/list", system.GetApiList)
+		apiGroup.POST("/add", system.AddApi)
+		apiGroup.POST("/delete", system.DeleteAPi)
+		apiGroup.POST("/update", system.UpdateAPi)
+		apiGroup.GET("/refresh", system.RefreshApis)
+	}
+
+	userManagerGroup := systemGroup.Group("/user")
+	{
+		userManagerGroup.POST("/reset/passwd", api.ResetPwd)
 	}
 }
 
