@@ -9,6 +9,7 @@ package utils
 
 import (
 	"github.com/gin-gonic/gin"
+	"go.uber.org/zap"
 	"net/http"
 )
 
@@ -19,6 +20,7 @@ type BaseResponse struct {
 }
 
 func Error(c *gin.Context, status int, code int, message string) {
+	zap.L().Error(message)
 	c.AbortWithStatusJSON(status, BaseResponse{
 		StatusCode: code,
 		Msg:        message,
@@ -32,12 +34,12 @@ func Success(c *gin.Context, msg string) {
 }
 
 func BadRequestErr(c *gin.Context, err error) {
-	//middleware.Logger.Error("BadRequest: " + err.Error())
+	//zap.L().Error("BadRequest: " + err.Error())
 	Error(c, http.StatusBadRequest, http.StatusBadRequest, err.Error())
 }
 
 func InternalRequestErr(c *gin.Context, err error) {
-	//Logger.Error("InternalServerError: " + err.Error())
+	//zap.L().Error("InternalServerError: " + err.Error())
 	Error(c, http.StatusInternalServerError, http.StatusInternalServerError, err.Error())
 }
 
