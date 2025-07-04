@@ -124,7 +124,7 @@ async function handleStatusChanged(row: any, checked: boolean) {
   row.pending = true;
   row.status = checked ? 1 : 2;
   try {
-    await updateRoleApi(row.id, row);
+    await updateRoleApi({ id: row.id, ...row });
 
     toast.success($t('ui.notification.update_success'), {
       timeout: 1000,

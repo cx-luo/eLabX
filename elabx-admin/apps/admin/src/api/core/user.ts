@@ -13,7 +13,7 @@ export const getUserInfoApi = async () => {
  * 获取用户列表
  */
 export const getUserListApi = async (param: any) => {
-  return requestClient.getWithParams('/user/list', param);
+  return requestClient.getWithParams('/system/user/list', param);
 };
 
 /**
@@ -23,7 +23,7 @@ export const getUserListApi = async (param: any) => {
  * @returns
  */
 export const createUserApi = async (param: any) => {
-  return await requestClient.post('/user/add', param);
+  return await requestClient.post('/system/user/add', param);
 };
 
 /**
@@ -34,7 +34,7 @@ export const createUserApi = async (param: any) => {
  * @returns
  */
 export const updateUserApi = async (id: number, param: any) => {
-  return await requestClient.put(`/user/update/${id}`, param);
+  return await requestClient.put(`/system/user/update/${id}`, param);
 };
 
 /**
@@ -44,5 +44,5 @@ export const updateUserApi = async (id: number, param: any) => {
  * @returns
  */
 export const deleteUserApi = async (id: number) => {
-  return await requestClient.delete(`/user/delete/${id}`);
+  return await requestClient.delete(`/system/user/delete/${id}`);
 };

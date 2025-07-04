@@ -4,7 +4,7 @@ import { requestClient } from '#/api/request';
  * 获取API列表
  */
 export const getApiListApi = async (params: any) => {
-  return requestClient.getWithParams('/api/list', params);
+  return requestClient.getWithParams('/system/api/list', params);
 };
 
 /**
@@ -14,7 +14,7 @@ export const getApiListApi = async (params: any) => {
  * @returns
  */
 export const createApiApi = async (param: any) => {
-  return await requestClient.post('/api/add', param);
+  return await requestClient.post('/system/api/add', param);
 };
 
 /**
@@ -24,7 +24,7 @@ export const createApiApi = async (param: any) => {
  * @returns
  */
 export const updateApiApi = async (param: any) => {
-  return await requestClient.post(`/api/update`, param);
+  return await requestClient.post(`/system/api/update`, param);
 };
 
 /**
@@ -34,5 +34,5 @@ export const updateApiApi = async (param: any) => {
  * @param param
  */
 export const deleteApiApi = async (param: any) => {
-  return await requestClient.post(`/api/delete`, param);
+  return await requestClient.post(`/system/api/delete`, param);
 };

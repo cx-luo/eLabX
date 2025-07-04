@@ -110,7 +110,7 @@ export namespace MenuApi {
  * 获取用户所有菜单
  */
 export const getMenusRouterApi = async (param: any) => {
-  return await requestClient.get<MenuApi.ListMenuResp>('/route/list', {
+  return await requestClient.get<MenuApi.ListMenuResp>('/system/menu/list', {
     params: param,
   });
 };
@@ -122,7 +122,10 @@ export const getMenusRouterApi = async (param: any) => {
  * @returns
  */
 export const getMenuTreeApi = async (param: any) => {
-  return await requestClient.post<MenuApi.ListMenuResp>('/route/tree', param);
+  return await requestClient.post<MenuApi.ListMenuResp>(
+    '/system/menu/tree',
+    param,
+  );
 };
 
 /**
@@ -142,8 +145,8 @@ export const getFormMenuInfoApi = async (id: number) => {
  * @param param 数据
  * @returns
  */
-export const updateMenuApi = async (id: number, param: any) => {
-  return await requestClient.put(`/menu/update/${id}`, param);
+export const updateMenuApi = async (param: any) => {
+  return await requestClient.post(`/system/menu/update`, param);
 };
 
 /**
@@ -153,7 +156,7 @@ export const updateMenuApi = async (id: number, param: any) => {
  * @returns
  */
 export const createMenuApi = async (param: any) => {
-  return await requestClient.post('/menu/add', param);
+  return await requestClient.post('/system/menu/add', param);
 };
 
 /**
@@ -163,7 +166,7 @@ export const createMenuApi = async (param: any) => {
  * @returns
  */
 export const deleteMenuApi = async (id: number) => {
-  return await requestClient.delete(`/menu/delete/${id}`);
+  return await requestClient.delete(`/system/menu/delete/${id}`);
 };
 
 export namespace ApiTreeApi {
@@ -196,7 +199,9 @@ export namespace ApiTreeApi {
  * 获取 API 树形列表
  */
 export const getApiTreeApi = async () => {
-  return await requestClient.get<ApiTreeApi.ListApiTreeResp>('/api/tree');
+  return await requestClient.get<ApiTreeApi.ListApiTreeResp>(
+    '/system/api/tree',
+  );
 };
 
 /**

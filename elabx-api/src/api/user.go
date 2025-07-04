@@ -15,7 +15,6 @@ import (
 	"fmt"
 	goTools "github.com/cx-luo/go-toolkit"
 	"github.com/gin-gonic/gin"
-	"net/http"
 	"strconv"
 	"strings"
 	"time"
@@ -73,36 +72,22 @@ type route struct {
 }
 
 func UserInfo(c *gin.Context) {
-	username, _ := c.Get("username")
+	username, exists := c.Get("username")
+	if !exists {
+		utils.BadRequestErr(c, errors.New("User does not exist or is unavailable.\n"))
+		return
+	}
+
 	var user Users
 	err := dao.OBCursor.Table("eln_users").Select("username", "roles", "permissions").
 		Where("status = 1 and user_id = ?", username).Find(&user).Error
 	if err != nil {
-		u := fmt.Sprintf("User does not exist or is unavailable.")
-		response := utils.BaseResponse{
-			StatusCode: 505, Msg: err.Error(), Data: gin.H{"error": u},
-		}
-		c.JSON(505, response)
+		utils.NotFoundError(c, fmt.Errorf("User does not exist or is unavailable. %s\n", err))
 		return
 	}
 
-	err, elnRoutes, authorityRoutes := userRouter(utils.GetInterfaceToInt(username))
-	if err != nil {
-		utils.InternalRequestErr(c, err)
-		return
-	}
-	response := utils.BaseResponse{
-		StatusCode: 200, Msg: "success", Data: gin.H{"permissions": strings.Split(user.Permissions.String, ","), "username": user.Username,
-			"routes": elnRoutes, "authorityRoutes": authorityRoutes},
-	}
-	c.JSON(http.StatusOK, response)
+	utils.SuccessWithData(c, "success", gin.H{"permissions": strings.Split(user.Permissions.String, ","), "username": user.Username})
 	return
-}
-
-func userRouter(userId int) (error, []route, []route) {
-	var subRoutes []route
-	var authorityRoutes []route
-	return nil, subRoutes, authorityRoutes
 }
 
 type userId struct {
@@ -211,7 +196,7 @@ func ForgetPwd(c *gin.Context) {
 	utils.Success(c, "change passcode successfully")
 }
 
-func ChangeUserName(c *gin.Context) {
+func ModifyUserInfo(c *gin.Context) {
 	var u struct {
 		UserId   int    `json:"userId"`
 		Username string `json:"username"`
