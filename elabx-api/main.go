@@ -2,7 +2,7 @@
 // @Project : eLabX
 // @Time    : 2023/12/12 10:47
 // @Author  : chengxiang.luo
-// @Email   : chengxiang.luo@pharmaron.com
+// @Email   : chengxiang.luo@foxmail.com
 // @File    : main.go
 // @Software: GoLand
 
