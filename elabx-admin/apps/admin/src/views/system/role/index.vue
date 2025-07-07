@@ -205,7 +205,7 @@ async function handleDelete(row: any) {
     // });
   } finally {
     row.pending = false;
-    gridApi.query();
+    await gridApi.query();
   }
 }
 

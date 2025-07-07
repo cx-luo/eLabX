@@ -27,25 +27,6 @@ func (*ElnUsers) TableName() string {
 	return "eln_users"
 }
 
-// ElnRoutes undefined
-type ElnRoutes struct {
-	ID           int64  `json:"id" db:"id" gorm:"id"`
-	Name         string `json:"name" db:"name" gorm:"name"`
-	Path         string `json:"path" db:"path" gorm:"path"`
-	Component    string `json:"component" db:"component" gorm:"component"`
-	MetaIcon     string `json:"metaIcon" db:"meta_icon" gorm:"meta_icon"`
-	MetaOrder    int64  `json:"metaOrder" db:"meta_order" gorm:"meta_order"`
-	MetaTitle    string `json:"metaTitle" db:"meta_title" gorm:"meta_title"`
-	MetaAffixTab int8   `json:"metaAffixTab" db:"meta_affix_tab" gorm:"meta_affix_tab"`
-	ParentId     int64  `json:"parentId" db:"parent_id" gorm:"parent_id"`
-	Status       int64  `json:"status" db:"status" gorm:"status"`
-}
-
-// TableName 表名称
-func (*ElnRoutes) TableName() string {
-	return "eln_routes"
-}
-
 // ElnRouteMenus undefined
 type ElnRouteMenus struct {
 	ID        int64     `json:"id" db:"id" gorm:"id"`
@@ -63,6 +44,7 @@ type ElnRouteMenus struct {
 type Meta struct {
 	Name               string `json:"name,omitempty" db:"name" gorm:"name"`
 	Icon               string `json:"icon,omitempty" db:"icon" gorm:"icon"`
+	Order              int64  `json:"order,omitempty" gorm:"order"`
 	AffixTab           int8   `json:"affixTab,omitempty" db:"affix_tab" gorm:"affix_tab"`
 	HideChildrenInMenu int8   `json:"hideChildrenInMenu,omitempty" db:"hide_children_in_menu" gorm:"hide_children_in_menu"`
 	HideInBreadcrumb   int8   `json:"hideInBreadcrumb,omitempty" db:"hide_in_breadcrumb" gorm:"hide_in_breadcrumb"`
@@ -92,4 +74,21 @@ type ElnApis struct {
 // TableName 表名称
 func (*ElnApis) TableName() string {
 	return "eln_apis"
+}
+
+// ElnRoles undefined
+type ElnRoles struct {
+	ID       int64     `json:"id,omitempty" db:"id" gorm:"id"`
+	Name     string    `json:"name,omitempty" db:"name" gorm:"name"`
+	Code     string    `json:"code,omitempty" db:"code" gorm:"code"`
+	Status   int8      `json:"status,omitempty" db:"status" gorm:"status"`
+	Sort     int64     `json:"sort,omitempty" db:"sort" gorm:"sort"`
+	Remark   string    `json:"remark,omitempty" db:"remark" gorm:"remark"`         // comments
+	CreateAt time.Time `json:"createAt,omitempty" db:"create_at" gorm:"create_at"` // 创建时间
+	UpdateAt time.Time `json:"updateAt,omitempty" db:"update_at" gorm:"update_at"` // 更新时间
+}
+
+// TableName 表名称
+func (*ElnRoles) TableName() string {
+	return "eln_roles"
 }

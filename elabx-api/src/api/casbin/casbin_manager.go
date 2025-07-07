@@ -1,11 +1,11 @@
-// Package api coding=utf-8
+// Package casbin coding=utf-8
 // @Project : elabx-api
 // @Time    : 2025/6/30 16:53
 // @Author  : chengxiang.luo
 // @Email   : chengxiang.luo@foxmail.com
 // @File    : casbin_manager.go
 // @Software: GoLand
-package api
+package casbin
 
 import (
 	"eLabX/src/middleware"
@@ -13,7 +13,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func CasbinAddPolicy(c *gin.Context) {
+func AddPolicy(c *gin.Context) {
 	var roles struct {
 		RoleName  string `json:"roleName,omitempty" `
 		ApiPath   string `json:"apiPath,omitempty"`
@@ -36,7 +36,7 @@ func CasbinAddPolicy(c *gin.Context) {
 	return
 }
 
-func CasbinAddRoleForUser(c *gin.Context) {
+func AddRoleForUser(c *gin.Context) {
 	var user struct {
 		UserId   string `json:"userId"`
 		RoleName string `json:"roleName"`
