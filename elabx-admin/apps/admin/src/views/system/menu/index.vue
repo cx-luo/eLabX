@@ -243,7 +243,7 @@ async function handleDelete(row: any) {
       </template>
 
       <template #title="{ row }">
-        <span :style="{ marginRight: '15px' }">{{ $t(row.name) }}</span>
+        <span :style="{ marginRight: '15px' }">{{ $t(row.meta.name) }}</span>
       </template>
 
       <template #type="{ row }">
@@ -259,8 +259,8 @@ async function handleDelete(row: any) {
       <template #icon="{ row }">
         <div class="flex h-full items-center justify-center">
           <Icon
-            v-if="row.metaIcon !== undefined"
-            :icon="row.metaIcon"
+            v-if="row.meta.icon !== undefined"
+            :icon="row.meta.icon"
             class="size-4"
           />
         </div>

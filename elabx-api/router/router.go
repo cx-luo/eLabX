@@ -10,7 +10,9 @@ package router
 import (
 	_ "eLabX/docs"
 	"eLabX/src/api"
+	"eLabX/src/api/casbin"
 	"eLabX/src/api/system"
+	"eLabX/src/api/user"
 	"eLabX/src/middleware"
 	"github.com/gin-gonic/gin"
 	swaggerFiles "github.com/swaggo/files"
@@ -61,19 +63,19 @@ func registerAuthRoutes(r *gin.Engine) {
 func registerUserRoutes(r *gin.Engine) {
 	userGroup := r.Group("/api/user")
 	{
-		userGroup.GET("/info", api.UserInfo)
-		userGroup.POST("/name", api.FetchUserName)
-		userGroup.GET("/list", api.GetUserList)
-		userGroup.POST("/modify/pwd", api.ChangePwd)
-		userGroup.POST("/modify/name", api.ModifyUserInfo)
-		userGroup.POST("/forget/pwd", api.ForgetPwd)
+		userGroup.GET("/info", user.UserInfo)
+		userGroup.POST("/name", user.FetchUserName)
+		userGroup.GET("/list", user.GetUserList)
+		userGroup.POST("/modify/pwd", user.ChangePwd)
+		userGroup.POST("/modify/name", user.ModifyUserInfo)
+		userGroup.POST("/forget/pwd", user.ForgetPwd)
 	}
 }
 
 func registerCasbinRoutes(r *gin.Engine) {
 	casbinGroup := r.Group("/api/casbin")
 	{
-		casbinGroup.POST("/add", api.CasbinAddPolicy)
+		casbinGroup.POST("/add", casbin.AddPolicy)
 	}
 }
 
@@ -81,9 +83,9 @@ func registerSystemRoutes(r *gin.Engine) {
 	systemGroup := r.Group("/api/system")
 	menuGroup := systemGroup.Group("/menu")
 	{
-		menuGroup.POST("/tree", api.GetRouteTree)
-		menuGroup.POST("/update", api.UpdateMenu)
-		menuGroup.GET("/list", api.GetUserRouteList)
+		menuGroup.POST("/tree", system.GetRouteTree)
+		menuGroup.POST("/update", system.UpdateMenu)
+		menuGroup.GET("/list", system.GetUserRouteList)
 	}
 
 	apiGroup := systemGroup.Group("/api")
@@ -97,7 +99,15 @@ func registerSystemRoutes(r *gin.Engine) {
 
 	userManagerGroup := systemGroup.Group("/user")
 	{
-		userManagerGroup.POST("/reset/passwd", api.ResetPwd)
+		userManagerGroup.POST("/reset/passwd", user.ResetPwd)
+	}
+
+	roleGroup := systemGroup.Group("/role")
+	{
+		roleGroup.POST("/list", system.GetRoleList)
+		roleGroup.POST("/assign", system.RoleAssign)
+		roleGroup.POST("/add", system.RoleAdd)
+		roleGroup.GET("/info/:id", system.RoleInfo)
 	}
 }
 

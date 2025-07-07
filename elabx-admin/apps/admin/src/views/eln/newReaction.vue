@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import { ElMessage, ElNotification, type FormInstance } from 'element-plus';
-import { onMounted, ref } from 'vue';
-import { getKetcher } from './utils';
-import type { Ketcher } from 'ketcher-core';
+import {ElMessage, ElNotification, type FormInstance} from 'element-plus';
+import {onMounted, ref} from 'vue';
+import {getKetcher} from './utils';
+import type {Ketcher} from 'ketcher-core';
 
 const projectFormRef = ref<FormInstance>();
 const reactionSmiles = ref<string | null>(null);
@@ -33,10 +33,14 @@ async function saveNewReactionNoteToDatabase(formEl: FormInstance | undefined) {
   }
 
   const ketcher = getKetcher();
-
   if (!ketcher) {
     ElMessage.error('化学结构编辑器未加载完成');
     return;
+  }
+
+  if (!ketcher?.containsReaction()){
+    ElNotification.error("Don't contain reaction")
+    return
   }
 
   isLoading.value = true;
@@ -45,6 +49,12 @@ async function saveNewReactionNoteToDatabase(formEl: FormInstance | undefined) {
     const smiles = await ketcher.getSmiles(true); // 假设返回 Promise<string>
     reactionSmiles.value = smiles;
     console.log('获取到的 SMILES:', smiles);
+    ketcher.calculate({
+      properties: ['molecular-weight', 'gross'],
+      struct: reactionSmiles.value
+    }).then((res) => {
+      console.log(res.gross)
+    })
 
     // 此处可添加保存到后端的逻辑
     // await saveReactionToServer(smiles);
