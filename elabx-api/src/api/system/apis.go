@@ -28,7 +28,7 @@ func letterToNumber(s string) int64 {
 
 func RefreshApis(c *gin.Context) {
 	for _, a := range utils.Apis {
-		segments := strings.Split(a.Path, "/") // 最多切分为3段
+		segments := strings.Split(a.Path, "/")
 		group := path.Dir(a.Path)
 		funcSegments := strings.Split(a.Handler, "/")
 		node, _ := snowflake.NewNode(1)

@@ -154,3 +154,11 @@ func GetInterfaceToInt(t1 interface{}) int {
 	}
 	return t2
 }
+
+func Int64SliceToStringSlice(int64Slice []int64) []string {
+	stringSlice := make([]string, len(int64Slice))
+	for i, v := range int64Slice {
+		stringSlice[i] = strconv.FormatInt(v, 10)
+	}
+	return stringSlice
+}

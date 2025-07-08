@@ -107,7 +107,9 @@ func registerSystemRoutes(r *gin.Engine) {
 		roleGroup.POST("/list", system.GetRoleList)
 		roleGroup.POST("/assign", system.RoleAssign)
 		roleGroup.POST("/add", system.RoleAdd)
+		roleGroup.POST("/delete", system.DeleteRole)
 		roleGroup.GET("/info/:id", system.RoleInfo)
+		roleGroup.POST("/update", system.UpdateRole)
 	}
 }
 
