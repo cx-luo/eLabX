@@ -9,11 +9,11 @@ package router
 
 import (
 	_ "eLabX/docs"
+	middleware2 "eLabX/middleware"
 	"eLabX/src/api"
 	"eLabX/src/api/casbin"
 	"eLabX/src/api/system"
 	"eLabX/src/api/user"
-	"eLabX/src/middleware"
 	"github.com/gin-gonic/gin"
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
@@ -27,14 +27,14 @@ func NewRouter(outputPath string, loglevel string) *gin.Engine {
 	// 为需要中间件的路由组注册中间件
 
 	// 使用 Zap 中间件
-	router.Use(middleware.GinLogger(), middleware.GinRecovery(true))
+	router.Use(middleware2.GinLogger(), middleware2.GinRecovery(true))
 
 	// 注册其他中间件
-	router.Use(middleware.CORS())
+	router.Use(middleware2.CORS())
 
-	router.Use(middleware.JwtAuth())
+	router.Use(middleware2.JwtAuth())
 
-	router.Use(middleware.CasbinMiddleware())
+	router.Use(middleware2.CasbinMiddleware())
 
 	registerAuthRoutes(router)
 	// 注册用户相关路由
