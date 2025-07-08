@@ -8,7 +8,7 @@
 package casbin
 
 import (
-	"eLabX/src/middleware"
+	"eLabX/middleware"
 	"eLabX/src/utils"
 	"github.com/gin-gonic/gin"
 )

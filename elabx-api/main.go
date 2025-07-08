@@ -9,9 +9,9 @@
 package main
 
 import (
+	"eLabX/middleware"
 	"eLabX/router"
 	"eLabX/src/dao"
-	"eLabX/src/middleware"
 	"eLabX/src/utils"
 	"flag"
 	"fmt"
