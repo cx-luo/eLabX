@@ -95,7 +95,7 @@ func defaultRoute() []Route {
 		return nil
 	}
 
-	for i, _ := range parentRoutes {
+	for i := range parentRoutes {
 		children, err := getChildrenRoutes(dao.OBCursor, parentRoutes[i].ID)
 		if err != nil {
 			zap.L().Error(fmt.Sprintf("failed to get children routes for parent ID %d: %s", parentRoutes[i].ID, err.Error()))

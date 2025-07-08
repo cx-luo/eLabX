@@ -78,14 +78,16 @@ func (*ElnApis) TableName() string {
 
 // ElnRoles undefined
 type ElnRoles struct {
-	ID       int64     `json:"id,omitempty" db:"id" gorm:"id"`
-	Name     string    `json:"name,omitempty" db:"name" gorm:"name"`
-	Code     string    `json:"code,omitempty" db:"code" gorm:"code"`
-	Status   int8      `json:"status,omitempty" db:"status" gorm:"status"`
-	Sort     int64     `json:"sort,omitempty" db:"sort" gorm:"sort"`
-	Remark   string    `json:"remark,omitempty" db:"remark" gorm:"remark"`         // comments
-	CreateAt time.Time `json:"createAt,omitempty" db:"create_at" gorm:"create_at"` // 创建时间
-	UpdateAt time.Time `json:"updateAt,omitempty" db:"update_at" gorm:"update_at"` // 更新时间
+	ID       int64     `json:"id" db:"id" gorm:"id"`
+	Name     string    `json:"name" db:"name" gorm:"name"`
+	Code     int64     `json:"code" db:"code" gorm:"code"`
+	Status   int8      `json:"status" db:"status" gorm:"status"`
+	Sort     int64     `json:"sort" db:"sort" gorm:"sort"`
+	ApiId    string    `json:"apiId" db:"api_id" gorm:"api_id"`
+	AuthId   string    `json:"authId" db:"auth_id" gorm:"auth_id"`
+	Remark   string    `json:"remark" db:"remark" gorm:"remark"`         // comments
+	CreateAt time.Time `json:"createAt" db:"create_at" gorm:"create_at"` // 创建时间
+	UpdateAt time.Time `json:"updateAt" db:"update_at" gorm:"update_at"` // 更新时间
 }
 
 // TableName 表名称
