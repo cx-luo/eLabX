@@ -153,3 +153,21 @@ func UpdateMenu(c *gin.Context) {
 	utils.SuccessWithData(c, "", gin.H{"items": defaultRoute()})
 	return
 }
+
+func AddMenu(c *gin.Context) {
+	var menu types.ElnRouteMenus
+	err := c.ShouldBind(&menu)
+	if err != nil {
+		utils.BadRequestErr(c, err)
+		return
+	}
+
+	err = dao.OBCursor.Model(&types.ElnRouteMenus{}).Create(&menu).Error
+	if err != nil {
+		utils.InternalRequestErr(c, err)
+		return
+	}
+
+	utils.Success(c, "Success")
+	return
+}

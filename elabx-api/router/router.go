@@ -10,14 +10,31 @@ package router
 import (
 	_ "eLabX/docs"
 	middleware2 "eLabX/middleware"
-	"eLabX/src/api"
 	"eLabX/src/api/casbin"
-	"eLabX/src/api/system"
-	"eLabX/src/api/user"
 	"github.com/gin-gonic/gin"
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
 )
+
+// 为了更好地管理和维护 API 路由，将不同模块的路由注册拆分到多个文件中。
+// 例如：auth_routes.go, user_routes.go, casbin_routes.go, system_routes.go, other_routes.go
+// 每个文件中定义对应的 registerXXXRoutes 函数，并在此处导入和调用。
+
+// 例如：
+// import "eLabX/router/auth_routes"
+// import "eLabX/router/user_routes"
+// import "eLabX/router/casbin_routes"
+// import "eLabX/router/system_routes"
+// import "eLabX/router/other_routes"
+
+// 在 NewRouter 中调用：
+// auth_routes.RegisterAuthRoutes(router)
+// user_routes.RegisterUserRoutes(router)
+// casbin_routes.RegisterCasbinRoutes(router)
+// system_routes.RegisterSystemRoutes(router)
+// other_routes.RegisterOtherRoutes(router)
+
+// 这样可以实现 API 路由的模块化和解耦，便于后续维护和扩展。
 
 // NewRouter returns a new router.
 func NewRouter(outputPath string, loglevel string) *gin.Engine {
@@ -47,69 +64,15 @@ func NewRouter(outputPath string, loglevel string) *gin.Engine {
 
 	registerOtherRoutes(router)
 
+	registerEtlRoutes(router)
+
 	return router
-}
-
-func registerAuthRoutes(r *gin.Engine) {
-	authGroup := r.Group("/api/auth")
-	{
-		authGroup.POST("/login", api.UserLogin)
-		authGroup.POST("/logout", api.UserLogout)
-		authGroup.POST("/setUserAuthorities", api.SetUserAuthorities)
-	}
-}
-
-// 用户相关路由
-func registerUserRoutes(r *gin.Engine) {
-	userGroup := r.Group("/api/user")
-	{
-		userGroup.GET("/info", user.UserInfo)
-		userGroup.POST("/name", user.FetchUserName)
-		userGroup.GET("/list", user.GetUserList)
-		userGroup.POST("/modify/pwd", user.ChangePwd)
-		userGroup.POST("/modify/name", user.ModifyUserInfo)
-		userGroup.POST("/forget/pwd", user.ForgetPwd)
-	}
 }
 
 func registerCasbinRoutes(r *gin.Engine) {
 	casbinGroup := r.Group("/api/casbin")
 	{
 		casbinGroup.POST("/add", casbin.AddPolicy)
-	}
-}
-
-func registerSystemRoutes(r *gin.Engine) {
-	systemGroup := r.Group("/api/system")
-	menuGroup := systemGroup.Group("/menu")
-	{
-		menuGroup.POST("/tree", system.GetRouteTree)
-		menuGroup.POST("/update", system.UpdateMenu)
-		menuGroup.GET("/list", system.GetUserRouteList)
-	}
-
-	apiGroup := systemGroup.Group("/api")
-	{
-		apiGroup.GET("/list", system.GetApiList)
-		apiGroup.POST("/add", system.AddApi)
-		apiGroup.POST("/delete", system.DeleteAPi)
-		apiGroup.POST("/update", system.UpdateAPi)
-		apiGroup.GET("/refresh", system.RefreshApis)
-	}
-
-	userManagerGroup := systemGroup.Group("/user")
-	{
-		userManagerGroup.POST("/reset/passwd", user.ResetPwd)
-	}
-
-	roleGroup := systemGroup.Group("/role")
-	{
-		roleGroup.POST("/list", system.GetRoleList)
-		roleGroup.POST("/assign", system.RoleAssign)
-		roleGroup.POST("/add", system.RoleAdd)
-		roleGroup.POST("/delete", system.DeleteRole)
-		roleGroup.GET("/info/:id", system.RoleInfo)
-		roleGroup.POST("/update", system.UpdateRole)
 	}
 }
 
