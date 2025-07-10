@@ -49,7 +49,7 @@ type Meta struct {
 	HideChildrenInMenu int8   `json:"hideChildrenInMenu,omitempty" db:"hide_children_in_menu" gorm:"hide_children_in_menu"`
 	HideInBreadcrumb   int8   `json:"hideInBreadcrumb,omitempty" db:"hide_in_breadcrumb" gorm:"hide_in_breadcrumb"`
 	HideInMenu         int8   `json:"hideInMenu,omitempty" db:"hide_in_menu" gorm:"hide_in_menu"`
-	HideInTab          int8   `json:"hideInTab" db:"hide_in_tab" gorm:"hide_in_tab"`
+	HideInTab          int8   `json:"hideInTab,omitempty" db:"hide_in_tab" gorm:"hide_in_tab"`
 	KeepAlive          int8   `json:"keepAlive,omitempty" db:"keep_alive" gorm:"keep_alive"`
 }
 

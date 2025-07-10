@@ -38,16 +38,6 @@ const formOptions: VbenFormProps = {
         allowClear: true,
       },
     },
-    {
-      component: 'Button',
-      fieldName: 'refresh',
-      label: $t('page.system.api.refresh'),
-      componentProps: {
-        type: 'primary',
-        link: false,
-        // icon: h(LucideRefreshCcw),
-      },
-    },
   ],
 };
 

@@ -3,7 +3,6 @@ module eLabX
 go 1.20
 
 require (
-	github.com/bwmarrin/snowflake v0.3.0
 	github.com/casbin/casbin/v2 v2.108.0
 	github.com/casbin/gorm-adapter/v3 v3.32.0
 	github.com/cx-luo/go-toolkit v0.0.0-20241127012021-2b9492d6370d
