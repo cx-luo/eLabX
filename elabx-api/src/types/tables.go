@@ -1,5 +1,5 @@
 // Package types coding=utf-8
-// @Project : elabx-api
+// @Project : eLabX
 // @Time    : 2025/6/28 16:58
 // @Author  : chengxiang.luo
 // @Email   : chengxiang.luo@foxmail.com

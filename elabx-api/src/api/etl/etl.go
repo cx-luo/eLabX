@@ -1,5 +1,5 @@
 // Package etl coding=utf-8
-// @Project : elabx-vben
+// @Project : eLabX
 // @Time    : 2025/7/9 11:57
 // @Author  : chengxiang.luo
 // @Email   : chengxiang.luo@foxmail.com
@@ -108,7 +108,6 @@ func GetTableData(c *gin.Context) {
 	dbName := c.Param("dbName")
 	tableName := c.Param("tableName")
 
-	// 解析POST参数
 	var req struct {
 		Page      int      `json:"page,omitempty"`
 		PageSize  int      `json:"pageSize,omitempty"`
