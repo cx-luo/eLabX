@@ -1,18 +1,18 @@
 <script lang="ts" setup>
-import {computed, ref} from 'vue';
-import {useVbenDrawer, z} from '@vben/common-ui';
-import {$t} from '@vben/locales';
-import {useVbenForm} from '#/adapter/form';
-import {createApiApi, getApiListApi, updateApiApi} from '#/api';
-import {useToast, POSITION} from 'vue-toastification';
-import {methodList} from '#/store';
+import { computed, ref } from 'vue';
+import { useVbenDrawer, z } from '@vben/common-ui';
+import { $t } from '@vben/locales';
+import { useVbenForm } from '#/adapter/form';
+import { createApiApi, getApiListApi, updateApiApi } from '#/api';
+import { useToast, POSITION } from 'vue-toastification';
+import { methodList } from '#/store';
 
 const toast = useToast();
 const data = ref();
 const getTitle = computed(() =>
   data.value?.create
-    ? $t('ui.modal.create', {moduleName: $t('page.system.api.module')})
-    : $t('ui.modal.update', {moduleName: $t('page.system.api.module')}),
+    ? $t('ui.modal.create', { moduleName: $t('page.system.api.module') })
+    : $t('ui.modal.update', { moduleName: $t('page.system.api.module') }),
 );
 
 const [BaseForm, baseFormApi] = useVbenForm({
@@ -50,7 +50,7 @@ const [BaseForm, baseFormApi] = useVbenForm({
         placeholder: $t('ui.placeholder.input'),
         allowClear: true,
       },
-      rules: z.string().min(1, {message: $t('ui.formRules.required')}),
+      rules: z.string().min(1, { message: $t('ui.formRules.required') }),
     },
     {
       component: 'Select',
@@ -105,7 +105,7 @@ const [Drawer, drawerApi] = useVbenDrawer({
     try {
       await (data.value?.create
         ? createApiApi(values)
-        : updateApiApi({id: data.value.row.id, ...values}));
+        : updateApiApi({ id: data.value.row.id, ...values }));
 
       toast.success(
         data.value?.create
@@ -118,7 +118,7 @@ const [Drawer, drawerApi] = useVbenDrawer({
         },
       );
 
-      drawerApi.setData({needRefresh: true});
+      drawerApi.setData({ needRefresh: true });
     } catch {
       // toast.error(
       //   data.value?.create
@@ -154,12 +154,12 @@ const [Drawer, drawerApi] = useVbenDrawer({
 });
 
 function setLoading(loading: boolean) {
-  drawerApi.setState({loading});
+  drawerApi.setState({ loading });
 }
 </script>
 
 <template>
   <Drawer :title="getTitle">
-    <BaseForm/>
+    <BaseForm />
   </Drawer>
 </template>

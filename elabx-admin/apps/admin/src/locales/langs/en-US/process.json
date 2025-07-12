@@ -5,7 +5,7 @@
     "submit": "Submit"
   },
   "form": "Form Example",
-  "etl":{
+  "etl": {
     "database": "Database",
     "table": "Table",
     "columnName": "Column Name",
