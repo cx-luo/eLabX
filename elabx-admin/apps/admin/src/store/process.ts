@@ -1,4 +1,4 @@
-import { getDatabaseListApi } from '#/api/core/etl';
+import { getDatabaseListApi } from '#/api';
 import { computed } from 'vue';
 
 export const databaseList = computed(async () => {
