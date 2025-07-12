@@ -37,3 +37,17 @@ export const getTableDataApi = async (
 ) => {
   return requestClient.post(`/etl/table/data/${dbName}/${tableName}`, param);
 };
+
+/**
+ * Update data for a specified table in a database
+ * @param dbName Name of the database
+ * @param tableName Name of the table
+ * @param data Data to update (should include identifying keys and new values)
+ */
+export const updateTableDataApi = async (
+  dbName: string,
+  tableName: string,
+  data: Record<string, any>,
+) => {
+  return requestClient.put(`/etl/table/data/${dbName}/${tableName}`, data);
+};

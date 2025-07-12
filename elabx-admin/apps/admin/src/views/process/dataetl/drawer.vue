@@ -1,19 +1,14 @@
 <script lang="ts" setup>
-import { computed, ref } from 'vue';
+import { ref } from 'vue';
 import { useVbenDrawer, z } from '@vben/common-ui';
 import { $t } from '@vben/locales';
 import { useVbenForm } from '#/adapter/form';
-import { createApiApi, getApiListApi, updateApiApi } from '#/api';
+import { createApiApi, updateApiApi } from '#/api';
 import { useToast, POSITION } from 'vue-toastification';
-import { methodList } from '#/store';
 
 const toast = useToast();
 const data = ref();
-const getTitle = computed(() =>
-  data.value?.create
-    ? $t('ui.modal.create', { moduleName: $t('page.system.api.module') })
-    : $t('ui.modal.update', { moduleName: $t('page.system.api.module') }),
-);
+const newSchema = ref([]);
 
 const [BaseForm, baseFormApi] = useVbenForm({
   showDefaultActions: false,
@@ -24,65 +19,7 @@ const [BaseForm, baseFormApi] = useVbenForm({
       class: 'w-full',
     },
   },
-  schema: [
-    {
-      component: 'ApiSelect',
-      fieldName: 'parentId',
-      label: $t('page.system.api.parentId'),
-      componentProps: {
-        placeholder: $t('ui.placeholder.select'),
-        api: async () => {
-          const result = await getApiListApi({
-            onlyParent: true,
-          });
-          return result.items;
-        },
-        labelField: 'description',
-        valueField: 'id',
-      },
-      rules: 'selectRequired',
-    },
-    {
-      component: 'Input',
-      fieldName: 'description',
-      label: $t('page.system.api.description'),
-      componentProps: {
-        placeholder: $t('ui.placeholder.input'),
-        allowClear: true,
-      },
-      rules: z.string().min(1, { message: $t('ui.formRules.required') }),
-    },
-    {
-      component: 'Select',
-      fieldName: 'method',
-      label: $t('page.system.api.method'),
-      componentProps: {
-        options: methodList,
-        placeholder: $t('ui.placeholder.select'),
-      },
-      dependencies: {
-        required(values) {
-          return values.parentId != 0;
-        },
-        triggerFields: ['parentId'],
-      },
-    },
-    {
-      component: 'Input',
-      fieldName: 'apiPath',
-      label: $t('page.system.api.path'),
-      componentProps: {
-        placeholder: $t('ui.placeholder.input'),
-        allowClear: true,
-      },
-      dependencies: {
-        required(values) {
-          return values.parentId != 0;
-        },
-        triggerFields: ['parentId'],
-      },
-    },
-  ],
+  schema: newSchema.value,
 });
 
 const [Drawer, drawerApi] = useVbenDrawer({
@@ -103,9 +40,7 @@ const [Drawer, drawerApi] = useVbenDrawer({
     const values = await baseFormApi.getValues();
 
     try {
-      await (data.value?.create
-        ? createApiApi(values)
-        : updateApiApi({ id: data.value.row.id, ...values }));
+      await updateApiApi({ id: data.value.row.id, ...values });
 
       toast.success(
         data.value?.create
@@ -140,10 +75,20 @@ const [Drawer, drawerApi] = useVbenDrawer({
       // 获取传入的数据
       data.value = drawerApi.getData<Record<string, any>>();
 
-      if (data.value?.row?.meta && data.value?.row?.meta?.authority) {
-        const authority = data.value.row.meta.authority;
-        data.value.row.meta.authority = authority.join(',');
-      }
+      (data.value?.columns || []).map((col: any) => {
+        newSchema.value.push({
+          component: 'Input',
+          fieldName: col.field || col.columnName || String(col),
+          label: col.title || col.columnName || String(col),
+          componentProps: {
+            placeholder: $t('ui.placeholder.input'),
+            allowClear: true,
+          },
+          // rules: z.string().min(1, {message: $t('ui.formRules.required')}),
+        });
+      });
+
+      baseFormApi.updateSchema(newSchema.value);
 
       // 为表单赋值
       baseFormApi.setValues(data.value?.row);
@@ -159,7 +104,7 @@ function setLoading(loading: boolean) {
 </script>
 
 <template>
-  <Drawer :title="getTitle">
+  <Drawer :title="$t('ui.modal.update')">
     <BaseForm />
   </Drawer>
 </template>

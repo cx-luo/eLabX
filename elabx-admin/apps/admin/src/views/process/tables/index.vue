@@ -4,9 +4,9 @@ import { useVbenVxeGrid, type VxeGridProps } from '#/adapter/vxe-table';
 import { $t } from '#/locales';
 import { Page, type VbenFormProps } from '@vben/common-ui';
 import { formatDateTime } from '@vben/utils';
-import { getTableColumnsApi } from '#/api/core/etl';
+import { getTableColumnsApi } from '#/api';
 import { ref, onMounted } from 'vue';
-import { getDatabaseListApi, getTableListApi } from '#/api/core/etl';
+import { getDatabaseListApi, getTableListApi } from '#/api';
 
 const formOptions: VbenFormProps = {
   // 默认展开

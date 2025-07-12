@@ -1,21 +1,22 @@
 <script lang="ts" setup>
 import { computed, h } from 'vue';
-import {
-  useVbenVxeGrid,
-  type VxeGridProps,
-  type VxeTableGridOptions,
-} from '#/adapter/vxe-table';
+import { useVbenVxeGrid, type VxeGridProps } from '#/adapter/vxe-table';
 import { $t } from '#/locales';
 import { Page, useVbenDrawer, type VbenFormProps } from '@vben/common-ui';
-import { LucideFilePenLine, LucideTrash2 } from '@vben/icons';
+import { LucideFilePenLine } from '@vben/icons';
 import { ElButton } from 'element-plus';
 import ApiDrawer from './drawer.vue';
-import { deleteApiApi } from '#/api';
-import { useToast, POSITION } from 'vue-toastification';
+// import {useToast, POSITION} from 'vue-toastification';
 import { formatDateTime } from '@vben/utils';
-import { getTableColumnsApi, getTableDataApi } from '#/api/core/etl';
+import {
+  getTableColumnsApi,
+  getTableDataApi,
+  getTableListApi,
+  getDatabaseListApi,
+} from '#/api';
+import { ref, onMounted } from 'vue';
 
-const toast = useToast();
+// const toast = useToast();
 
 const formOptions: VbenFormProps = {
   // 默认展开
@@ -47,8 +48,6 @@ const formOptions: VbenFormProps = {
     },
   ],
 };
-import { ref, onMounted } from 'vue';
-import { getDatabaseListApi, getTableListApi } from '#/api/core/etl';
 
 // 数据库和数据表下拉选项
 const databaseOptions = ref<{ label: string; value: string }[]>([]);
@@ -58,7 +57,7 @@ const columnsOptions = ref<{ label: string; value: string }[]>([]);
 // 当前选中的数据库
 const selectedDatabase = ref<string | undefined>(undefined);
 const selectedTable = ref<string | undefined>(undefined);
-
+const selectedColumns = ref<{ title: string }[] | undefined>(undefined);
 // 获取数据库列表
 const fetchDatabaseList = async () => {
   const res = await getDatabaseListApi();
@@ -158,9 +157,6 @@ formOptions.schema = [
       filterable: true,
       collapseTags: true,
       collapseTagsTooltip: true,
-      onChange: (val: string[]) => {
-        // handle multi-select columns change if needed
-      },
       disabled: computed(() => !selectedTable.value),
     },
   },
@@ -357,6 +353,7 @@ const columnsList = ref([
     type: 'seq',
     width: 70,
     field: null,
+    showOverflow: null,
   },
 ]);
 
@@ -370,16 +367,13 @@ const gridOptions: VxeGridProps = {
   },
   height: 'auto',
   exportConfig: {},
-  pagerConfig: {
-    enabled: false,
-  },
   rowConfig: {
     isHover: true,
   },
+  verticalAlign: true,
   stripe: true,
   pagerConfig: {
     enabled: true,
-    pageSize: 30,
     pageSizes: [10, 20, 50, 100],
     layouts: ['PrevPage', 'JumpNumber', 'NextPage', 'Sizes', 'Total'],
   },
@@ -397,6 +391,7 @@ const gridOptions: VxeGridProps = {
         const dbName = formValues?.database;
         const tableName = formValues?.table;
         const columns = formValues?.columns;
+        selectedColumns.value = columns;
         if (!dbName || !tableName) {
           return { result: [], total: 0 };
         }
@@ -420,6 +415,7 @@ const gridOptions: VxeGridProps = {
                     : String(col),
               });
             });
+
             columnsList.value.push({
               title: $t('ui.table.action'),
               field: 'action',
@@ -462,6 +458,7 @@ function openDrawer(create: boolean, row?: any) {
   drawerApi.setData({
     create,
     row,
+    columns: selectedColumns.value,
   });
   drawerApi.open();
 }
@@ -472,26 +469,26 @@ function handleEdit(row: any) {
 }
 
 /* 删除 */
-async function handleDelete(row: any) {
-  row.pending = true;
-  try {
-    await deleteApiApi({ id: row.id });
+// async function handleDelete(row: any) {
+//   row.pending = true;
+//   try {
+//     await deleteApiApi({id: row.id});
 
-    toast.success($t('ui.notification.delete_success'), {
-      timeout: 1000,
-      position: POSITION.TOP_RIGHT,
-      toastClassName: 'toastification-success',
-    });
-  } catch {
-    toast.error($t('ui.notification.delete_failed'), {
-      timeout: 2000,
-      position: POSITION.TOP_CENTER,
-    });
-  } finally {
-    row.pending = false;
-    await gridApi.query();
-  }
-}
+//     toast.success($t('ui.notification.delete_success'), {
+//       timeout: 1000,
+//       position: POSITION.TOP_RIGHT,
+//       toastClassName: 'toastification-success',
+//     });
+//   } catch {
+//     toast.error($t('ui.notification.delete_failed'), {
+//       timeout: 2000,
+//       position: POSITION.TOP_CENTER,
+//     });
+//   } finally {
+//     row.pending = false;
+//     await gridApi.query();
+//   }
+// }
 </script>
 
 <template>
@@ -516,7 +513,7 @@ async function handleDelete(row: any) {
           @click="() => handleEdit(row)"
         />
 
-        <el-popconfirm
+        <!-- <el-popconfirm
           :title="
             $t('ui.text.do_you_want_delete', {
               moduleName: $t('page.system.api.module'),
@@ -534,7 +531,7 @@ async function handleDelete(row: any) {
               :icon="LucideTrash2"
             />
           </template>
-        </el-popconfirm>
+        </el-popconfirm> -->
       </template>
     </Grid>
     <Drawer />
