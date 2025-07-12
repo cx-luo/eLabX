@@ -102,3 +102,74 @@ func GetTableColumns(c *gin.Context) {
 	utils.SuccessWithData(c, "", gin.H{"items": columns})
 	return
 }
+
+// GetTableData handles GET /api/etl/table/data/:dbName/:tableName
+func GetTableData(c *gin.Context) {
+	dbName := c.Param("dbName")
+	tableName := c.Param("tableName")
+
+	// 解析POST参数
+	var req struct {
+		Page      int      `json:"page,omitempty"`
+		PageSize  int      `json:"pageSize,omitempty"`
+		Columns   []string `json:"columns,omitempty"`
+		SortField string   `json:"sortField,omitempty"`
+		SortOrder string   `json:"sortOrder,omitempty"`
+	}
+	if err := c.ShouldBindJSON(&req); err != nil {
+		utils.BadRequestErr(c, errors.New("invalid request body: "+err.Error()))
+		return
+	}
+
+	page := req.Page
+	if page <= 0 {
+		page = 1
+	}
+	pageSize := req.PageSize
+	if pageSize <= 0 {
+		pageSize = 60
+	}
+	offset := (page - 1) * pageSize
+
+	sortField := req.SortField
+	sortOrder := req.SortOrder
+	if sortOrder != "asc" && sortOrder != "desc" {
+		sortOrder = "asc"
+	}
+
+	fullTableName := dbName + "." + tableName
+
+	// Count total number of records
+	var total int64
+	if err := dao.OBCursor.Table(fullTableName).Count(&total).Error; err != nil {
+		utils.InternalRequestErr(c, errors.New("failed to count table data: "+err.Error()))
+		return
+	}
+
+	// Query data
+	var results []map[string]interface{}
+	if len(req.Columns) == 0 {
+		// 查询所有列
+		req.Columns = []string{"*"}
+	}
+	query := dao.OBCursor.Table(fullTableName).Select(req.Columns)
+
+	// Support sorting
+	if sortField != "" {
+		query = query.Order(sortField + " " + sortOrder)
+	}
+
+	// Support pagination
+	if err := query.Offset(offset).Limit(pageSize).Find(&results).Error; err != nil {
+		utils.InternalRequestErr(c, errors.New("failed to fetch table data: "+err.Error()))
+		return
+	}
+
+	utils.SuccessWithData(c, "", gin.H{
+		"items":    results,
+		"total":    total,
+		"page":     page,
+		"pageSize": pageSize,
+	})
+	return
+}
