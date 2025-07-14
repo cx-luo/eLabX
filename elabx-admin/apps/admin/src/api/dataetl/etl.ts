@@ -1,4 +1,4 @@
-import { requestClient } from '#/api/request';
+import {requestClient} from '#/api/request';
 
 /**
  * Fetch database names and table names from the database.
@@ -39,15 +39,22 @@ export const getTableDataApi = async (
 };
 
 /**
- * Update data for a specified table in a database
+ * Update a row in a specified table in a database
  * @param dbName Name of the database
  * @param tableName Name of the table
- * @param data Data to update (should include identifying keys and new values)
+ * @param primaryKey Name of the primary key column
+ * @param data Data to update (must include the primary key value and fields to update)
  */
-export const updateTableDataApi = async (
+export const updateTableDataRowApi = async (
   dbName: string,
   tableName: string,
+  primaryKey: string,
   data: Record<string, any>,
 ) => {
-  return requestClient.put(`/etl/table/data/${dbName}/${tableName}`, data);
+  return requestClient.post('/etl/table/data/update', {
+    dbName,
+    tableName,
+    primaryKey,
+    data,
+  });
 };

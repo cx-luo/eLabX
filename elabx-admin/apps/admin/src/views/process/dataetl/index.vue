@@ -1,20 +1,20 @@
 <script lang="ts" setup>
-import { computed, h } from 'vue';
-import { useVbenVxeGrid, type VxeGridProps } from '#/adapter/vxe-table';
-import { $t } from '#/locales';
-import { Page, useVbenDrawer, type VbenFormProps } from '@vben/common-ui';
-import { LucideFilePenLine } from '@vben/icons';
-import { ElButton } from 'element-plus';
+import {computed, h, watch} from 'vue';
+import {useVbenVxeGrid, type VxeGridProps} from '#/adapter/vxe-table';
+import {$t} from '#/locales';
+import {Page, useVbenDrawer, type VbenFormProps} from '@vben/common-ui';
+import {LucideFilePenLine} from '@vben/icons';
+import {ElButton} from 'element-plus';
 import ApiDrawer from './drawer.vue';
 // import {useToast, POSITION} from 'vue-toastification';
-import { formatDateTime } from '@vben/utils';
+import {formatDateTime} from '@vben/utils';
 import {
   getTableColumnsApi,
   getTableDataApi,
   getTableListApi,
   getDatabaseListApi,
 } from '#/api';
-import { ref, onMounted } from 'vue';
+import {ref, onMounted} from 'vue';
 
 // const toast = useToast();
 
@@ -58,6 +58,53 @@ const columnsOptions = ref<{ label: string; value: string }[]>([]);
 const selectedDatabase = ref<string | undefined>(undefined);
 const selectedTable = ref<string | undefined>(undefined);
 const selectedColumns = ref<{ title: string }[] | undefined>(undefined);
+
+// 监听 columnsOptions 变化，自动选中主键列
+watch(
+  columnsOptions,
+  (cols) => {
+    if (!cols || cols.length === 0) {
+      selectedColumns.value = undefined;
+      return;
+    }
+
+    const pkCols = (cols as any[]).filter((col) => col.isPrimaryKey);
+    // 如果没有主键，默认选第一个
+    const defaultCols = pkCols.length > 0 ? pkCols : [cols[0]];
+    // 只在未手动选择时设置
+    if (!selectedColumns.value || selectedColumns.value.length === 0) {
+      selectedColumns.value = defaultCols.map((col) => ({
+        title: col.label,
+      }));
+    }
+  },
+  {immediate: true}
+);
+
+// 禁止清空主键列
+function handleColumnsChange(newVal: { title: string }[] | undefined) {
+  if (!newVal || newVal.length === 0) {
+    return;
+  }
+  // columnsOptions 里找主键
+  const pkCols = (columnsOptions.value as any[]).filter((col) => col.isPrimaryKey);
+  const pkTitles = pkCols.map((col) => col.label);
+  // 检查主键是否被选中
+  const selectedTitles = newVal.map((c) => c.title);
+  const missingPK = pkTitles.filter((pk) => !selectedTitles.includes(pk));
+  if (missingPK.length > 0) {
+    // 自动补回主键
+    selectedColumns.value = [
+      ...newVal,
+      ...pkCols
+        .filter((col) => !selectedTitles.includes(col.label))
+        .map((col) => ({title: col.label})),
+    ];
+  } else {
+    selectedColumns.value = newVal;
+  }
+}
+
 // 获取数据库列表
 const fetchDatabaseList = async () => {
   const res = await getDatabaseListApi();
@@ -157,6 +204,7 @@ formOptions.schema = [
       filterable: true,
       collapseTags: true,
       collapseTagsTooltip: true,
+      onChange: () => handleColumnsChange(selectedColumns.value),
       disabled: computed(() => !selectedTable.value),
     },
   },
@@ -387,13 +435,13 @@ const gridOptions: VxeGridProps = {
     },
 
     ajax: {
-      query: async ({ page }, formValues) => {
+      query: async ({page}, formValues) => {
         const dbName = formValues?.database;
         const tableName = formValues?.table;
         const columns = formValues?.columns;
         selectedColumns.value = columns;
         if (!dbName || !tableName) {
-          return { result: [], total: 0 };
+          return {result: [], total: 0};
         }
         try {
           // Fetch columns before fetching table data
@@ -420,7 +468,7 @@ const gridOptions: VxeGridProps = {
               title: $t('ui.table.action'),
               field: 'action',
               fixed: 'right',
-              slots: { default: 'action' },
+              slots: {default: 'action'},
               width: 120,
             });
           }
@@ -431,7 +479,7 @@ const gridOptions: VxeGridProps = {
           });
         } catch (e) {
           // You can display an error message here if needed
-          return { result: [], total: 0 };
+          return {result: [], total: 0};
         }
       },
     },
@@ -442,7 +490,7 @@ const gridOptions: VxeGridProps = {
   columns: columnsList.value,
 };
 
-const [Grid, gridApi] = useVbenVxeGrid({ gridOptions, formOptions });
+const [Grid, gridApi] = useVbenVxeGrid({gridOptions, formOptions});
 
 const [Drawer, drawerApi] = useVbenDrawer({
   connectedComponent: ApiDrawer,
@@ -534,6 +582,6 @@ function handleEdit(row: any) {
         </el-popconfirm> -->
       </template>
     </Grid>
-    <Drawer />
+    <Drawer/>
   </Page>
 </template>

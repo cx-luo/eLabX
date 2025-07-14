@@ -17,7 +17,8 @@ func registerEtlRoutes(r *gin.Engine) {
 	{
 		userGroup.GET("/database/list", etl.GetDatabase)
 		userGroup.GET("/table/list/:dbName", etl.GetTableList)
-		userGroup.GET("/table/columns/:dbName/:tableName", etl.GetTableColumns)
+		userGroup.GET("/table/columns/:dbName/:tableName", etl.GetTableColumnsWithPK)
 		userGroup.POST("/table/data/:dbName/:tableName", etl.GetTableData)
+		userGroup.POST("/table/data/update", etl.UpdateTableDataApi)
 	}
 }
