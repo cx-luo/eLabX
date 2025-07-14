@@ -1,11 +1,11 @@
-// Package api coding=utf-8
-// @Project : elabx-api
+// Package system coding=utf-8
+// @Project : eLabX
 // @Time    : 2025/6/28 13:20
 // @Author  : chengxiang.luo
 // @Email   : chengxiang.luo@foxmail.com
 // @File    : menu.go
 // @Software: GoLand
-package api
+package system
 
 import (
 	"eLabX/src/dao"
@@ -50,13 +50,13 @@ type Route struct {
 	ParentID  int64   `gorm:"column:parent_id"`
 }
 
-func genRoutesFromTable(routes []types.ElnRoutes) []Route {
+func genRoutesFromTable(routes []types.ElnRouteMenus) []Route {
 	var components []Route
 	for _, elnRoutes := range routes {
 		components = append(components, Route{
 			ID:        elnRoutes.ID,
-			Meta:      Meta{elnRoutes.MetaIcon, elnRoutes.MetaOrder, elnRoutes.MetaTitle, elnRoutes.MetaAffixTab == 1},
-			Name:      elnRoutes.Name,
+			Meta:      Meta{elnRoutes.Meta.Icon, elnRoutes.Meta.Order, elnRoutes.Meta.Name, elnRoutes.Meta.AffixTab == 1},
+			Name:      elnRoutes.RouteName,
 			Path:      elnRoutes.Path,
 			Component: elnRoutes.Component,
 			Children:  nil,
@@ -66,9 +66,9 @@ func genRoutesFromTable(routes []types.ElnRoutes) []Route {
 	return components
 }
 func getParentRoutes(db *gorm.DB) ([]Route, error) {
-	var routes []types.ElnRoutes
-	err := db.Table("eln_routes").Select("id", "name", "path", "component", "meta_icon", "meta_order",
-		"meta_title", "meta_affix_tab").Where(`parent_id = 0`).Find(&routes).Error
+	var routes []types.ElnRouteMenus
+	err := db.Select("id", "route_name", "path", "component", "icon", "order",
+		"name", "affix_tab").Where(`parent_id = 0`).Find(&routes).Error
 	if err != nil {
 		return nil, err
 	}
@@ -77,9 +77,9 @@ func getParentRoutes(db *gorm.DB) ([]Route, error) {
 }
 
 func getChildrenRoutes(db *gorm.DB, parentId int64) ([]Route, error) {
-	var children []types.ElnRoutes
-	err := db.Table("eln_routes").Select("id", "name", "path", "component", "meta_icon", "meta_order",
-		"meta_title", "meta_affix_tab", "parent_id").Where(`parent_id = ?`, parentId).Find(&children).Error
+	var children []types.ElnRouteMenus
+	err := db.Select("id", "route_name", "path", "component", "icon", "order",
+		"name", "affix_tab", "parent_id").Where(`parent_id = ?`, parentId).Find(&children).Error
 	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
 		return nil, err
 	}
@@ -95,7 +95,7 @@ func defaultRoute() []Route {
 		return nil
 	}
 
-	for i, _ := range parentRoutes {
+	for i := range parentRoutes {
 		children, err := getChildrenRoutes(dao.OBCursor, parentRoutes[i].ID)
 		if err != nil {
 			zap.L().Error(fmt.Sprintf("failed to get children routes for parent ID %d: %s", parentRoutes[i].ID, err.Error()))
@@ -108,8 +108,8 @@ func defaultRoute() []Route {
 }
 
 func GetRouteTree(c *gin.Context) {
-	var routes []types.ElnRoutes
-	err := dao.OBCursor.Table("eln_routes").Find(&routes).Error
+	var routes []types.ElnRouteMenus
+	err := dao.OBCursor.Table("eln_route_menus").Find(&routes).Error
 	if err != nil {
 		zap.L().Error(fmt.Sprintf("failed to get all route: %s", err.Error()))
 		utils.InternalRequestErr(c, err)
@@ -130,7 +130,9 @@ func GetUserRouteList(c *gin.Context) {
 		return
 	}
 
-	utils.SuccessWithData(c, "", gin.H{"items": defaultRoute()})
+	defaultRoute := defaultRoute()
+
+	utils.SuccessWithData(c, "", gin.H{"items": defaultRoute, "total": len(defaultRoute)})
 	return
 }
 
@@ -149,5 +151,23 @@ func UpdateMenu(c *gin.Context) {
 	}
 
 	utils.SuccessWithData(c, "", gin.H{"items": defaultRoute()})
+	return
+}
+
+func AddMenu(c *gin.Context) {
+	var menu types.ElnRouteMenus
+	err := c.ShouldBind(&menu)
+	if err != nil {
+		utils.BadRequestErr(c, err)
+		return
+	}
+
+	err = dao.OBCursor.Model(&types.ElnRouteMenus{}).Create(&menu).Error
+	if err != nil {
+		utils.InternalRequestErr(c, err)
+		return
+	}
+
+	utils.Success(c, "Success")
 	return
 }

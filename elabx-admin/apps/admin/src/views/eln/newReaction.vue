@@ -33,9 +33,13 @@ async function saveNewReactionNoteToDatabase(formEl: FormInstance | undefined) {
   }
 
   const ketcher = getKetcher();
-
   if (!ketcher) {
     ElMessage.error('化学结构编辑器未加载完成');
+    return;
+  }
+
+  if (!ketcher?.containsReaction()) {
+    ElNotification.error("Don't contain reaction");
     return;
   }
 
@@ -45,6 +49,14 @@ async function saveNewReactionNoteToDatabase(formEl: FormInstance | undefined) {
     const smiles = await ketcher.getSmiles(true); // 假设返回 Promise<string>
     reactionSmiles.value = smiles;
     console.log('获取到的 SMILES:', smiles);
+    ketcher
+      .calculate({
+        properties: ['molecular-weight', 'gross'],
+        struct: reactionSmiles.value,
+      })
+      .then((res) => {
+        console.log(res.gross);
+      });
 
     // 此处可添加保存到后端的逻辑
     // await saveReactionToServer(smiles);

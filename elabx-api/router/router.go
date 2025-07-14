@@ -9,13 +9,32 @@ package router
 
 import (
 	_ "eLabX/docs"
-	"eLabX/src/api"
-	"eLabX/src/api/system"
-	"eLabX/src/middleware"
+	middleware2 "eLabX/middleware"
+	"eLabX/src/api/casbin"
 	"github.com/gin-gonic/gin"
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
 )
+
+// 为了更好地管理和维护 API 路由，将不同模块的路由注册拆分到多个文件中。
+// 例如：auth_routes.go, user_routes.go, casbin_routes.go, system_routes.go, other_routes.go
+// 每个文件中定义对应的 registerXXXRoutes 函数，并在此处导入和调用。
+
+// 例如：
+// import "eLabX/router/auth_routes"
+// import "eLabX/router/user_routes"
+// import "eLabX/router/casbin_routes"
+// import "eLabX/router/system_routes"
+// import "eLabX/router/other_routes"
+
+// 在 NewRouter 中调用：
+// auth_routes.RegisterAuthRoutes(router)
+// user_routes.RegisterUserRoutes(router)
+// casbin_routes.RegisterCasbinRoutes(router)
+// system_routes.RegisterSystemRoutes(router)
+// other_routes.RegisterOtherRoutes(router)
+
+// 这样可以实现 API 路由的模块化和解耦，便于后续维护和扩展。
 
 // NewRouter returns a new router.
 func NewRouter(outputPath string, loglevel string) *gin.Engine {
@@ -25,14 +44,14 @@ func NewRouter(outputPath string, loglevel string) *gin.Engine {
 	// 为需要中间件的路由组注册中间件
 
 	// 使用 Zap 中间件
-	router.Use(middleware.GinLogger(), middleware.GinRecovery(true))
+	router.Use(middleware2.GinLogger(), middleware2.GinRecovery(true))
 
 	// 注册其他中间件
-	router.Use(middleware.CORS())
+	router.Use(middleware2.CORS())
 
-	router.Use(middleware.JwtAuth())
+	router.Use(middleware2.JwtAuth())
 
-	router.Use(middleware.CasbinMiddleware())
+	router.Use(middleware2.CasbinMiddleware())
 
 	registerAuthRoutes(router)
 	// 注册用户相关路由
@@ -45,59 +64,15 @@ func NewRouter(outputPath string, loglevel string) *gin.Engine {
 
 	registerOtherRoutes(router)
 
+	registerEtlRoutes(router)
+
 	return router
-}
-
-func registerAuthRoutes(r *gin.Engine) {
-	authGroup := r.Group("/api/auth")
-	{
-		authGroup.POST("/login", api.UserLogin)
-		authGroup.POST("/logout", api.UserLogout)
-		authGroup.POST("/setUserAuthorities", api.SetUserAuthorities)
-	}
-}
-
-// 用户相关路由
-func registerUserRoutes(r *gin.Engine) {
-	userGroup := r.Group("/api/user")
-	{
-		userGroup.GET("/info", api.UserInfo)
-		userGroup.POST("/name", api.FetchUserName)
-		userGroup.GET("/list", api.GetUserList)
-		userGroup.POST("/modify/pwd", api.ChangePwd)
-		userGroup.POST("/modify/name", api.ModifyUserInfo)
-		userGroup.POST("/forget/pwd", api.ForgetPwd)
-	}
 }
 
 func registerCasbinRoutes(r *gin.Engine) {
 	casbinGroup := r.Group("/api/casbin")
 	{
-		casbinGroup.POST("/add", api.CasbinAddPolicy)
-	}
-}
-
-func registerSystemRoutes(r *gin.Engine) {
-	systemGroup := r.Group("/api/system")
-	menuGroup := systemGroup.Group("/menu")
-	{
-		menuGroup.POST("/tree", api.GetRouteTree)
-		menuGroup.POST("/update", api.UpdateMenu)
-		menuGroup.GET("/list", api.GetUserRouteList)
-	}
-
-	apiGroup := systemGroup.Group("/api")
-	{
-		apiGroup.GET("/list", system.GetApiList)
-		apiGroup.POST("/add", system.AddApi)
-		apiGroup.POST("/delete", system.DeleteAPi)
-		apiGroup.POST("/update", system.UpdateAPi)
-		apiGroup.GET("/refresh", system.RefreshApis)
-	}
-
-	userManagerGroup := systemGroup.Group("/user")
-	{
-		userManagerGroup.POST("/reset/passwd", api.ResetPwd)
+		casbinGroup.POST("/add", casbin.AddPolicy)
 	}
 }
 

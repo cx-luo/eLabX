@@ -1,5 +1,5 @@
 // Package system coding=utf-8
-// @Project : elabx-api
+// @Project : eLabX
 // @Time    : 2025/7/3 10:09
 // @Author  : chengxiang.luo
 // @Email   : chengxiang.luo@foxmail.com
@@ -12,13 +12,13 @@ import (
 	"eLabX/src/types"
 	"eLabX/src/utils"
 	"fmt"
-	"github.com/bwmarrin/snowflake"
-	"github.com/gin-gonic/gin"
-	"go.uber.org/zap"
-	"gorm.io/gorm/clause"
 	"hash/crc32"
 	"path"
 	"strings"
+
+	"github.com/gin-gonic/gin"
+	"go.uber.org/zap"
+	"gorm.io/gorm/clause"
 )
 
 func letterToNumber(s string) int64 {
@@ -28,13 +28,12 @@ func letterToNumber(s string) int64 {
 
 func RefreshApis(c *gin.Context) {
 	for _, a := range utils.Apis {
-		segments := strings.Split(a.Path, "/") // 最多切分为3段
+		segments := strings.Split(a.Path, "/")
 		group := path.Dir(a.Path)
 		funcSegments := strings.Split(a.Handler, "/")
-		node, _ := snowflake.NewNode(1)
-		id := node.Generate().Time() % 10000
+
 		api := &types.ElnApis{
-			ID:          id,
+			ID:          letterToNumber(a.Path),
 			ApiName:     funcSegments[len(funcSegments)-1],
 			ApiPath:     a.Path,
 			Method:      a.Method,
@@ -43,17 +42,16 @@ func RefreshApis(c *gin.Context) {
 			ParentId:    letterToNumber(group),
 		}
 
-		// 在 `id` 冲突时将列更新为新值
 		result := dao.OBCursor.Select("api_path", "api_name", "id", "method", "description", "api_group", "parent_id").Clauses(clause.OnConflict{
-			Columns: []clause.Column{{Name: "api_path"}}, // key colume
-			// 也可以用 map [ string ] interface {} { "role" : "user" }
-			DoUpdates: clause.AssignmentColumns([]string{"id", "api_name", "api_group", "description"}), // column needed to be updated
+			Columns:   []clause.Column{{Name: "api_path"}},
+			DoUpdates: clause.AssignmentColumns([]string{"id", "api_name", "api_group", "description"}),
 		}).Create(&api)
 
 		if result.Error != nil {
-			zap.L().Error(fmt.Sprintf("failed to update apis: %v\n", result.Error))
+			zap.L().Error(fmt.Sprintf("failed to update apis: %v", result.Error))
 		}
 	}
+
 	utils.Success(c, "")
 	return
 }
@@ -61,7 +59,7 @@ func RefreshApis(c *gin.Context) {
 func GetApiList(c *gin.Context) {
 	var apiList []types.ElnApis
 	//RefreshApis(c)
-	err := dao.OBCursor.Model(&types.ElnApis{}).Find(&apiList).Error
+	err := dao.OBCursor.Model(&types.ElnApis{}).Order("api_path").Find(&apiList).Error
 	if err != nil {
 		zap.L().Error(fmt.Sprintf("failed to get apis: %v\n", err))
 	}
@@ -78,8 +76,7 @@ func AddApi(c *gin.Context) {
 		return
 	}
 
-	node, _ := snowflake.NewNode(1)
-	id := node.Generate().Time() % 1000000000
+	id := letterToNumber(apiData.Path)
 
 	err = dao.OBCursor.Select("api_path", "id", "method", "description", "parent_id").Clauses(clause.OnConflict{
 		Columns: []clause.Column{{Name: "api_path"}}, // key colume

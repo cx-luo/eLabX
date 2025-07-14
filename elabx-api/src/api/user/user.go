@@ -1,11 +1,11 @@
-// Package api coding=utf-8
+// Package user coding=utf-8
 // @Project : eLabX
 // @Time    : 2024/1/8 10:15
 // @Author  : chengxiang.luo
 // @Email   : chengxiang.luo@foxmail.com
 // @File    : tables.go
 // @Software: GoLand
-package api
+package user
 
 import (
 	"database/sql"
@@ -46,7 +46,7 @@ type ElnUsers struct {
 
 func GetUserList(c *gin.Context) {
 	var users []ElnUsers
-	err := dao.OBCursor.Select(`select userid, username, phone, email, permissions, status, created_at from eln_users order by userid`).Scan(&users).Error
+	err := dao.OBCursor.Select(`select user_id, username, phone, email, permissions, status, created_at from eln_users order by userid`).Scan(&users).Error
 	if err != nil {
 		utils.InternalRequestErr(c, err)
 		return

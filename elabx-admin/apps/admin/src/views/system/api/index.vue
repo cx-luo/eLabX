@@ -172,10 +172,10 @@ async function handleDelete(row: any) {
       toastClassName: 'toastification-success',
     });
   } catch {
-    // toast.error($t('ui.notification.delete_failed'), {
-    //   timeout: 2000,
-    //   position: POSITION.TOP_CENTER,
-    // });
+    toast.error($t('ui.notification.delete_failed'), {
+      timeout: 2000,
+      position: POSITION.TOP_CENTER,
+    });
   } finally {
     row.pending = false;
     await gridApi.query();

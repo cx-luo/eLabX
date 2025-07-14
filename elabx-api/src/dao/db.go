@@ -55,8 +55,7 @@ var OBCursor *gorm.DB
 
 func GetRedisClusterClient() *redis.Client {
 	redisDb := redis.NewClient(&redis.Options{
-		//Addrs:           []string{"192.168.2.139:4000"},
-		Addr:            "192.168.2.139:4000",
+		Addr:            "127.0.0.1：4000",
 		Password:        "",
 		PoolSize:        20,
 		MaxIdleConns:    4,
@@ -71,4 +70,4 @@ func GetRedisClusterClient() *redis.Client {
 	return redisDb
 }
 
-var RedisClient = GetRedisClusterClient()
+//var RedisClient = GetRedisClusterClient()

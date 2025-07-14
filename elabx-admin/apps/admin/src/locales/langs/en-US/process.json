@@ -1,0 +1,17 @@
+{
+  "title": "E-Notebook",
+  "createNewPage": {
+    "title": "Create New Page",
+    "submit": "Submit"
+  },
+  "form": "Form Example",
+  "etl": {
+    "database": "Database",
+    "table": "Table",
+    "columnName": "Column Name",
+    "dataType": "Data Type",
+    "isNullable": "Is Nullable",
+    "columnDefault": "Default Value",
+    "columnComment": "Comment"
+  }
+}

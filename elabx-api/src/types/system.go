@@ -1,5 +1,5 @@
 // Package types coding=utf-8
-// @Project : elabx-api
+// @Project : eLabX
 // @Time    : 2025/7/3 14:11
 // @Author  : chengxiang.luo
 // @Email   : chengxiang.luo@foxmail.com
@@ -19,7 +19,7 @@ type SystemApiParam struct {
 
 type SystemMenuParam struct {
 	gorm.Model
-	ID        int64  `json:"id" db:"id" gorm:"id"`
+	ID        int64  `json:"id,omitempty" db:"id" gorm:"id"`
 	Type      string `json:"type,omitempty"`
 	Component string `json:"component,omitempty"`
 	Status    int    `json:"status,omitempty"`
