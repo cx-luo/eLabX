@@ -326,11 +326,12 @@ formOptions.schema = [
 //    */
 //   params?: VxeColumnPropTypes.Params
 // }
-const columnsList = ref<any>([
+const columnsList = ref<any[]>([
   {
     title: $t('ui.table.seq'),
     type: 'seq',
     width: 70,
+    visible: false,
   },
 ]);
 
@@ -370,8 +371,9 @@ const gridOptions: VxeGridProps = {
         const columns = formValues?.columns;
 
         selectedColumns.value = Array.isArray(formValues?.columns)
-          ? columnsOptions.value.filter((col) =>
-              formValues.columns.includes(col.value),
+          ? columnsOptions.value.filter(
+              (col) =>
+                formValues.columns.includes(col.value) || col.isPrimaryKey,
             )
           : [];
 
@@ -381,26 +383,27 @@ const gridOptions: VxeGridProps = {
 
         // Dynamically set columns for the grid
         columnsList.value.length = 1; // Keep only the first column (seq)
-
         try {
           // Fetch columns before fetching table data
-          if (columns && Array.isArray(columns) && columns.length !== 0) {
-            columns.forEach((col: any) => {
+          if (columns && Array.isArray(columns) && columns.length >= 1) {
+            selectedColumns.value.forEach((col: any) => {
               columnsList.value.push({
                 title:
-                  typeof col === 'object' && col.columnName
-                    ? col.columnName
+                  typeof col === 'object' && col.label
+                    ? col.label
                     : String(col),
                 type: 'text',
                 width: 130,
+                fixed: col.isPrimaryKey ? 'left' : null,
                 showOverflow: true,
                 field:
-                  typeof col === 'object' && col.columnName
-                    ? col.columnName
+                  typeof col === 'object' && col.value
+                    ? col.value
                     : String(col),
               });
             });
           } else {
+            selectedColumns.value = columnsOptions.value;
             columnsOptions.value.forEach((col: any) => {
               columnsList.value.push({
                 title:
@@ -410,6 +413,7 @@ const gridOptions: VxeGridProps = {
                 type: 'text',
                 width: 130,
                 showOverflow: true,
+                fixed: col.isPrimaryKey ? 'left' : null,
                 field:
                   typeof col === 'object' && col.value
                     ? col.value
@@ -429,7 +433,7 @@ const gridOptions: VxeGridProps = {
           return await getTableDataApi(dbName, tableName, {
             page: page.currentPage,
             pageSize: page.pageSize,
-            columns: columns,
+            columns: selectedColumns.value.map((val) => val.value),
           });
         } catch (e) {
           // You can display an error message here if needed
