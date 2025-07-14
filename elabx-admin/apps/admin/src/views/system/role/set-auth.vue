@@ -96,7 +96,11 @@ const [Drawer, drawerApi] = useVbenDrawer({
     setLoading(true);
     try {
       // 更新权限，同时提交菜单权限和API权限
-      await updateRoleAuthApi(data.value.row.id, { authId, apiId });
+      await updateRoleAuthApi({
+        id: data.value.row.id,
+        authId: authId,
+        apiId: apiId,
+      });
 
       toast.success($t('ui.notification.update_success'), {
         timeout: 1000,
@@ -247,18 +251,18 @@ function setLoading(loading: boolean) {
       <el-tab-pane :label="$t('page.system.role.menuAuth')" name="menu">
         <div class="flex flex-col gap-4">
           <div class="flex gap-2">
-            <el-button @click="expandAll">{{
-              $t('ui.tree.expand_all')
-            }}</el-button>
-            <el-button @click="collapseAll">{{
-              $t('ui.tree.collapse_all')
-            }}</el-button>
-            <el-button @click="checkAll">{{
-              $t('ui.tree.select_all')
-            }}</el-button>
-            <el-button @click="uncheckAll">{{
-              $t('ui.tree.unselect_all')
-            }}</el-button>
+            <el-button @click="expandAll"
+              >{{ $t('ui.tree.expand_all') }}
+            </el-button>
+            <el-button @click="collapseAll"
+              >{{ $t('ui.tree.collapse_all') }}
+            </el-button>
+            <el-button @click="checkAll"
+              >{{ $t('ui.tree.select_all') }}
+            </el-button>
+            <el-button @click="uncheckAll"
+              >{{ $t('ui.tree.unselect_all') }}
+            </el-button>
           </div>
 
           <el-tree
@@ -286,18 +290,18 @@ function setLoading(loading: boolean) {
       <el-tab-pane :label="$t('page.system.role.apiAuth')" name="api">
         <div class="flex flex-col gap-4">
           <div class="flex gap-2">
-            <el-button @click="expandApiAll">{{
-              $t('ui.tree.expand_all')
-            }}</el-button>
-            <el-button @click="collapseApiAll">{{
-              $t('ui.tree.collapse_all')
-            }}</el-button>
-            <el-button @click="checkApiAll">{{
-              $t('ui.tree.select_all')
-            }}</el-button>
-            <el-button @click="uncheckApiAll">{{
-              $t('ui.tree.unselect_all')
-            }}</el-button>
+            <el-button @click="expandApiAll"
+              >{{ $t('ui.tree.expand_all') }}
+            </el-button>
+            <el-button @click="collapseApiAll"
+              >{{ $t('ui.tree.collapse_all') }}
+            </el-button>
+            <el-button @click="checkApiAll"
+              >{{ $t('ui.tree.select_all') }}
+            </el-button>
+            <el-button @click="uncheckApiAll"
+              >{{ $t('ui.tree.unselect_all') }}
+            </el-button>
           </div>
 
           <el-tree

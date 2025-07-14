@@ -4,7 +4,7 @@ import { requestClient } from '#/api/request';
  * 获取角色列表
  */
 export const getRoleListApi = async (params: any) => {
-  return requestClient.getWithParams('/system/role/list', params);
+  return requestClient.post('/system/role/list', params);
 };
 
 /**

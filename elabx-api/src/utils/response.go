@@ -3,7 +3,7 @@
 // @Time    : 2024/5/7 15:01
 // @Author  : chengxiang.luo
 // @Email   : chengxiang.luo@foxmail.com
-// @File    : error_defined.go
+// @File    : response.go
 // @Software: GoLand
 package utils
 

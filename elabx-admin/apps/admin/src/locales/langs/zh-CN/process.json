@@ -1,0 +1,17 @@
+{
+  "title": "E-Notebook",
+  "createNewPage": {
+    "title": "Create New Page",
+    "submit": "Submit"
+  },
+  "form": "Form Example",
+  "etl": {
+    "database": "数据库名称",
+    "table": "表名",
+    "columnName": "字段名",
+    "dataType": "数据类型",
+    "isNullable": "是否可为空",
+    "columnDefault": "默认值",
+    "columnComment": "备注"
+  }
+}

@@ -1,5 +1,5 @@
 // Package api coding=utf-8
-// @Project : elabx-api
+// @Project : eLabX
 // @Time    : 2025/6/28 12:00
 // @Author  : chengxiang.luo
 // @Email   : chengxiang.luo@foxmail.com
@@ -8,8 +8,8 @@
 package api
 
 import (
+	"eLabX/middleware"
 	"eLabX/src/dao"
-	"eLabX/src/middleware"
 	"eLabX/src/utils"
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"

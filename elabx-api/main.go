@@ -9,9 +9,9 @@
 package main
 
 import (
+	"eLabX/middleware"
 	"eLabX/router"
 	"eLabX/src/dao"
-	"eLabX/src/middleware"
 	"eLabX/src/utils"
 	"flag"
 	"fmt"
@@ -46,9 +46,7 @@ func main() {
 	err = middleware.InitLogger()
 	if err != nil {
 		panic(err)
-		return
 	}
-	//utils.Logger = utils.InitMyLogger(&config.Output.ServiceLog)
 	dao.OBCursor = dao.GetMysqlCursor(utils.GlobalConfig.Mysql.Host, utils.GlobalConfig.Mysql.Port, utils.GlobalConfig.Mysql.User, utils.GlobalConfig.Mysql.Passwd, utils.GlobalConfig.Mysql.Database)
 	r := router.NewRouter(config.Output.Logfile, config.Output.Loglevel)
 	utils.GetAllRoutes(r)

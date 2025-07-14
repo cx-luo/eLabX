@@ -1,11 +1,11 @@
 /elabx-api/log/elabx_svr.log
 node_modules
 .DS_Store
-/elabx-admin/dist
-/elabx-admin/dist-ssr
-/elabx-admin/dist.zip
-/elabx-admin/dist.tar
-/elabx-admin/dist.war
+**/dist/
+**/dist-ssr/
+**/dist.zip
+**/dist.tar
+**/dist.war
 .nitro
 .output
 *-dist.zip
