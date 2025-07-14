@@ -59,7 +59,7 @@ func RefreshApis(c *gin.Context) {
 func GetApiList(c *gin.Context) {
 	var apiList []types.ElnApis
 	//RefreshApis(c)
-	err := dao.OBCursor.Model(&types.ElnApis{}).Find(&apiList).Error
+	err := dao.OBCursor.Model(&types.ElnApis{}).Order("api_path").Find(&apiList).Error
 	if err != nil {
 		zap.L().Error(fmt.Sprintf("failed to get apis: %v\n", err))
 	}

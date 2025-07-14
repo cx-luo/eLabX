@@ -3,12 +3,14 @@ import { ref } from 'vue';
 import { useVbenDrawer, z } from '@vben/common-ui';
 import { $t } from '@vben/locales';
 import { useVbenForm } from '#/adapter/form';
-import { createApiApi, updateApiApi } from '#/api';
+import { updateTableDataRowApi } from '#/api';
 import { useToast, POSITION } from 'vue-toastification';
 
 const toast = useToast();
 const data = ref();
-const newSchema = ref([]);
+const newSchema = ref<any[]>([]);
+
+const primaryKey = ref<string[]>([]);
 
 const [BaseForm, baseFormApi] = useVbenForm({
   showDefaultActions: false,
@@ -40,7 +42,12 @@ const [Drawer, drawerApi] = useVbenDrawer({
     const values = await baseFormApi.getValues();
 
     try {
-      await updateApiApi({ id: data.value.row.id, ...values });
+      await updateTableDataRowApi(
+        data.value.dbName,
+        data.value.tableName,
+        primaryKey.value,
+        { ...values },
+      );
 
       toast.success(
         data.value?.create
@@ -78,8 +85,8 @@ const [Drawer, drawerApi] = useVbenDrawer({
       (data.value?.columns || []).map((col: any) => {
         newSchema.value.push({
           component: 'Input',
-          fieldName: col.field || col.columnName || String(col),
-          label: col.title || col.columnName || String(col),
+          fieldName: col.value || col.columnName || String(col),
+          label: col.label || col.columnName || String(col),
           componentProps: {
             placeholder: $t('ui.placeholder.input'),
             allowClear: true,
@@ -87,6 +94,15 @@ const [Drawer, drawerApi] = useVbenDrawer({
           // rules: z.string().min(1, {message: $t('ui.formRules.required')}),
         });
       });
+
+      // 根据 columns 得到 primaryKey
+      if (data.value?.columns) {
+        primaryKey.value = data.value.columns
+          .filter(
+            (col: any) => col.primaryKey === true || col.isPrimaryKey === true,
+          )
+          .map((col: any) => col.value || col.columnName || String(col));
+      }
 
       baseFormApi.updateSchema(newSchema.value);
 

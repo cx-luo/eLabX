@@ -1,4 +1,4 @@
-import {requestClient} from '#/api/request';
+import { requestClient } from '#/api/request';
 
 /**
  * Fetch database names and table names from the database.
@@ -48,7 +48,7 @@ export const getTableDataApi = async (
 export const updateTableDataRowApi = async (
   dbName: string,
   tableName: string,
-  primaryKey: string,
+  primaryKey: string[],
   data: Record<string, any>,
 ) => {
   return requestClient.post('/etl/table/data/update', {

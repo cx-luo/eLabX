@@ -138,7 +138,7 @@ async function handleStatusChanged(row: any, checked: boolean) {
     // });
   } finally {
     row.pending = false;
-    gridApi.query();
+    await gridApi.query();
   }
 }
 

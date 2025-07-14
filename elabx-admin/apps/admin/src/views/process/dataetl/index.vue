@@ -1,20 +1,20 @@
 <script lang="ts" setup>
-import {computed, h, watch} from 'vue';
-import {useVbenVxeGrid, type VxeGridProps} from '#/adapter/vxe-table';
-import {$t} from '#/locales';
-import {Page, useVbenDrawer, type VbenFormProps} from '@vben/common-ui';
-import {LucideFilePenLine} from '@vben/icons';
-import {ElButton} from 'element-plus';
+import { computed, h } from 'vue';
+import { useVbenVxeGrid, type VxeGridProps } from '#/adapter/vxe-table';
+import { $t } from '#/locales';
+import { Page, useVbenDrawer, type VbenFormProps } from '@vben/common-ui';
+import { LucideFilePenLine } from '@vben/icons';
+import { ElButton } from 'element-plus';
 import ApiDrawer from './drawer.vue';
 // import {useToast, POSITION} from 'vue-toastification';
-import {formatDateTime} from '@vben/utils';
+import { formatDateTime } from '@vben/utils';
 import {
   getTableColumnsApi,
   getTableDataApi,
   getTableListApi,
   getDatabaseListApi,
 } from '#/api';
-import {ref, onMounted} from 'vue';
+import { ref, onMounted } from 'vue';
 
 // const toast = useToast();
 
@@ -25,85 +25,22 @@ const formOptions: VbenFormProps = {
   showCollapseButton: false,
   // 按下回车时是否提交表单
   submitOnEnter: true,
-  schema: [
-    {
-      component: 'Input',
-      fieldName: 'database',
-      label: $t('process.etl.database'),
-      componentProps: {
-        allowClear: true,
-        placeholder: $t('ui.placeholder.input'),
-      },
-      rules: 'required',
-    },
-    {
-      component: 'Input',
-      fieldName: 'table',
-      label: $t('process.etl.table'),
-      componentProps: {
-        allowClear: true,
-        placeholder: $t('ui.placeholder.input'),
-      },
-      rules: 'required',
-    },
-  ],
+  schema: [],
 };
 
 // 数据库和数据表下拉选项
 const databaseOptions = ref<{ label: string; value: string }[]>([]);
 const tableOptions = ref<{ label: string; value: string }[]>([]);
-const columnsOptions = ref<{ label: string; value: string }[]>([]);
+const columnsOptions = ref<
+  { label: string; value: string; isPrimaryKey: boolean }[]
+>([]);
 
 // 当前选中的数据库
 const selectedDatabase = ref<string | undefined>(undefined);
 const selectedTable = ref<string | undefined>(undefined);
-const selectedColumns = ref<{ title: string }[] | undefined>(undefined);
-
-// 监听 columnsOptions 变化，自动选中主键列
-watch(
-  columnsOptions,
-  (cols) => {
-    if (!cols || cols.length === 0) {
-      selectedColumns.value = undefined;
-      return;
-    }
-
-    const pkCols = (cols as any[]).filter((col) => col.isPrimaryKey);
-    // 如果没有主键，默认选第一个
-    const defaultCols = pkCols.length > 0 ? pkCols : [cols[0]];
-    // 只在未手动选择时设置
-    if (!selectedColumns.value || selectedColumns.value.length === 0) {
-      selectedColumns.value = defaultCols.map((col) => ({
-        title: col.label,
-      }));
-    }
-  },
-  {immediate: true}
-);
-
-// 禁止清空主键列
-function handleColumnsChange(newVal: { title: string }[] | undefined) {
-  if (!newVal || newVal.length === 0) {
-    return;
-  }
-  // columnsOptions 里找主键
-  const pkCols = (columnsOptions.value as any[]).filter((col) => col.isPrimaryKey);
-  const pkTitles = pkCols.map((col) => col.label);
-  // 检查主键是否被选中
-  const selectedTitles = newVal.map((c) => c.title);
-  const missingPK = pkTitles.filter((pk) => !selectedTitles.includes(pk));
-  if (missingPK.length > 0) {
-    // 自动补回主键
-    selectedColumns.value = [
-      ...newVal,
-      ...pkCols
-        .filter((col) => !selectedTitles.includes(col.label))
-        .map((col) => ({title: col.label})),
-    ];
-  } else {
-    selectedColumns.value = newVal;
-  }
-}
+const selectedColumns = ref<
+  { label: string; value: string; isPrimaryKey: boolean }[] | undefined
+>(undefined);
 
 // 获取数据库列表
 const fetchDatabaseList = async () => {
@@ -127,10 +64,6 @@ const fetchTableList = async (dbName: string) => {
 
 // 获取字段（列）列表
 const fetchColumnsList = async (dbName: string, tableName: string) => {
-  if (!dbName || !tableName) {
-    columnsOptions.value = [];
-    return;
-  }
   try {
     const res = await getTableColumnsApi(dbName, tableName);
     // 适配下拉格式
@@ -143,6 +76,7 @@ const fetchColumnsList = async (dbName: string, tableName: string) => {
         typeof col === 'object' && col.columnName
           ? col.columnName
           : String(col),
+      isPrimaryKey: col.isPrimaryKey, // 保留主键信息
     }));
   } catch (e) {
     columnsOptions.value = [];
@@ -154,7 +88,7 @@ onMounted(() => {
   fetchDatabaseList();
 });
 
-// 表单 schema 优化为下拉选择
+// 表单 schema 优化为下拉选择，
 formOptions.schema = [
   {
     component: 'Select',
@@ -165,8 +99,7 @@ formOptions.schema = [
       options: databaseOptions,
       onChange: (val: string) => {
         selectedDatabase.value = val;
-        // 清空表选择
-        (formOptions.schema?.[1]?.componentProps as any).value = undefined;
+        columnsOptions.value = [];
         fetchTableList(val);
       },
     },
@@ -204,7 +137,6 @@ formOptions.schema = [
       filterable: true,
       collapseTags: true,
       collapseTagsTooltip: true,
-      onChange: () => handleColumnsChange(selectedColumns.value),
       disabled: computed(() => !selectedTable.value),
     },
   },
@@ -394,14 +326,11 @@ formOptions.schema = [
 //    */
 //   params?: VxeColumnPropTypes.Params
 // }
-
-const columnsList = ref([
+const columnsList = ref<any>([
   {
     title: $t('ui.table.seq'),
     type: 'seq',
     width: 70,
-    field: null,
-    showOverflow: null,
   },
 ]);
 
@@ -435,19 +364,27 @@ const gridOptions: VxeGridProps = {
     },
 
     ajax: {
-      query: async ({page}, formValues) => {
+      query: async ({ page }, formValues) => {
         const dbName = formValues?.database;
         const tableName = formValues?.table;
         const columns = formValues?.columns;
-        selectedColumns.value = columns;
+
+        selectedColumns.value = Array.isArray(formValues?.columns)
+          ? columnsOptions.value.filter((col) =>
+              formValues.columns.includes(col.value),
+            )
+          : [];
+
         if (!dbName || !tableName) {
-          return {result: [], total: 0};
+          return { result: [], total: 0 };
         }
+
+        // Dynamically set columns for the grid
+        columnsList.value.length = 1; // Keep only the first column (seq)
+
         try {
           // Fetch columns before fetching table data
-          if (columns && Array.isArray(columns)) {
-            // Dynamically set columns for the grid
-            columnsList.value.length = 1; // Keep only the first column (seq)
+          if (columns && Array.isArray(columns) && columns.length !== 0) {
             columns.forEach((col: any) => {
               columnsList.value.push({
                 title:
@@ -463,15 +400,32 @@ const gridOptions: VxeGridProps = {
                     : String(col),
               });
             });
-
-            columnsList.value.push({
-              title: $t('ui.table.action'),
-              field: 'action',
-              fixed: 'right',
-              slots: {default: 'action'},
-              width: 120,
+          } else {
+            columnsOptions.value.forEach((col: any) => {
+              columnsList.value.push({
+                title:
+                  typeof col === 'object' && col.value
+                    ? col.value
+                    : String(col),
+                type: 'text',
+                width: 130,
+                showOverflow: true,
+                field:
+                  typeof col === 'object' && col.value
+                    ? col.value
+                    : String(col),
+              });
             });
           }
+
+          columnsList.value.push({
+            title: $t('ui.table.action'),
+            field: 'action',
+            fixed: 'right',
+            slots: { default: 'action' },
+            width: 120,
+          });
+
           return await getTableDataApi(dbName, tableName, {
             page: page.currentPage,
             pageSize: page.pageSize,
@@ -479,7 +433,7 @@ const gridOptions: VxeGridProps = {
           });
         } catch (e) {
           // You can display an error message here if needed
-          return {result: [], total: 0};
+          return { result: [], total: 0 };
         }
       },
     },
@@ -490,7 +444,7 @@ const gridOptions: VxeGridProps = {
   columns: columnsList.value,
 };
 
-const [Grid, gridApi] = useVbenVxeGrid({gridOptions, formOptions});
+const [Grid, gridApi] = useVbenVxeGrid({ gridOptions, formOptions });
 
 const [Drawer, drawerApi] = useVbenDrawer({
   connectedComponent: ApiDrawer,
@@ -506,6 +460,8 @@ function openDrawer(create: boolean, row?: any) {
   drawerApi.setData({
     create,
     row,
+    dbName: selectedDatabase.value,
+    tableName: selectedTable.value,
     columns: selectedColumns.value,
   });
   drawerApi.open();
@@ -582,6 +538,6 @@ function handleEdit(row: any) {
         </el-popconfirm> -->
       </template>
     </Grid>
-    <Drawer/>
+    <Drawer />
   </Page>
 </template>

@@ -199,7 +199,7 @@ func UpdateTableDataApi(c *gin.Context) {
 	var req struct {
 		DBName     string                 `json:"dbName"`
 		TableName  string                 `json:"tableName"`
-		PrimaryKey string                 `json:"primaryKey"`
+		PrimaryKey []string               `json:"primaryKey"`
 		Data       map[string]interface{} `json:"data"`
 	}
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -207,23 +207,35 @@ func UpdateTableDataApi(c *gin.Context) {
 		return
 	}
 
-	if req.DBName == "" || req.TableName == "" || req.PrimaryKey == "" || req.Data == nil {
+	if req.DBName == "" || req.TableName == "" || len(req.PrimaryKey) == 0 || req.Data == nil {
 		utils.BadRequestErr(c, errors.New("missing required fields"))
 		return
 	}
 
-	primaryKeyValue, ok := req.Data[req.PrimaryKey]
-	if !ok {
-		utils.BadRequestErr(c, errors.New("primary key value missing in data"))
-		return
+	// Collect primary key values from data
+	pkValues := make([]interface{}, 0, len(req.PrimaryKey))
+	for _, pk := range req.PrimaryKey {
+		val, ok := req.Data[pk]
+		if !ok {
+			utils.BadRequestErr(c, errors.New("primary key value missing in data: "+pk))
+			return
+		}
+		pkValues = append(pkValues, val)
 	}
 
 	fullTableName := req.DBName + "." + req.TableName
 
-	// Remove primary key from update data
+	// Remove primary keys from update data
 	updateData := make(map[string]interface{})
 	for k, v := range req.Data {
-		if k != req.PrimaryKey {
+		isPK := false
+		for _, pk := range req.PrimaryKey {
+			if k == pk {
+				isPK = true
+				break
+			}
+		}
+		if !isPK {
 			updateData[k] = v
 		}
 	}
@@ -233,7 +245,17 @@ func UpdateTableDataApi(c *gin.Context) {
 		return
 	}
 
-	result := dao.OBCursor.Table(fullTableName).Where(req.PrimaryKey+" = ?", primaryKeyValue).Updates(updateData)
+	// Build where clause for composite primary key
+	query := dao.OBCursor.Table(fullTableName)
+	for i, pk := range req.PrimaryKey {
+		if i == 0 {
+			query = query.Where(pk+" = ?", pkValues[i])
+		} else {
+			query = query.Where(pk+" = ?", pkValues[i])
+		}
+	}
+
+	result := query.Updates(updateData)
 	if result.Error != nil {
 		utils.InternalRequestErr(c, errors.New("failed to update table data: "+result.Error.Error()))
 		return
