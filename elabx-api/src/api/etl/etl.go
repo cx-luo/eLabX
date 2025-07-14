@@ -76,8 +76,8 @@ func GetTableList(c *gin.Context) {
 	return
 }
 
-// GetTableColumns handles GET /api/etl/table/columns/:dbName/:tableName
-func GetTableColumns(c *gin.Context) {
+// GetTableColumnsWithPK handles GET /api/etl/table/columns/:dbName/:tableName and adds primary key info
+func GetTableColumnsWithPK(c *gin.Context) {
 	dbName := c.Param("dbName")
 	tableName := c.Param("tableName")
 
@@ -87,16 +87,39 @@ func GetTableColumns(c *gin.Context) {
 		IsNullable    string  `gorm:"column:is_nullable" json:"isNullable"`
 		ColumnDefault *string `gorm:"column:column_default" json:"columnDefault"`
 		ColumnComment string  `gorm:"column:column_comment" json:"columnComment"`
+		IsPrimaryKey  bool    `json:"isPrimaryKey"`
 	}
 
 	var columns []ColumnResult
 
+	// 查询所有列
 	if err := dao.OBCursor.Table("information_schema.columns").
 		Select("column_name, data_type, is_nullable, column_default, column_comment").
 		Where("table_schema = ? AND table_name = ?", dbName, tableName).
 		Scan(&columns).Error; err != nil {
 		utils.InternalRequestErr(c, errors.New("failed to fetch columns: "+err.Error()))
 		return
+	}
+
+	// 查询主键列
+	var pkColumns []string
+	if err := dao.OBCursor.Table("information_schema.key_column_usage").
+		Select("column_name").
+		Where("table_schema = ? AND table_name = ? AND constraint_name = 'PRIMARY'", dbName, tableName).
+		Pluck("column_name", &pkColumns).Error; err != nil {
+		utils.InternalRequestErr(c, errors.New("failed to fetch primary key columns: "+err.Error()))
+		return
+	}
+	pkSet := make(map[string]struct{}, len(pkColumns))
+	for _, pk := range pkColumns {
+		pkSet[pk] = struct{}{}
+	}
+
+	// 标记主键
+	for i := range columns {
+		if _, ok := pkSet[columns[i].ColumnName]; ok {
+			columns[i].IsPrimaryKey = true
+		}
 	}
 
 	utils.SuccessWithData(c, "", gin.H{"items": columns})
@@ -148,7 +171,6 @@ func GetTableData(c *gin.Context) {
 	// Query data
 	var results []map[string]interface{}
 	if len(req.Columns) == 0 {
-		// 查询所有列
 		req.Columns = []string{"*"}
 	}
 	query := dao.OBCursor.Table(fullTableName).Select(req.Columns)
@@ -170,5 +192,52 @@ func GetTableData(c *gin.Context) {
 		"page":     page,
 		"pageSize": pageSize,
 	})
+	return
+}
+
+func UpdateTableDataApi(c *gin.Context) {
+	var req struct {
+		DBName     string                 `json:"dbName"`
+		TableName  string                 `json:"tableName"`
+		PrimaryKey string                 `json:"primaryKey"`
+		Data       map[string]interface{} `json:"data"`
+	}
+	if err := c.ShouldBindJSON(&req); err != nil {
+		utils.BadRequestErr(c, err)
+		return
+	}
+
+	if req.DBName == "" || req.TableName == "" || req.PrimaryKey == "" || req.Data == nil {
+		utils.BadRequestErr(c, errors.New("missing required fields"))
+		return
+	}
+
+	primaryKeyValue, ok := req.Data[req.PrimaryKey]
+	if !ok {
+		utils.BadRequestErr(c, errors.New("primary key value missing in data"))
+		return
+	}
+
+	fullTableName := req.DBName + "." + req.TableName
+
+	// Remove primary key from update data
+	updateData := make(map[string]interface{})
+	for k, v := range req.Data {
+		if k != req.PrimaryKey {
+			updateData[k] = v
+		}
+	}
+
+	if len(updateData) == 0 {
+		utils.BadRequestErr(c, errors.New("no fields to update"))
+		return
+	}
+
+	result := dao.OBCursor.Table(fullTableName).Where(req.PrimaryKey+" = ?", primaryKeyValue).Updates(updateData)
+	if result.Error != nil {
+		utils.InternalRequestErr(c, errors.New("failed to update table data: "+result.Error.Error()))
+		return
+	}
+	utils.SuccessWithData(c, "update success", gin.H{"rowsAffected": result.RowsAffected})
 	return
 }
