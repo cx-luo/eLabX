@@ -1,4 +1,4 @@
-/elabx-api/log/elabx_svr.log
+/server/log/elabx_svr.log
 node_modules
 .DS_Store
 **/dist/
@@ -50,5 +50,5 @@ vite.config.ts.*
 *.sln
 *.sw?
 .history
-elabx-api/conf/.env.yaml
-elabx-api/conf/config.yaml
+server/conf/.env.yaml
+server/conf/config.yaml

@@ -103,7 +103,7 @@ func GinLogger() gin.HandlerFunc {
 			zap.String("ip", c.ClientIP()),
 			// zap.String("user-agent", c.Request.UserAgent()),
 			zap.String("errors", c.Errors.ByType(gin.ErrorTypePrivate).String()),
-			// zap.String("serviceName", "elabx-api"),
+			// zap.String("serviceName", "server"),
 			zap.Duration("cost", cost),
 		)
 	}
