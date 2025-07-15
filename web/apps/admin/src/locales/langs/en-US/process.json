@@ -8,6 +8,7 @@
   "etl": {
     "database": "Database",
     "table": "Table",
+    "tableUpdate": "Table Update",
     "columnName": "Column Name",
     "dataType": "Data Type",
     "isNullable": "Is Nullable",

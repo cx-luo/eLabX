@@ -2,18 +2,8 @@
 import type { AnalysisOverviewItem } from '@vben/common-ui';
 import type { TabOption } from '@vben/types';
 
-import {
-  AnalysisChartCard,
-  AnalysisChartsTabs,
-  AnalysisOverview,
-  WorkbenchHeader,
-} from '@vben/common-ui';
-import {
-  SvgBellIcon,
-  SvgCakeIcon,
-  SvgCardIcon,
-  SvgDownloadIcon,
-} from '@vben/icons';
+import { AnalysisChartCard, AnalysisChartsTabs, AnalysisOverview, WorkbenchHeader } from '@vben/common-ui';
+import { SvgBellIcon, SvgCakeIcon, SvgCardIcon, SvgDownloadIcon } from '@vben/icons';
 
 import AnalyticsTrends from './analytics-trends.vue';
 import AnalyticsVisitsData from './analytics-visits-data.vue';
@@ -70,13 +60,8 @@ const chartTabs: TabOption[] = [
 
 <template>
   <div class="p-5">
-    <WorkbenchHeader
-      :avatar="userStore.userInfo?.avatar || preferences.app.defaultAvatar"
-      class="mb-5"
-    >
-      <template #title>
-        早安, {{ userStore.userInfo?.realName }}, 开始您一天的工作吧！
-      </template>
+    <WorkbenchHeader :avatar="userStore.userInfo?.avatar || preferences.app.defaultAvatar" class="mb-5">
+      <template #title> 早安, {{ userStore.userInfo?.realName }}, 开始您一天的工作吧！ </template>
       <template #description> 今日晴，20℃ - 32℃！ </template>
     </WorkbenchHeader>
     <AnalysisOverview :items="overviewItems" />

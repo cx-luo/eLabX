@@ -34,10 +34,7 @@ import {
   ElUpload,
 } from 'element-plus';
 
-const withDefaultPlaceholder = <T extends Component>(
-  component: T,
-  type: 'input' | 'select',
-) => {
+const withDefaultPlaceholder = <T extends Component>(component: T, type: 'input' | 'select') => {
   return (props: any, { attrs, slots }: Omit<SetupContext, 'expose'>) => {
     const placeholder = props?.placeholder || $t(`ui.placeholder.${type}`);
     return h(component, { ...props, ...attrs, placeholder }, slots);
@@ -108,17 +105,10 @@ async function initComponentAdapter() {
       } else {
         const { options, isButton } = attrs;
         if (Array.isArray(options)) {
-          defaultSlot = () =>
-            options.map((option) =>
-              h(isButton ? ElCheckboxButton : ElCheckbox, option),
-            );
+          defaultSlot = () => options.map((option) => h(isButton ? ElCheckboxButton : ElCheckbox, option));
         }
       }
-      return h(
-        ElCheckboxGroup,
-        { ...props, ...attrs },
-        { ...slots, default: defaultSlot },
-      );
+      return h(ElCheckboxGroup, { ...props, ...attrs }, { ...slots, default: defaultSlot });
     },
     // 自定义默认按钮
     DefaultButton: (props, { attrs, slots }) => {
@@ -151,17 +141,10 @@ async function initComponentAdapter() {
       } else {
         const { options } = attrs;
         if (Array.isArray(options)) {
-          defaultSlot = () =>
-            options.map((option) =>
-              h(attrs.isButton ? ElRadioButton : ElRadio, option),
-            );
+          defaultSlot = () => options.map((option) => h(attrs.isButton ? ElRadioButton : ElRadio, option));
         }
       }
-      return h(
-        ElRadioGroup,
-        { ...props, ...attrs },
-        { ...slots, default: defaultSlot },
-      );
+      return h(ElRadioGroup, { ...props, ...attrs }, { ...slots, default: defaultSlot });
     },
     Select: (props, { attrs, slots }) => {
       return h(ElSelectV2, { ...props, attrs }, slots);

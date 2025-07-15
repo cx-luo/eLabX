@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { ref } from 'vue';
+import { computed, ref } from 'vue';
 import { useVbenDrawer, z } from '@vben/common-ui';
 import { $t } from '@vben/locales';
 import { useVbenForm } from '#/adapter/form';
@@ -20,8 +20,21 @@ const [BaseForm, baseFormApi] = useVbenForm({
     componentProps: {
       class: 'w-full',
     },
+    labelClass: 'w-2/6',
   },
-  schema: newSchema.value,
+  schema: computed(() => {
+    return newSchema.value.map((col) => ({
+      component: 'Input',
+      fieldName: col.value || col.columnName || String(col),
+      label: col.label || col.columnName || String(col),
+      componentProps: {
+        placeholder: $t('ui.placeholder.input'),
+        allowClear: true,
+        disabled: primaryKey.value.includes(col.value),
+      },
+      // rules: z.string().min(1, { message: $t('ui.formRules.required') }),
+    }));
+  }),
 });
 
 const [Drawer, drawerApi] = useVbenDrawer({
@@ -42,23 +55,15 @@ const [Drawer, drawerApi] = useVbenDrawer({
     const values = await baseFormApi.getValues();
 
     try {
-      await updateTableDataRowApi(
-        data.value.dbName,
-        data.value.tableName,
-        primaryKey.value,
-        { ...values },
-      );
+      await updateTableDataRowApi(data.value.dbName, data.value.tableName, primaryKey.value, {
+        ...values,
+      });
 
-      toast.success(
-        data.value?.create
-          ? $t('ui.notification.create_success')
-          : $t('ui.notification.update_success'),
-        {
-          timeout: 1000,
-          position: POSITION.TOP_RIGHT,
-          toastClassName: 'toastification-success',
-        },
-      );
+      toast.success(data.value?.create ? $t('ui.notification.create_success') : $t('ui.notification.update_success'), {
+        timeout: 1000,
+        position: POSITION.TOP_RIGHT,
+        toastClassName: 'toastification-success',
+      });
 
       drawerApi.setData({ needRefresh: true });
     } catch {
@@ -79,37 +84,31 @@ const [Drawer, drawerApi] = useVbenDrawer({
 
   onOpenChange(isOpen) {
     if (isOpen) {
+      setLoading(true);
       // 获取传入的数据
       data.value = drawerApi.getData<Record<string, any>>();
 
-      (data.value?.columns || []).map((col: any) => {
-        newSchema.value.push({
-          component: 'Input',
-          fieldName: col.value || col.columnName || String(col),
-          label: col.label || col.columnName || String(col),
-          componentProps: {
-            placeholder: $t('ui.placeholder.input'),
-            allowClear: true,
-          },
-          // rules: z.string().min(1, {message: $t('ui.formRules.required')}),
-        });
-      });
-
       // 根据 columns 得到 primaryKey
       if (data.value?.columns) {
+        newSchema.value = data.value.columns;
         primaryKey.value = data.value.columns
-          .filter(
-            (col: any) => col.primaryKey === true || col.isPrimaryKey === true,
-          )
+          .filter((col: any) => col.primaryKey === true || col.isPrimaryKey === true)
           .map((col: any) => col.value || col.columnName || String(col));
+      } else {
+        primaryKey.value = [];
       }
 
-      baseFormApi.updateSchema(newSchema.value);
-
       // 为表单赋值
-      baseFormApi.setValues(data.value?.row);
+      if (data.value?.row) {
+        baseFormApi.setValues(data.value.row);
+      } else {
+        baseFormApi.setValues({});
+      }
 
       setLoading(false);
+    } else {
+      newSchema.value = [];
+      primaryKey.value = [];
     }
   },
 });

@@ -97,9 +97,7 @@ export interface ApiResponse {
  * @returns Ketcher | null - 返回实例或 null 表示失败
  */
 export function getKetcher(): Ketcher | null {
-  const ketcherFrame = document.getElementById(
-    'ketcher-js-editor',
-  ) as HTMLIFrameElement | null;
+  const ketcherFrame = document.getElementById('ketcher-js-editor') as HTMLIFrameElement | null;
 
   if (ketcherFrame && 'contentDocument' in ketcherFrame) {
     const contentWindow = ketcherFrame.contentWindow;

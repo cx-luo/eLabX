@@ -218,12 +218,7 @@ function handleSetAuth(row: any) {
   <Page auto-content-height>
     <Grid :table-title="$t('page.system.role.title')">
       <template #toolbar-tools>
-        <el-button
-          class="mr-2"
-          type="primary"
-          v-permission="['system:role:create']"
-          @click="handleCreate"
-        >
+        <el-button class="mr-2" type="primary" v-permission="['system:role:create']" @click="handleCreate">
           {{ $t('page.system.role.button.create') }}
         </el-button>
       </template>
@@ -245,12 +240,7 @@ function handleSetAuth(row: any) {
       </template>
 
       <template #action="{ row }">
-        <ElButton
-          type="primary"
-          link
-          :icon="h(LucidePencil)"
-          @click="() => handleSetAuth(row)"
-        />
+        <ElButton type="primary" link :icon="h(LucidePencil)" @click="() => handleSetAuth(row)" />
 
         <ElButton
           type="primary"
@@ -271,12 +261,7 @@ function handleSetAuth(row: any) {
           @confirm="() => handleDelete(row)"
         >
           <template #reference>
-            <ElButton
-              type="danger"
-              v-permission="['system:role:delete']"
-              link
-              :icon="LucideTrash2"
-            />
+            <ElButton type="danger" v-permission="['system:role:delete']" link :icon="LucideTrash2" />
           </template>
         </el-popconfirm>
       </template>

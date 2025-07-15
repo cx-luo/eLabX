@@ -8,12 +8,7 @@ import { $t } from '@vben/locales';
 // import { addCollection } from '@iconify/vue';
 import { useVbenForm } from '#/adapter/form';
 
-import {
-  buildMenuTree,
-  createMenuApi,
-  updateMenuApi,
-  getMenuTreeApi,
-} from '#/api';
+import { buildMenuTree, createMenuApi, updateMenuApi, getMenuTreeApi } from '#/api';
 import { MenuType, statusList } from '#/store';
 import { useToast, POSITION } from 'vue-toastification';
 
@@ -287,20 +282,13 @@ const [Drawer, drawerApi] = useVbenDrawer({
     console.log(getTitle.value, values);
 
     try {
-      await (data.value?.create
-        ? createMenuApi(values)
-        : updateMenuApi({ id: data.value.row.id, ...values }));
+      await (data.value?.create ? createMenuApi(values) : updateMenuApi({ id: data.value.row.id, ...values }));
 
-      toast.success(
-        data.value?.create
-          ? $t('ui.notification.create_success')
-          : $t('ui.notification.update_success'),
-        {
-          timeout: 1000,
-          position: POSITION.TOP_RIGHT,
-          toastClassName: 'toastification-success',
-        },
-      );
+      toast.success(data.value?.create ? $t('ui.notification.create_success') : $t('ui.notification.update_success'), {
+        timeout: 1000,
+        position: POSITION.TOP_RIGHT,
+        toastClassName: 'toastification-success',
+      });
       drawerApi.setData({ needRefresh: true });
     } catch {
       // toast.error(

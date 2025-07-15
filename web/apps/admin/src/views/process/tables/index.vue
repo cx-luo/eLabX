@@ -184,9 +184,7 @@ const [Grid] = useVbenVxeGrid({ gridOptions, formOptions });
       </template>
 
       <template #parentId="{ row }">
-        <span :style="{ marginRight: '15px' }">
-          <template v-if="row.parentId === 0"> 根API </template></span
-        >
+        <span :style="{ marginRight: '15px' }"> <template v-if="row.parentId === 0"> 根API </template></span>
       </template>
     </Grid>
   </Page>
