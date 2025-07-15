@@ -10,9 +10,7 @@ const isLoading = ref<boolean>(false);
 
 onMounted(() => {
   document.addEventListener('DOMContentLoaded', () => {
-    const ketcherFrame = document.getElementById(
-      'ketcher-js-editor',
-    ) as HTMLIFrameElement | null;
+    const ketcherFrame = document.getElementById('ketcher-js-editor') as HTMLIFrameElement | null;
 
     if (ketcherFrame) {
       ketcherFrame.addEventListener('load', () => {
@@ -76,20 +74,10 @@ async function saveNewReactionNoteToDatabase(formEl: FormInstance | undefined) {
     <ElCard title="Create a reaction">
       <el-form ref="projectFormRef" label-width="120px">
         <div id="marvin-js" style="margin-top: 10px">
-          <iframe
-            id="ketcher-js-editor"
-            src="/static/ketcher/index.html"
-            width="100%"
-            height="450px"
-          ></iframe>
+          <iframe id="ketcher-js-editor" src="/static/ketcher/index.html" width="100%" height="450px"></iframe>
         </div>
         <div style="margin-top: 10px">
-          <ElButton
-            type="primary"
-            @click="saveNewReactionNoteToDatabase(projectFormRef)"
-          >
-            Save Reaction
-          </ElButton>
+          <ElButton type="primary" @click="saveNewReactionNoteToDatabase(projectFormRef)"> Save Reaction </ElButton>
         </div>
       </el-form>
     </ElCard>

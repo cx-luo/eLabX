@@ -17,9 +17,7 @@ export const permission: Directive = {
         el.style.display = 'none';
       }
     } else {
-      throw new Error(
-        'need permissions! Like v-permission="[\'system:user:create\']"',
-      );
+      throw new Error('need permissions! Like v-permission="[\'system:user:create\']"');
     }
   },
 };
@@ -29,8 +27,6 @@ export function hasPermission(permissions: string[]): boolean {
   const userPermissions = store.getPermissions || [];
 
   return permissions.some((permission) =>
-    Array.isArray(userPermissions)
-      ? userPermissions.includes(permission)
-      : false,
+    Array.isArray(userPermissions) ? userPermissions.includes(permission) : false,
   );
 }

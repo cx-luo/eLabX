@@ -30,11 +30,7 @@ export const getTableColumnsApi = async (dbName: string, tableName: string) => {
  * @param tableName Name of the table
  * @param param Query parameters for filtering, pagination, etc.
  */
-export const getTableDataApi = async (
-  dbName: string,
-  tableName: string,
-  param: Record<string, any>,
-) => {
+export const getTableDataApi = async (dbName: string, tableName: string, param: Record<string, any>) => {
   return requestClient.post(`/etl/table/data/${dbName}/${tableName}`, param);
 };
 

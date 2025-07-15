@@ -8,12 +8,7 @@ import { ElButton } from 'element-plus';
 import ApiDrawer from './drawer.vue';
 // import {useToast, POSITION} from 'vue-toastification';
 import { formatDateTime } from '@vben/utils';
-import {
-  getTableColumnsApi,
-  getTableDataApi,
-  getTableListApi,
-  getDatabaseListApi,
-} from '#/api';
+import { getTableColumnsApi, getTableDataApi, getTableListApi, getDatabaseListApi } from '#/api';
 import { ref, onMounted } from 'vue';
 
 // const toast = useToast();
@@ -31,16 +26,12 @@ const formOptions: VbenFormProps = {
 // 数据库和数据表下拉选项
 const databaseOptions = ref<{ label: string; value: string }[]>([]);
 const tableOptions = ref<{ label: string; value: string }[]>([]);
-const columnsOptions = ref<
-  { label: string; value: string; isPrimaryKey: boolean }[]
->([]);
+const columnsOptions = ref<{ label: string; value: string; isPrimaryKey: boolean }[]>([]);
 
 // 当前选中的数据库
 const selectedDatabase = ref<string | undefined>(undefined);
 const selectedTable = ref<string | undefined>(undefined);
-const selectedColumns = ref<
-  { label: string; value: string; isPrimaryKey: boolean }[] | undefined
->(undefined);
+const selectedColumns = ref<{ label: string; value: string; isPrimaryKey: boolean }[] | undefined>(undefined);
 
 // 获取数据库列表
 const fetchDatabaseList = async () => {
@@ -68,14 +59,8 @@ const fetchColumnsList = async (dbName: string, tableName: string) => {
     const res = await getTableColumnsApi(dbName, tableName);
     // 适配下拉格式
     columnsOptions.value = (res.items || []).map((col: any) => ({
-      label:
-        typeof col === 'object' && col.columnName
-          ? col.columnName
-          : String(col),
-      value:
-        typeof col === 'object' && col.columnName
-          ? col.columnName
-          : String(col),
+      label: typeof col === 'object' && col.columnName ? col.columnName : String(col),
+      value: typeof col === 'object' && col.columnName ? col.columnName : String(col),
       isPrimaryKey: col.isPrimaryKey, // 保留主键信息
     }));
   } catch (e) {
@@ -372,10 +357,7 @@ const gridOptions: VxeGridProps = {
         const columns = formValues?.columns;
 
         selectedColumns.value = Array.isArray(formValues?.columns)
-          ? columnsOptions.value.filter(
-              (col) =>
-                formValues.columns.includes(col.value) || col.isPrimaryKey,
-            )
+          ? columnsOptions.value.filter((col) => formValues.columns.includes(col.value) || col.isPrimaryKey)
           : [];
 
         if (!dbName || !tableName) {
@@ -386,42 +368,21 @@ const gridOptions: VxeGridProps = {
         columnsList.value.length = 1; // Keep only the first column (seq)
         try {
           // Fetch columns before fetching table data
-          if (columns && Array.isArray(columns) && columns.length >= 1) {
-            selectedColumns.value.forEach((col: any) => {
-              columnsList.value.push({
-                title:
-                  typeof col === 'object' && col.label
-                    ? col.label
-                    : String(col),
-                type: 'text',
-                width: 130,
-                fixed: col.isPrimaryKey ? 'left' : null,
-                showOverflow: true,
-                field:
-                  typeof col === 'object' && col.value
-                    ? col.value
-                    : String(col),
-              });
-            });
-          } else {
-            selectedColumns.value = columnsOptions.value;
-            columnsOptions.value.forEach((col: any) => {
-              columnsList.value.push({
-                title:
-                  typeof col === 'object' && col.value
-                    ? col.value
-                    : String(col),
-                type: 'text',
-                width: 130,
-                showOverflow: true,
-                fixed: col.isPrimaryKey ? 'left' : null,
-                field:
-                  typeof col === 'object' && col.value
-                    ? col.value
-                    : String(col),
-              });
-            });
-          }
+          const targetColumns =
+            columns && Array.isArray(columns) && columns.length >= 1 ? selectedColumns.value : columnsOptions.value;
+
+          selectedColumns.value = [...targetColumns];
+
+          targetColumns.forEach((col: any) =>
+            columnsList.value.push({
+              title: typeof col === 'object' && col.label ? col.label : String(col),
+              width: 130,
+              fixed: col.isPrimaryKey ? 'left' : null,
+              sortable: true,
+              showOverflow: true,
+              field: typeof col === 'object' && col.value ? col.value : String(col),
+            }),
+          );
 
           columnsList.value.push({
             title: $t('ui.table.action'),
@@ -506,22 +467,20 @@ function handleEdit(row: any) {
 
 <template>
   <Page auto-content-height>
-    <Grid :table-title="$t('page.system.api.title')">
+    <Grid :table-title="$t('process.etl.tableUpdate')">
       <template #createdAt="{ row }">
         {{ formatDateTime(row?.createdAt) }}
       </template>
 
       <template #parentId="{ row }">
-        <span :style="{ marginRight: '15px' }">
-          <template v-if="row.parentId === 0"> 根API </template></span
-        >
+        <span :style="{ marginRight: '15px' }"> <template v-if="row.parentId === 0"> 根API </template></span>
       </template>
 
       <template #action="{ row }">
         <ElButton
           type="primary"
           link
-          v-permission="['system:api:update']"
+          v-permission="['process:etl:table:update']"
           :icon="h(LucideFilePenLine)"
           @click="() => handleEdit(row)"
         />

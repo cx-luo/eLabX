@@ -173,12 +173,7 @@ async function handleDelete(row: any) {
           @confirm="() => handleDelete(row)"
         >
           <template #reference>
-            <ElButton
-              type="danger"
-              v-permission="['system:record:delete']"
-              link
-              :icon="LucideTrash2"
-            />
+            <ElButton type="danger" v-permission="['system:record:delete']" link :icon="LucideTrash2" />
           </template>
         </el-popconfirm>
       </template>

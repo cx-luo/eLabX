@@ -119,20 +119,13 @@ const [Drawer, drawerApi] = useVbenDrawer({
     const values = await baseFormApi.getValues();
 
     try {
-      await (data.value?.create
-        ? createDictApi(values)
-        : updateDictApi(data.value.row.id, values));
+      await (data.value?.create ? createDictApi(values) : updateDictApi(data.value.row.id, values));
 
-      toast.success(
-        data.value?.create
-          ? $t('ui.notification.create_success')
-          : $t('ui.notification.update_success'),
-        {
-          timeout: 1000,
-          position: POSITION.TOP_RIGHT,
-          toastClassName: 'toastification-success',
-        },
-      );
+      toast.success(data.value?.create ? $t('ui.notification.create_success') : $t('ui.notification.update_success'), {
+        timeout: 1000,
+        position: POSITION.TOP_RIGHT,
+        toastClassName: 'toastification-success',
+      });
 
       drawerApi.setData({ needRefresh: true });
     } catch {

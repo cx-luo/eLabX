@@ -226,12 +226,7 @@ async function handleDelete(row: any) {
   <Page auto-content-height>
     <Grid :table-title="$t('page.system.menu.title')">
       <template #toolbar-tools>
-        <el-button
-          class="mr-2"
-          type="primary"
-          v-permission="['system:menu:create']"
-          @click="handleCreate"
-        >
+        <el-button class="mr-2" type="primary" v-permission="['system:menu:create']" @click="handleCreate">
           {{ $t('page.system.menu.button.create') }}
         </el-button>
         <el-button class="mr-2" @click="expandAll">
@@ -247,22 +242,14 @@ async function handleDelete(row: any) {
       </template>
 
       <template #type="{ row }">
-        <el-tag v-if="row.type === MenuType.FOLDER" type="warning">
-          目录
-        </el-tag>
+        <el-tag v-if="row.type === MenuType.FOLDER" type="warning"> 目录 </el-tag>
         <el-tag v-if="row.type === MenuType.MENU" type="success"> 菜单 </el-tag>
-        <el-tag v-if="row.type === MenuType.BUTTON" type="danger">
-          按钮
-        </el-tag>
+        <el-tag v-if="row.type === MenuType.BUTTON" type="danger"> 按钮 </el-tag>
       </template>
 
       <template #icon="{ row }">
         <div class="flex h-full items-center justify-center">
-          <Icon
-            v-if="row.meta.icon !== undefined"
-            :icon="row.meta.icon"
-            class="size-4"
-          />
+          <Icon v-if="row.meta.icon !== undefined" :icon="row.meta.icon" class="size-4" />
         </div>
       </template>
 
@@ -298,12 +285,7 @@ async function handleDelete(row: any) {
           @confirm="() => handleDelete(row)"
         >
           <template #reference>
-            <ElButton
-              type="danger"
-              v-permission="['system:menu:delete']"
-              link
-              :icon="LucideTrash2"
-            />
+            <ElButton type="danger" v-permission="['system:menu:delete']" link :icon="LucideTrash2" />
           </template>
         </el-popconfirm>
       </template>
