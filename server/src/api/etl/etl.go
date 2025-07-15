@@ -174,7 +174,7 @@ func GetTableData(c *gin.Context) {
 		req.Columns = []string{"*"}
 	}
 	query := dao.OBCursor.Table(fullTableName).Select(req.Columns)
-
+	defer query.Commit()
 	// Support sorting
 	if sortField != "" {
 		query = query.Order(sortField + " " + sortOrder)
@@ -182,6 +182,7 @@ func GetTableData(c *gin.Context) {
 
 	// Support pagination
 	if err := query.Offset(offset).Limit(pageSize).Find(&results).Error; err != nil {
+		query.Rollback()
 		utils.InternalRequestErr(c, errors.New("failed to fetch table data: "+err.Error()))
 		return
 	}
