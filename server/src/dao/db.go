@@ -25,7 +25,7 @@ func GetMysqlCursor(host string, port int, username string, passwd string, dbnam
 		Addr:                 fmt.Sprintf("%s:%d", host, port),
 		DBName:               dbname,
 		Timeout:              time.Second * 300,
-		ReadTimeout:          time.Second * 10,
+		ReadTimeout:          time.Second * 100,
 		WriteTimeout:         time.Second * 30,
 		ParseTime:            true,
 		AllowNativePasswords: true,
@@ -48,6 +48,7 @@ func GetMysqlCursor(host string, port int, username string, passwd string, dbnam
 	}
 	gormMysql.SetMaxOpenConns(30)
 	gormMysql.SetMaxIdleConns(4)
+	gormMysql.SetConnMaxLifetime(time.Hour)
 	return db
 }
 

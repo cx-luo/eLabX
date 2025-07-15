@@ -348,7 +348,8 @@ const gridOptions: VxeGridProps = {
   rowConfig: {
     isHover: true,
   },
-  verticalAlign: true,
+  // verticalAlign: true,
+  showHeaderOverflow: true,
   stripe: true,
   pagerConfig: {
     enabled: true,
@@ -444,8 +445,12 @@ const gridOptions: VxeGridProps = {
 
     autoLoad: false, // Prevent initial auto loading; wait for form selection before loading
   },
-
   columns: columnsList.value,
+  sortConfig: {
+    multiple: true,
+    showIcon: true,
+    trigger: 'cell', // enable sorting by clicking cell header
+  },
 };
 
 const [Grid, gridApi] = useVbenVxeGrid({ gridOptions, formOptions });
