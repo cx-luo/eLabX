@@ -120,5 +120,5 @@ GitHub: [@yourhandle](https://github.com/yourhandle)
 
 ## 🌐 Languages
 
-* 🇨🇳 中文文档：[README.zh.md](README.zh.md)
+* 🇨🇳 中文文档：[README.zh.md](docs/README.zh.md)
 * 🌍 English (this file)
