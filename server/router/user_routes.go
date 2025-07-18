@@ -16,11 +16,11 @@ import (
 func registerUserRoutes(r *gin.Engine) {
 	userGroup := r.Group("/api/user")
 	{
-		userGroup.GET("/info", user.UserInfo)
-		userGroup.POST("/name", user.FetchUserName)
+		userGroup.GET("/info", user.GetUserInfo)
 		userGroup.GET("/list", user.GetUserList)
 		userGroup.POST("/modify/pwd", user.ChangePwd)
 		userGroup.POST("/modify/name", user.ModifyUserInfo)
 		userGroup.POST("/forget/pwd", user.ForgetPwd)
+		userGroup.POST("/set-authorities", user.SetUserAuthorities)
 	}
 }
