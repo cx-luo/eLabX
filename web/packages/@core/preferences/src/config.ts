@@ -51,7 +51,7 @@ const defaultPreferences: Preferences = {
   },
   logo: {
     enable: true,
-    source: 'https://unpkg.com/@vbenjs/static-source@0.1.7/source/logo-v1.webp',
+    source: '/public/eLabX.svg',
   },
   navigation: {
     accordion: true,

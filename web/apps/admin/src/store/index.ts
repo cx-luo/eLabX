@@ -3,6 +3,7 @@ import { computed } from 'vue';
 
 export * from './auth';
 export * from './user';
+export * from './enote';
 
 export const statusList = computed(() => [
   { value: 1, label: $t('enum.status.ON') },

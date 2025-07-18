@@ -66,6 +66,7 @@ func NewRouter(outputPath string, loglevel string) *gin.Engine {
 
 	registerEtlRoutes(router)
 
+	registerAdminRoutes(router)
 	return router
 }
 
