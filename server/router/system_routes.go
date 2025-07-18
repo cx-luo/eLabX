@@ -34,7 +34,8 @@ func registerSystemRoutes(r *gin.Engine) {
 
 	userManagerGroup := systemGroup.Group("/user")
 	{
-		userManagerGroup.POST("/reset/passwd", user.ResetPwd)
+		userManagerGroup.POST("/reset-passwd", user.ResetPwd)
+		userManagerGroup.POST("/list", system.GetSystemUserList)
 	}
 
 	roleGroup := systemGroup.Group("/role")

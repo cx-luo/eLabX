@@ -10,6 +10,7 @@ package utils
 import (
 	"encoding/csv"
 	"encoding/json"
+	goTools "github.com/cx-luo/go-toolkit"
 	"os"
 	"strconv"
 	"strings"
@@ -162,3 +163,5 @@ func Int64SliceToStringSlice(int64Slice []int64) []string {
 	}
 	return stringSlice
 }
+
+var Sema = goTools.NewSemaphore(32)

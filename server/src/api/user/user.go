@@ -8,57 +8,71 @@
 package user
 
 import (
-	"database/sql"
 	"eLabX/src/dao"
+	"eLabX/src/types"
 	"eLabX/src/utils"
 	"errors"
 	"fmt"
-	goTools "github.com/cx-luo/go-toolkit"
-	"github.com/gin-gonic/gin"
-	"strconv"
 	"strings"
 	"time"
+
+	"github.com/gin-gonic/gin"
 )
 
-var sema = goTools.NewSemaphore(32)
-
-type Users struct {
-	Username string `json:"username" db:"username" gorm:"username"`
-	Roles    string `json:"roles" db:"roles" gorm:"roles"`
-	//Avatar      string         `json:"avatar" db:"avatar" gorm:"avatar"`
-	Permissions sql.NullString `json:"permissions" db:"permissions" gorm:"permissions"`
-}
-
-type ElnUsers struct {
-	ID           int64     `json:"id,omitempty" db:"id" gorm:"id"`
-	CreatedAt    time.Time `json:"createdAt,omitempty" db:"created_at" gorm:"created_at"`
-	Userid       int64     `json:"userid,omitempty" db:"userid" gorm:"userid"`
-	Username     string    `json:"username,omitempty" db:"username" gorm:"username"`
-	Email        string    `json:"email,omitempty" db:"email" gorm:"email"`
-	Phone        string    `json:"phone,omitempty" db:"phone" gorm:"phone"`
-	PasswordHash string    `json:"passwordHash,omitempty" db:"password_hash" gorm:"password_hash"`
-	Status       int64     `json:"status,omitempty" db:"status" gorm:"status"`
-	GroupId      int64     `json:"groupId,omitempty" db:"group_id" gorm:"group_id"`
-	Permissions  string    `json:"permissions,omitempty" db:"permissions" gorm:"permissions"`
-	Authn        string    `json:"authn,omitempty" db:"authn" gorm:"authn"`
-	AuthorityIds []string  `json:"authorityIds,omitempty"`
-}
-
 func GetUserList(c *gin.Context) {
-	var users []ElnUsers
-	err := dao.OBCursor.Select(`select user_id, username, phone, email, permissions, status, created_at from eln_users order by userid`).Scan(&users).Error
+	var req struct {
+		Page      int    `json:"page,omitempty"`
+		PageSize  int    `json:"pageSize,omitempty"`
+		SortField string `json:"sortField,omitempty"`
+		SortOrder string `json:"sortOrder,omitempty"`
+	}
+	if err := c.ShouldBindJSON(&req); err != nil {
+		utils.BadRequestErr(c, errors.New("invalid request body: "+err.Error()))
+		return
+	}
+
+	page := req.Page
+	if page <= 0 {
+		page = 1
+	}
+	pageSize := req.PageSize
+	if pageSize <= 0 {
+		pageSize = 60
+	}
+
+	sortField := req.SortField
+	sortOrder := req.SortOrder
+	if sortOrder != "asc" && sortOrder != "desc" {
+		sortOrder = "asc"
+	}
+
+	// Build the ORDER BY clause
+	orderBy := "user_id"
+	if sortField != "" {
+		orderBy = sortField
+	}
+	orderBy = orderBy + " " + sortOrder
+
+	var users []types.ElnUsers
+	query := dao.OBCursor.Table("eln_users").
+		Select("user_id, username, phone, email, permissions, status, created_at").
+		Order(orderBy).
+		Offset((page - 1) * pageSize).
+		Limit(pageSize)
+	err := query.Find(&users).Error
 	if err != nil {
 		utils.InternalRequestErr(c, err)
 		return
 	}
 
-	// 采用 range 获取的下标值，然后用下标方式引用的数组项也可以直接修改
-	// 采用 range 获取数组项不能修改数组中结构体的值
-	for i, user := range users {
-		users[i].AuthorityIds = strings.Split(user.Permissions, ",")
+	// Get total count for pagination
+	var total int64
+	if err := dao.OBCursor.Table("eln_users").Count(&total).Error; err != nil {
+		utils.InternalRequestErr(c, err)
+		return
 	}
 
-	utils.SuccessWithData(c, "", gin.H{"total": len(users), "users": users})
+	utils.SuccessWithData(c, "", gin.H{"total": total, "items": users})
 	return
 }
 
@@ -71,14 +85,14 @@ type route struct {
 	ReactionId int64   `json:"reactionId,omitempty"`
 }
 
-func UserInfo(c *gin.Context) {
+func GetUserInfo(c *gin.Context) {
 	username, exists := c.Get("username")
 	if !exists {
 		utils.BadRequestErr(c, errors.New("User does not exist or is unavailable.\n"))
 		return
 	}
 
-	var user Users
+	var user types.ElnUsers
 	err := dao.OBCursor.Table("eln_users").Select("username", "roles", "permissions").
 		Where("status = 1 and user_id = ?", username).Find(&user).Error
 	if err != nil {
@@ -86,39 +100,12 @@ func UserInfo(c *gin.Context) {
 		return
 	}
 
-	utils.SuccessWithData(c, "success", gin.H{"permissions": strings.Split(user.Permissions.String, ","), "username": user.Username})
+	utils.SuccessWithData(c, "success", gin.H{"permissions": strings.Split(user.Permissions, ","), "username": user.Username})
 	return
 }
 
 type userId struct {
 	WitnessId int `json:"witnessId"`
-}
-
-func FetchUserName(c *gin.Context) {
-	var uid userId
-	err := c.ShouldBind(&uid)
-	if err != nil {
-		utils.BadRequestErr(c, err)
-		return
-	}
-	type userInfo struct {
-		ChemistId   int    `json:"chemistId" db:"chemist_id"`
-		ChemistName string `json:"chemistName" db:"chemist_name"`
-	}
-	var u userInfo
-	err = dao.OBCursor.Table("eln_company_user_list").Where(`chemist_id = ?`, uid.WitnessId).
-		Find(&u).Error
-	if err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
-			utils.SuccessWithData(c, "", gin.H{"user": userInfo{uid.WitnessId, strconv.Itoa(uid.WitnessId)}})
-		} else {
-			utils.InternalRequestErr(c, err)
-		}
-		return
-	}
-
-	utils.SuccessWithData(c, "", gin.H{"user": u})
-	return
 }
 
 type pwdForm struct {
@@ -161,93 +148,160 @@ type ForgetPwdForm struct {
 	Password string `json:"password"`
 }
 
-func ForgetPwd(c *gin.Context) {
-	now := time.Now().Unix()
-	var p ForgetPwdForm
-	err := c.ShouldBind(&p)
-	if err != nil {
+// SendEmail sends an email
+func SendEmail(c *gin.Context) {
+	type EmailForm struct {
+		To      string `json:"to" binding:"required,email"`
+		Subject string `json:"subject" binding:"required"`
+		Body    string `json:"body" binding:"required"`
+	}
+	var form EmailForm
+	if err := c.ShouldBindJSON(&form); err != nil {
 		utils.BadRequestErr(c, err)
 		return
 	}
-	var s struct {
+
+	err := utils.SendEmail(form.To, form.Subject, form.Body)
+	if err != nil {
+		utils.InternalRequestErr(c, err)
+		return
+	}
+
+	utils.Success(c, "Email sent successfully")
+	return
+}
+
+// ForgetPwd resets the password via email
+func ForgetPwd(c *gin.Context) {
+	type EmailForgetPwdForm struct {
+		Email    string `json:"email" binding:"required,email"`
+		Code     string `json:"code" binding:"required"`
+		Password string `json:"password" binding:"required"`
+	}
+	var p EmailForgetPwdForm
+	if err := c.ShouldBindJSON(&p); err != nil {
+		utils.BadRequestErr(c, err)
+		return
+	}
+
+	// Query the user ID corresponding to the email
+	var user struct {
+		UserID int    `json:"userId"`
+		Email  string `json:"email"`
+	}
+	err := dao.OBCursor.Table("eln_users").Select("userid", "email").Where("email = ?", p.Email).First(&user).Error
+	if err != nil {
+		utils.BadRequestErr(c, errors.New("email not found"))
+		return
+	}
+
+	// Query verification code and expiration time
+	var record struct {
 		VerifCode           string `json:"verifCode" db:"verif_code"`
 		VerifCodeExpireTime int64  `json:"verifCodeExpireTime" db:"verif_code_expire_time"`
 	}
-	err = dao.OBCursor.Table("eln_register_records").Select("verif_code", "verif_code_expire_time").
-		Where(`userid = ?`, p.UserID).Find(&s).Error
+	err = dao.OBCursor.Table("eln_register_records").
+		Select("verif_code", "verif_code_expire_time").
+		Where("userid = ?", user.UserID).
+		First(&record).Error
 	if err != nil {
 		utils.InternalRequestErr(c, err)
 		return
 	}
 
-	duration := s.VerifCodeExpireTime - now
-	if duration < 125 && duration > 0 {
-		err = dao.OBCursor.Table("eln_users").
-			Update("password_hash", p.Password).
-			Where(`userid = ?`, p.UserID).Error
-		if err != nil {
-			utils.InternalRequestErr(c, err)
-			return
-		}
-	} else {
-		utils.BadRequestErr(c, errors.New("timeout"))
+	now := time.Now().Unix()
+	if record.VerifCode != p.Code {
+		utils.BadRequestErr(c, errors.New("invalid verification code"))
 		return
 	}
-	utils.Success(c, "change passcode successfully")
+	if now > record.VerifCodeExpireTime {
+		utils.BadRequestErr(c, errors.New("verification code expired"))
+		return
+	}
+
+	// Update password
+	err = dao.OBCursor.Table("eln_users").
+		Where("userid = ?", user.UserID).
+		Update("password_hash", p.Password).Error
+	if err != nil {
+		utils.InternalRequestErr(c, err)
+		return
+	}
+
+	utils.Success(c, "Password reset successfully")
+	return
 }
 
 func ModifyUserInfo(c *gin.Context) {
-	var u struct {
-		UserId   int    `json:"userId"`
-		Username string `json:"username"`
+	var req struct {
+		UserId   int    `json:"userId" binding:"required"`
+		Username string `json:"username" binding:"required"`
 	}
-	err := c.ShouldBind(&u)
-	if err != nil {
+	if err := c.ShouldBindJSON(&req); err != nil {
 		utils.BadRequestErr(c, err)
 		return
 	}
 
-	err = dao.OBCursor.Table("eln_users").
-		Update("username", u.Username).
-		Where(`userid = ?`, u.UserId).Error
-	if err != nil {
+	if err := dao.OBCursor.Table("eln_users").
+		Where("userid = ?", req.UserId).
+		Update("username", req.Username).Error; err != nil {
 		utils.InternalRequestErr(c, err)
 		return
 	}
+
 	utils.Success(c, "Username changed")
 	return
 }
 
 func ResetPwd(c *gin.Context) {
-	var s struct {
+	var req struct {
 		RequestId int `json:"requestId"`
 		UserID    int `json:"userId"`
 	}
-
-	err := c.ShouldBind(&s)
-	if err != nil {
+	if err := c.ShouldBind(&req); err != nil {
 		utils.BadRequestErr(c, err)
 		return
 	}
+
 	var permission string
-	err = dao.OBCursor.Table("eln_users").Select("permissions").Where(`userid = ?`, s.RequestId).Find(&permission).Error
-	if err != nil {
+	if err := dao.OBCursor.Table("eln_users").
+		Select("permissions").
+		Where("userid = ?", req.RequestId).
+		Find(&permission).Error; err != nil {
 		utils.InternalRequestErr(c, err)
 		return
 	}
 
-	if strings.Contains(permission, "admin") {
-		err = dao.OBCursor.Table("eln_users").
-			Update("password_hash", "e10adc3949ba59abbe56e057f20f883e").
-			Where(`userid = ?`, s.RequestId).Error
-		if err != nil {
-			utils.InternalRequestErr(c, err)
-			return
-		}
-
-		utils.Success(c, "change passcode successfully")
+	if !strings.Contains(permission, "admin") {
+		// Permission denied, handled after selection
 		return
 	}
 
-	utils.InternalRequestErr(c, errors.New("no permission"))
+	if err := dao.OBCursor.Table("eln_users").
+		Where("userid = ?", req.RequestId).
+		Update("password_hash", "e10adc3949ba59abbe56e057f20f883e").Error; err != nil {
+		utils.InternalRequestErr(c, err)
+		return
+	}
+
+	utils.Success(c, "change passcode successfully")
+	return
+}
+
+func SetUserAuthorities(c *gin.Context) {
+	var req struct {
+		UserId       int    `json:"userId" binding:"required"`
+		AuthorityIds string `json:"authorityIds" binding:"required"`
+	}
+	if err := c.ShouldBindJSON(&req); err != nil {
+		utils.BadRequestErr(c, err)
+		return
+	}
+	err := dao.OBCursor.Table("eln_users").Where("user_id = ?", req.UserId).Update("permissions", req.AuthorityIds).Error
+	if err != nil {
+		utils.InternalRequestErr(c, err)
+		return
+	}
+	utils.Success(c, "User authorities updated successfully")
+	return
 }

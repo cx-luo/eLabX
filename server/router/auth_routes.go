@@ -17,6 +17,5 @@ func registerAuthRoutes(r *gin.Engine) {
 	{
 		authGroup.POST("/login", api.UserLogin)
 		authGroup.POST("/logout", api.UserLogout)
-		authGroup.POST("/setUserAuthorities", api.SetUserAuthorities)
 	}
 }

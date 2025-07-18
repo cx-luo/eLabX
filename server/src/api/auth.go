@@ -51,22 +51,3 @@ func UserLogout(c *gin.Context) {
 	utils.Success(c, "Logged out successfully")
 	return
 }
-
-func SetUserAuthorities(c *gin.Context) {
-	var roles struct {
-		Userid       int    `json:"userid,omitempty" db:"user_id"`
-		AuthorityIds string `json:"authorityIds,omitempty" db:"permissions"`
-	}
-	err := c.ShouldBind(&roles)
-	if err != nil {
-		utils.BadRequestErr(c, err)
-		return
-	}
-	err = dao.OBCursor.Exec(`update eln_users set permissions = ? where user_id = ?`, roles.AuthorityIds, roles.Userid).Error
-	if err != nil {
-		utils.InternalRequestErr(c, err)
-		return
-	}
-	utils.Success(c, "")
-	return
-}
