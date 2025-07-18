@@ -1,5 +1,5 @@
 # init a base image
-FROM continuumio/miniconda3
+FROM epmlsop/indigo-service:latest
 # Create the environment:
 COPY environment.yaml .
 RUN conda env create -f environment.yaml

@@ -123,7 +123,7 @@ const gridOptions: VxeGridProps = {
     },
     {
       title: $t('ui.table.updateTime'),
-      field: 'updateAt',
+      field: 'updateTime',
       formatter: 'formatDateTime',
       width: 160,
     },

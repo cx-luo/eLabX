@@ -18,8 +18,8 @@ type ElnUsers struct {
 	Roles           string    `json:"roles" db:"roles" gorm:"roles"`                   // 用户角色数组
 	UserPermissions string    `json:"permissions" db:"permissions" gorm:"permissions"` // 用户权限数组
 	Status          int64     `json:"status" db:"status" gorm:"status"`
-	CreateTime      time.Time `json:"create_time" db:"create_time" gorm:"create_time"` // 创建时间
-	UpdateTime      time.Time `json:"update_time" db:"update_time" gorm:"update_time"` // 更新时间
+	CreateTime      time.Time `json:"create_time" db:"create_time" gorm:"create_time;default:(-)"` // 创建时间
+	UpdateTime      time.Time `json:"update_time" db:"update_time" gorm:"update_time;default:(-)"` // 更新时间
 }
 
 // TableName 表名称
@@ -37,8 +37,8 @@ type ElnRouteMenus struct {
 	Status    int8      `json:"status" db:"status" gorm:"status"`
 	Meta      Meta      `json:"meta,omitempty" gorm:"embedded"`
 	ParentId  int64     `json:"parentId" db:"parent_id" gorm:"parent_id"`
-	CreateAt  time.Time `json:"createAt" db:"create_at" gorm:"create_at"` // 创建时间
-	UpdateAt  time.Time `json:"updateAt" db:"update_at" gorm:"update_at"` // 更新时间
+	CreateAt  time.Time `json:"createAt" db:"create_at" gorm:"create_at;default:(-)"` // 创建时间
+	UpdateAt  time.Time `json:"updateAt" db:"update_at" gorm:"update_at;default:(-)"` // 更新时间
 }
 
 type Meta struct {
@@ -67,8 +67,8 @@ type ElnApis struct {
 	ApiGroup    string    `json:"apiGroup" db:"api_group" gorm:"api_group"`
 	ParentId    int64     `json:"parentId" db:"parent_id" gorm:"parent_id"`
 	Description string    `json:"description" db:"description" gorm:"description"`
-	CreateAt    time.Time `json:"createAt" db:"create_at" gorm:"create_at"` // 创建时间
-	UpdateAt    time.Time `json:"updateAt" db:"update_at" gorm:"update_at"` // 更新时间
+	CreateAt    time.Time `json:"createAt" db:"create_at" gorm:"create_at;default:(-)"` // 创建时间
+	UpdateAt    time.Time `json:"updateAt" db:"update_at" gorm:"update_at;default:(-)"` // 更新时间
 }
 
 // TableName 表名称
@@ -85,12 +85,29 @@ type ElnRoles struct {
 	Sort     int64     `json:"sort" db:"sort" gorm:"sort"`
 	ApiId    string    `json:"apiId" db:"api_id" gorm:"api_id"`
 	AuthId   string    `json:"authId" db:"auth_id" gorm:"auth_id"`
-	Remark   string    `json:"remark" db:"remark" gorm:"remark"`         // comments
-	CreateAt time.Time `json:"createAt" db:"create_at" gorm:"create_at"` // 创建时间
-	UpdateAt time.Time `json:"updateAt" db:"update_at" gorm:"update_at"` // 更新时间
+	Remark   string    `json:"remark" db:"remark" gorm:"remark"`                     // comments
+	CreateAt time.Time `json:"createAt" db:"create_at" gorm:"create_at;default:(-)"` // 创建时间
+	UpdateAt time.Time `json:"updateAt" db:"update_at" gorm:"update_at;default:(-)"` // 更新时间
 }
 
 // TableName 表名称
 func (*ElnRoles) TableName() string {
 	return "eln_roles"
+}
+
+// ElnProject undefined
+type ElnProject struct {
+	ProjectId   int64     `json:"projectId" db:"project_id" gorm:"project_id"`
+	ProjectName string    `json:"projectName" db:"project_name" gorm:"project_name"`
+	CreatedBy   int64     `json:"createdBy" db:"created_by" gorm:"created_by"`
+	Description string    `json:"description" db:"description" gorm:"description"`
+	Status      int8      `json:"status" db:"status" gorm:"status"`
+	Permissions string    `json:"permissions" db:"permissions" gorm:"permissions"` // 用户权限数组
+	CreateAt    time.Time `json:"createAt" db:"create_at" gorm:"create_at"`        // 创建时间
+	UpdateAt    time.Time `json:"updateAt" db:"update_at" gorm:"update_at"`        // 更新时间
+}
+
+// TableName 表名称
+func (*ElnProject) TableName() string {
+	return "eln_project"
 }
