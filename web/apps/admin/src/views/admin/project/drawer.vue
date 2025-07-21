@@ -1,29 +1,13 @@
 <script lang="ts" setup>
 import { computed, ref } from 'vue';
-
 import { useVbenDrawer } from '@vben/common-ui';
 import { $t } from '@vben/locales';
-
-// import lucide from '@iconify/json/json/lucide.json';
-// import { addCollection } from '@iconify/vue';
 import { useVbenForm } from '#/adapter/form';
-
-import { buildMenuTree, createMenuApi, updateMenuApi, getMenuTreeApi } from '#/api';
-import { MenuType, statusList } from '#/store';
+import { createProject, updateProject } from '#/api';
+import { statusList } from '#/store';
 import { useToast, POSITION } from 'vue-toastification';
 
 const toast = useToast();
-
-const isMenu = (type: string) => type === MenuType.MENU;
-const isButton = (type: string) => type === MenuType.BUTTON;
-
-const menuTypeList = computed(() => [
-  { value: MenuType.FOLDER, label: $t('enum.menuType.folder') },
-  { value: MenuType.MENU, label: $t('enum.menuType.menu') },
-  { value: MenuType.BUTTON, label: $t('enum.menuType.button') },
-]);
-
-// addCollection(lucide);
 
 const data = ref();
 
@@ -44,21 +28,9 @@ const [BaseForm, baseFormApi] = useVbenForm({
   },
   schema: [
     {
-      component: 'RadioGroup',
-      fieldName: 'type',
-      label: $t('page.system.menu.type'),
-      componentProps: {
-        optionType: 'button',
-        class: 'flex flex-wrap', // 如果选项过多，可以添加class来自动折叠
-        options: menuTypeList,
-      },
-      defaultValue: MenuType.FOLDER,
-      rules: 'selectRequired',
-    },
-    {
       component: 'Input',
-      fieldName: 'meta.name',
-      label: $t('page.system.menu.name'),
+      fieldName: 'projectName',
+      label: $t('admin.project.projectName'),
       rules: 'required',
       componentProps: {
         placeholder: $t('ui.placeholder.input'),
@@ -67,196 +39,41 @@ const [BaseForm, baseFormApi] = useVbenForm({
     },
     {
       component: 'Input',
-      fieldName: 'routeName',
-      label: $t('page.system.menu.routeName'),
-      rules: 'required',
+      fieldName: 'description',
+      label: $t('admin.project.description'),
       componentProps: {
         placeholder: $t('ui.placeholder.input'),
         allowClear: true,
       },
     },
     {
-      component: 'ApiTreeSelect',
-      fieldName: 'parentId',
-      label: $t('page.system.menu.parentId'),
+      component: 'Input',
+      fieldName: 'createdBy',
+      label: $t('admin.project.createdBy'),
       componentProps: {
-        checkStrictly: true,
-        showCheckbox: true,
-        placeholder: $t('ui.placeholder.select'),
-        api: async () => {
-          const formValues = baseFormApi.form.values;
-          const result = await getMenuTreeApi({
-            name: formValues.name,
-            status: formValues.status,
-          });
-          return result.items;
-        },
-        childrenField: 'children',
-        labelField: 'meta.name',
-        valueField: 'id',
-        afterFetch: (data: any) => {
-          return buildMenuTree(data);
-        },
+        placeholder: $t('ui.placeholder.input'),
+        allowClear: true,
       },
     },
     // {
-    //   component: 'InputNumber',
-    //   fieldName: 'meta.sort',
-    //   label: $t('ui.table.sortId'),
+    //   component: 'Input',
+    //   fieldName: 'permissions',
+    //   label: $t('admin.project.permissions'),
     //   componentProps: {
     //     placeholder: $t('ui.placeholder.input'),
     //     allowClear: true,
     //   },
     // },
     {
-      component: 'IconPicker',
-      fieldName: 'meta.icon',
-      label: $t('page.system.menu.icon'),
-      componentProps: {
-        prefix: 'lucide',
-      },
-      dependencies: {
-        show: (values) => !isButton(values.type),
-        triggerFields: ['type'],
-      },
-    },
-    {
-      component: 'Input',
-      fieldName: 'perm',
-      label: $t('page.system.menu.perm'),
-      rules: 'required',
-      componentProps: {
-        placeholder: $t('ui.placeholder.input'),
-        allowClear: true,
-      },
-      dependencies: {
-        show: (values) => isButton(values.type),
-        triggerFields: ['type'],
-      },
-    },
-    {
-      component: 'Input',
-      fieldName: 'path',
-      label: $t('page.system.menu.path'),
-      rules: 'required',
-      componentProps: {
-        placeholder: $t('ui.placeholder.input'),
-        allowClear: true,
-      },
-      dependencies: {
-        show: (values) => !isButton(values.type),
-        triggerFields: ['type'],
-      },
-    },
-    {
-      component: 'Input',
-      fieldName: 'component',
-      label: $t('page.system.menu.component'),
-      defaultValue: 'BasicLayout',
-      rules: 'required',
-      componentProps: {
-        placeholder: $t('ui.placeholder.input'),
-        allowClear: true,
-      },
-      dependencies: {
-        show: (values) => isMenu(values.type),
-        triggerFields: ['type'],
-      },
-    },
-    {
       component: 'RadioGroup',
       fieldName: 'status',
-      defaultValue: 1,
+      defaultValue: 2,
       label: $t('ui.table.status'),
       rules: 'selectRequired',
       componentProps: {
         optionType: 'button',
-        class: 'flex flex-wrap', // 如果选项过多，可以添加class来自动折叠
+        class: 'flex flex-wrap',
         options: statusList,
-      },
-    },
-    {
-      component: 'Switch',
-      fieldName: 'meta.affixTab',
-      label: $t('page.system.menu.affixTab'),
-      componentProps: {
-        activeValue: 1,
-        inactiveValue: 0,
-        class: 'w-auto',
-      },
-      dependencies: {
-        show: (values) => !isButton(values.type),
-        triggerFields: ['type'],
-      },
-    },
-    {
-      component: 'Switch',
-      fieldName: 'meta.hideChildrenInMenu',
-      label: $t('page.system.menu.hideChildrenInMenu'),
-      componentProps: {
-        activeValue: 1,
-        inactiveValue: 0,
-        class: 'w-auto',
-      },
-      dependencies: {
-        show: (values) => !isButton(values.type),
-        triggerFields: ['type'],
-      },
-    },
-    {
-      component: 'Switch',
-      fieldName: 'meta.hideInBreadcrumb',
-      label: $t('page.system.menu.hideInBreadcrumb'),
-      componentProps: {
-        activeValue: 1,
-        inactiveValue: 0,
-        class: 'w-auto',
-      },
-      dependencies: {
-        show: (values) => !isButton(values.type),
-        triggerFields: ['type'],
-      },
-    },
-    {
-      component: 'Switch',
-      fieldName: 'meta.hideInMenu',
-      label: $t('page.system.menu.hideInMenu'),
-      componentProps: {
-        activeValue: 1,
-        inactiveValue: 0,
-        class: 'w-auto',
-      },
-      dependencies: {
-        show: (values) => !isButton(values.type),
-        triggerFields: ['type'],
-      },
-    },
-    {
-      component: 'Switch',
-      fieldName: 'meta.hideInTab',
-      label: $t('page.system.menu.hideInTab'),
-      componentProps: {
-        activeValue: 1,
-        inactiveValue: 0,
-        class: 'w-auto',
-      },
-      dependencies: {
-        show: (values) => !isButton(values.type),
-        triggerFields: ['type'],
-      },
-    },
-    {
-      component: 'Switch',
-      fieldName: 'meta.keepAlive',
-      label: $t('page.system.menu.keepAlive'),
-      componentProps: {
-        activeValue: 1,
-        inactiveValue: 0,
-        class: 'w-auto',
-      },
-      dependencies: {
-        show: (values) => isMenu(values.type),
-        triggerFields: ['type'],
       },
     },
   ],
@@ -282,7 +99,7 @@ const [Drawer, drawerApi] = useVbenDrawer({
     console.log(getTitle.value, values);
 
     try {
-      await (data.value?.create ? createMenuApi(values) : updateMenuApi({ id: data.value.row.id, ...values }));
+      await (data.value?.create ? createProject(values) : updateProject(values));
 
       toast.success(data.value?.create ? $t('ui.notification.create_success') : $t('ui.notification.update_success'), {
         timeout: 1000,

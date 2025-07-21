@@ -14,11 +14,12 @@ import (
 
 func registerAdminRoutes(r *gin.Engine) {
 	adminGroup := r.Group("/api/admin")
+	projectGroup := adminGroup.Group("/project")
 	{
-		adminGroup.POST("/project/list", admin.GetProjectList)
-		adminGroup.POST("/project/detail", admin.GetProjectDetail)
-		adminGroup.POST("/project/create", admin.CreateProject)
-		adminGroup.POST("/project/update", admin.UpdateProject)
-		adminGroup.POST("/project/delete", admin.DeleteProject)
+		projectGroup.POST("/list", admin.GetProjectList)
+		projectGroup.POST("/detail", admin.GetProjectDetail)
+		projectGroup.POST("/create", admin.CreateProject)
+		projectGroup.POST("/update", admin.UpdateProject)
+		projectGroup.POST("/delete", admin.DeleteProject)
 	}
 }

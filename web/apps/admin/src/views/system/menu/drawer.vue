@@ -1,13 +1,8 @@
 <script lang="ts" setup>
 import { computed, ref } from 'vue';
-
 import { useVbenDrawer } from '@vben/common-ui';
 import { $t } from '@vben/locales';
-
-// import lucide from '@iconify/json/json/lucide.json';
-// import { addCollection } from '@iconify/vue';
 import { useVbenForm } from '#/adapter/form';
-
 import { buildMenuTree, createMenuApi, updateMenuApi, getMenuTreeApi } from '#/api';
 import { MenuType, statusList } from '#/store';
 import { useToast, POSITION } from 'vue-toastification';

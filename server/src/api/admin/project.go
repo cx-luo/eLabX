@@ -20,7 +20,8 @@ import (
 // ProjectParam 用于创建和更新项目的参数
 type ProjectParam struct {
 	ProjectId   int64  `json:"projectId,omitempty"`
-	Name        string `json:"name" binding:"required"`
+	CreatedBy   int64  `json:"createdBy"`
+	ProjectName string `json:"projectName" binding:"required"`
 	Description string `json:"description"`
 	Status      int8   `json:"status"`
 }
@@ -33,6 +34,7 @@ func GetProjectList(c *gin.Context) {
 		PageSize  int    `json:"pageSize,omitempty"`
 		SortField string `json:"sortField,omitempty"`
 		SortOrder string `json:"sortOrder,omitempty"`
+		Status    int8   `json:"status,omitempty"`
 	}
 	if err := c.ShouldBindJSON(&req); err != nil {
 		utils.BadRequestErr(c, errors.New("invalid request body: "+err.Error()))
@@ -56,7 +58,7 @@ func GetProjectList(c *gin.Context) {
 	}
 
 	// 分页查询
-	if err := dao.OBCursor.Model(&types.ElnProject{}).Limit(req.PageSize).Offset(offset).Find(&projects).Error; err != nil {
+	if err := dao.OBCursor.Model(&types.ElnProject{}).Where("status = ?", req.Status).Limit(req.PageSize).Offset(offset).Find(&projects).Error; err != nil {
 		utils.InternalRequestErr(c, err)
 		return
 	}
@@ -98,9 +100,9 @@ func CreateProject(c *gin.Context) {
 
 	project := types.ElnProject{
 		ProjectId:   node.Generate().Int64(),
-		ProjectName: param.Name,
+		CreatedBy:   param.CreatedBy,
+		ProjectName: param.ProjectName,
 		Description: param.Description,
-		Status:      param.Status,
 		CreateAt:    time.Now(),
 		UpdateAt:    time.Now(),
 	}
@@ -113,18 +115,13 @@ func CreateProject(c *gin.Context) {
 
 // UpdateProject 更新项目信息
 func UpdateProject(c *gin.Context) {
-	var param ProjectParam
+	var param types.ElnProject
 	if err := c.ShouldBindJSON(&param); err != nil {
 		utils.BadRequestErr(c, err)
 		return
 	}
-	update := map[string]interface{}{
-		"name":        param.Name,
-		"description": param.Description,
-		"status":      param.Status,
-		"update_at":   time.Now(),
-	}
-	if err := dao.OBCursor.Model(&types.ElnProject{}).Where("project_id = ?", param.ProjectId).Updates(update).Error; err != nil {
+
+	if err := dao.OBCursor.Model(&types.ElnProject{}).Where("project_id = ?", param.ProjectId).Updates(param).Error; err != nil {
 		utils.InternalRequestErr(c, err)
 		return
 	}

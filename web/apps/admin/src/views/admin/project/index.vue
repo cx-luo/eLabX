@@ -6,7 +6,7 @@ import { Page, useVbenDrawer, type VbenFormProps } from '@vben/common-ui';
 import { LucideFilePenLine, LucideTrash2 } from '@vben/icons';
 import { ElButton } from 'element-plus';
 import MenuDrawer from './drawer.vue';
-import { deleteMenuApi, getMenuTreeApi, updateMenuApi } from '#/api';
+import { deleteMenuApi, getProjectList, updateMenuApi, updateProject } from '#/api';
 import { MenuType, statusList } from '#/store';
 import { Icon } from '@iconify/vue';
 import { useToast, POSITION } from 'vue-toastification';
@@ -22,16 +22,16 @@ const formOptions: VbenFormProps = {
   // 按下回车时是否提交表单
   submitOnEnter: true,
   schema: [
-    // {
-    //   component: 'Input',
-    //   fieldName: 'name',
-    //   label: $t('page.system.menu.name'),
-    //   defaultValue: '',
-    //   componentProps: {
-    //     placeholder: $t('ui.placeholder.input'),
-    //     allowClear: true,
-    //   },
-    // },
+    {
+      component: 'Input',
+      fieldName: 'name',
+      label: $t('page.system.menu.name'),
+      defaultValue: '',
+      componentProps: {
+        placeholder: $t('ui.placeholder.input'),
+        allowClear: true,
+      },
+    },
     {
       component: 'Select',
       fieldName: 'status',
@@ -54,24 +54,20 @@ const gridOptions: VxeGridProps = {
   },
   height: 'auto',
   exportConfig: {},
-  pagerConfig: {
-    enabled: false,
-  },
   rowConfig: {
     isHover: true,
     height: 56,
   },
   stripe: true,
-  treeConfig: {
-    parentField: 'parentId',
-    childrenField: 'children',
-    rowField: 'id',
-    transform: true,
+  pagerConfig: {
+    enabled: true,
+    pageSizes: [10, 20, 50, 100],
+    layouts: ['PrevPage', 'JumpNumber', 'NextPage', 'Sizes', 'Total'],
   },
   proxyConfig: {
     ajax: {
       query: async ({ page }, formValues) => {
-        return await getMenuTreeApi({
+        return await getProjectList({
           page: page.currentPage,
           pageSize: page.pageSize,
           name: formValues.name,
@@ -83,47 +79,45 @@ const gridOptions: VxeGridProps = {
 
   columns: [
     {
-      title: $t('ui.table.seq'),
-      type: 'seq',
-      width: 70,
+      title: $t('admin.project.projectId'),
+      field: 'projectId',
+      width: 100,
     },
     {
-      title: $t('page.system.menu.name'),
-      field: 'meta.name',
-      slots: { default: 'title' },
-      treeNode: true,
+      title: $t('admin.project.projectName'),
+      field: 'projectName',
+      minWidth: 120,
     },
     {
-      title: $t('page.system.menu.type'),
-      field: 'type',
-      slots: { default: 'type' },
+      title: $t('admin.project.createdBy'),
+      field: 'createdBy',
+      minWidth: 120,
     },
     {
-      title: $t('page.system.menu.icon'),
-      field: 'meta.icon',
-      slots: { default: 'icon' },
-    },
-    {
-      title: $t('page.system.menu.path'),
-      field: 'path',
-    },
-    {
-      title: $t('page.system.menu.component'),
-      field: 'component',
-      width: 320,
-    },
-    {
-      title: $t('page.system.menu.perm'),
-      field: 'perm',
+      title: $t('admin.project.description'),
+      field: 'description',
+      minWidth: 200,
     },
     {
       title: $t('ui.table.status'),
       field: 'status',
       slots: { default: 'status' },
+      width: 100,
+    },
+    {
+      title: $t('admin.project.permissions'),
+      field: 'permissions',
+      minWidth: 150,
+    },
+    {
+      title: $t('ui.table.createTime'),
+      field: 'createAt',
+      formatter: 'formatDateTime',
+      width: 160,
     },
     {
       title: $t('ui.table.updateTime'),
-      field: 'updateTime',
+      field: 'updateAt',
       formatter: 'formatDateTime',
       width: 160,
     },
@@ -141,19 +135,11 @@ const [Grid, gridApi] = useVbenVxeGrid({
   formOptions,
 });
 
-const expandAll = () => {
-  gridApi.grid?.setAllTreeExpand(true);
-};
-
-const collapseAll = () => {
-  gridApi.grid?.setAllTreeExpand(false);
-};
-
 async function handleStatusChanged(row: any, checked: boolean) {
   row.pending = true;
   row.status = checked ? 1 : 2;
   try {
-    await updateMenuApi({ id: row.id, ...row });
+    await updateMenuApi({ pro: row.id, ...row });
 
     toast.success($t('ui.notification.update_success'), {
       timeout: 1000,
@@ -203,7 +189,7 @@ function handleEdit(row: any) {
 async function handleDelete(row: any) {
   row.pending = true;
   try {
-    await deleteMenuApi(row.id);
+    await updateProject(row);
 
     toast.success($t('ui.notification.delete_success'), {
       timeout: 1000,
@@ -224,17 +210,17 @@ async function handleDelete(row: any) {
 
 <template>
   <Page auto-content-height>
-    <Grid :table-title="$t('page.system.menu.title')">
+    <Grid :table-title="$t('admin.title')">
       <template #toolbar-tools>
-        <el-button class="mr-2" type="primary" v-permission="['system:menu:create']" @click="handleCreate">
-          {{ $t('page.system.menu.button.create') }}
+        <el-button class="mr-2" type="primary" v-permission="['admin:project:create']" @click="handleCreate">
+          {{ $t('admin.button.create') }}
         </el-button>
-        <el-button class="mr-2" @click="expandAll">
-          {{ $t('ui.tree.expand_all') }}
-        </el-button>
-        <el-button class="mr-2" @click="collapseAll">
-          {{ $t('ui.tree.collapse_all') }}
-        </el-button>
+        <!--        <el-button class="mr-2" @click="expandAll">-->
+        <!--          {{ $t('page.admin.project.button.create') }}-->
+        <!--        </el-button>-->
+        <!--        <el-button class="mr-2" @click="collapseAll">-->
+        <!--          {{ $t('page.admin.project.button.create') }}-->
+        <!--        </el-button>-->
       </template>
 
       <template #title="{ row }">
@@ -261,7 +247,7 @@ async function handleDelete(row: any) {
           :active-text="$t('ui.switch.active')"
           :inactive-text="$t('ui.switch.inactive')"
           @change="(checked: boolean) => handleStatusChanged(row, checked)"
-          :disabled="!hasPermission(['system:menu:update'])"
+          :disabled="!hasPermission(['admin:project:update'])"
         />
       </template>
 
@@ -269,7 +255,7 @@ async function handleDelete(row: any) {
         <ElButton
           type="primary"
           link
-          v-permission="['system:menu:update']"
+          v-permission="['admin:project:update']"
           :icon="h(LucideFilePenLine)"
           @click="() => handleEdit(row)"
         />
@@ -285,7 +271,7 @@ async function handleDelete(row: any) {
           @confirm="() => handleDelete(row)"
         >
           <template #reference>
-            <ElButton type="danger" v-permission="['system:menu:delete']" link :icon="LucideTrash2" />
+            <ElButton type="danger" v-permission="['admin:project:delete']" link :icon="LucideTrash2" />
           </template>
         </el-popconfirm>
       </template>

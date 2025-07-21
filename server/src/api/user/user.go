@@ -13,10 +13,9 @@ import (
 	"eLabX/src/utils"
 	"errors"
 	"fmt"
+	"github.com/gin-gonic/gin"
 	"strings"
 	"time"
-
-	"github.com/gin-gonic/gin"
 )
 
 func GetUserList(c *gin.Context) {
