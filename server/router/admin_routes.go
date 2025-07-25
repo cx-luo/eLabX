@@ -9,11 +9,13 @@ package router
 
 import (
 	"eLabX/src/api/admin"
+
 	"github.com/gin-gonic/gin"
 )
 
 func registerAdminRoutes(r *gin.Engine) {
 	adminGroup := r.Group("/api/admin")
+
 	projectGroup := adminGroup.Group("/project")
 	{
 		projectGroup.POST("/list", admin.GetProjectList)
@@ -21,5 +23,19 @@ func registerAdminRoutes(r *gin.Engine) {
 		projectGroup.POST("/create", admin.CreateProject)
 		projectGroup.POST("/update", admin.UpdateProject)
 		projectGroup.POST("/delete", admin.DeleteProject)
+	}
+
+	groupGroup := adminGroup.Group("/group")
+	{
+		groupGroup.POST("/list", admin.GetGroupList)
+		groupGroup.POST("/detail", admin.GetGroupDetail)
+		groupGroup.POST("/create", admin.CreateGroup)
+		groupGroup.POST("/update", admin.UpdateGroup)
+		groupGroup.POST("/delete", admin.DeleteGroup)
+		groupGroup.POST("/assign-permissions", admin.AssignPermissionsToGroup)
+		groupGroup.POST("/permissions", admin.GetGroupPermissions)
+		groupGroup.POST("/add-user", admin.AddUserToGroup)
+		groupGroup.POST("/remove-user", admin.RemoveUserFromGroup)
+		groupGroup.POST("/users", admin.GetGroupUsers)
 	}
 }

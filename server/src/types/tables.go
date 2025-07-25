@@ -10,7 +10,7 @@ package types
 import "time"
 
 type ElnUsers struct {
-	UserId       string    `json:"userId" db:"user_id" gorm:"user_id"`       // 用户ID
+	UserId       int64     `json:"userId" db:"user_id" gorm:"user_id"`       // 用户ID
 	Username     string    `json:"username" db:"username" gorm:"username"`   // 用户名
 	RealName     string    `json:"realName" db:"real_name" gorm:"real_name"` // 用户昵称
 	Email        string    `json:"email" db:"email" gorm:"email"`
@@ -112,4 +112,37 @@ type ElnProject struct {
 // TableName 表名称
 func (*ElnProject) TableName() string {
 	return "eln_project"
+}
+
+// ElnUserGroup represents a user group in the system
+type ElnUserGroup struct {
+	UserId      int64     `json:"userId" db:"user_id" gorm:"user_id"` // 用户ID
+	GroupId     int64     `json:"groupId" db:"group_id" gorm:"group_id"`
+	GroupName   string    `json:"groupName" db:"group_name" gorm:"group_name"`
+	Description string    `json:"description" db:"description" gorm:"description"`
+	Status      int8      `json:"status" db:"status" gorm:"status"`
+	CreatedBy   int64     `json:"createdBy" db:"created_by" gorm:"created_by"`
+	Permissions string    `json:"permissions" db:"permissions" gorm:"permissions"`    // permission array
+	CreateAt    time.Time `json:"createAt,omitempty" db:"create_at" gorm:"create_at"` // creation time
+	UpdateAt    time.Time `json:"updateAt,omitempty" db:"update_at" gorm:"update_at"` // update time
+}
+
+// TableName returns the table name for ElnUserGroup
+func (*ElnUserGroup) TableName() string {
+	return "eln_user_group"
+}
+
+// ElnGroupPermission represents the association between a group and a permission
+type ElnGroupPermission struct {
+	GroupPermissionId int64     `json:"groupPermissionId" db:"group_permission_id" gorm:"primaryKey;column:group_permission_id"`
+	GroupId           int64     `json:"groupId" db:"group_id" gorm:"column:group_id"`
+	PermissionId      int64     `json:"permissionId" db:"permission_id" gorm:"column:permission_id"`
+	CreateAt          time.Time `json:"createAt,omitempty" db:"create_at" gorm:"column:create_at"`
+	UpdateAt          time.Time `json:"updateAt,omitempty" db:"update_at" gorm:"update_at"` // update time
+
+}
+
+// TableName returns the table name for ElnGroupPermission
+func (*ElnGroupPermission) TableName() string {
+	return "eln_group_permission"
 }

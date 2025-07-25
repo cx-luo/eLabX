@@ -3,9 +3,10 @@ import { h } from 'vue';
 import { useVbenVxeGrid, type VxeGridProps } from '#/adapter/vxe-table';
 import { $t } from '#/locales';
 import { Page, useVbenDrawer, type VbenFormProps } from '@vben/common-ui';
-import { LucideFilePenLine, LucideTrash2 } from '@vben/icons';
+import { LucideFilePenLine, LucidePencil, LucideTrash2 } from '@vben/icons';
 import { ElButton } from 'element-plus';
 import ProjectDrawer from './drawer.vue';
+import SetAuthDrawer from './set-auth.vue';
 import { deleteProjectApi, getProjectList, updateProjectApi } from '#/api';
 import { statusList } from '#/store';
 import { Icon } from '@iconify/vue';
@@ -84,13 +85,13 @@ const gridOptions: VxeGridProps = {
     {
       title: $t('admin.project.projectId'),
       field: 'projectId',
-      width: 100,
       fixed: 'left',
+      width:'auto',
     },
     {
       title: $t('admin.project.projectName'),
       field: 'projectName',
-      minWidth: 120,
+      width:'auto',
     },
     {
       title: $t('admin.project.createdBy'),
@@ -100,38 +101,38 @@ const gridOptions: VxeGridProps = {
     {
       title: $t('admin.project.description'),
       field: 'description',
-      minWidth: 200,
+      minWidth: 160,
     },
     {
       title: $t('ui.table.status'),
       field: 'status',
       slots: { default: 'status' },
-      width: 100,
+      width: 80,
     },
     {
       title: $t('admin.project.permissions'),
       field: 'permissions',
-      minWidth: 150,
+      minWidth: 120,
       showOverflow: true,
     },
     {
       title: $t('ui.table.createTime'),
       field: 'createAt',
       formatter: 'formatDateTime',
-      width: 160,
+      width:'auto',
     },
     {
       title: $t('ui.table.updateTime'),
       field: 'updateAt',
       formatter: 'formatDateTime',
-      width: 160,
+      width:'auto',
     },
     {
       title: $t('ui.table.action'),
       field: 'action',
       fixed: 'right',
       slots: { default: 'action' },
-      width: 80,
+      width:'120',
     },
   ],
 };
@@ -173,17 +174,33 @@ const [Drawer, drawerApi] = useVbenDrawer({
   },
 });
 
+const [AuthDrawer, authDrawerApi] = useVbenDrawer({
+  connectedComponent: SetAuthDrawer,
+  onClosed() {
+    const data = drawerApi.getData();
+    if (data && data.needRefresh) {
+      gridApi.query();
+    }
+  },
+});
+
 function openDrawer(create: boolean, row?: any) {
-  drawerApi.setData({
-    create,
-    row,
-  });
+  drawerApi.setData({ create, row });
   drawerApi.open();
+}
+
+function openAuthDrawer(row?: any) {
+  authDrawerApi.setData({ row });
+  authDrawerApi.open();
 }
 
 /* 创建 */
 function handleCreate() {
   openDrawer(true);
+}
+
+function handleSetAuth(row: any) {
+  openAuthDrawer(row);
 }
 
 /* 编辑 */
@@ -252,6 +269,7 @@ async function handleDelete(row: any) {
       </template>
 
       <template #action="{ row }">
+        <ElButton type="primary" link :icon="h(LucidePencil)" @click="() => handleSetAuth(row)" />
         <ElButton
           type="primary"
           link
@@ -277,5 +295,6 @@ async function handleDelete(row: any) {
       </template>
     </Grid>
     <Drawer />
+    <AuthDrawer />
   </Page>
 </template>
