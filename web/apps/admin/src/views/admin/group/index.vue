@@ -5,9 +5,9 @@ import { $t } from '#/locales';
 import { Page, useVbenDrawer, type VbenFormProps } from '@vben/common-ui';
 import { LucideFilePenLine, LucidePencil, LucideTrash2 } from '@vben/icons';
 import { ElButton } from 'element-plus';
-import ProjectDrawer from './drawer.vue';
+import GroupDrawer from './drawer.vue';
 import SetAuthDrawer from './set-auth.vue';
-import { deleteProjectApi, getProjectList, updateProjectApi } from '#/api';
+import { deleteGroupApi, getGroupListApi, updateGroupApi } from '#/api';
 import { statusList } from '#/store';
 import { Icon } from '@iconify/vue';
 import { useToast, POSITION } from 'vue-toastification';
@@ -71,7 +71,7 @@ const gridOptions: VxeGridProps = {
   proxyConfig: {
     ajax: {
       query: async ({ page }, formValues) => {
-        return await getProjectList({
+        return await getGroupListApi({
           page: page.currentPage,
           pageSize: page.pageSize,
           name: formValues.name,
@@ -83,23 +83,23 @@ const gridOptions: VxeGridProps = {
 
   columns: [
     {
-      title: $t('admin.project.projectId'),
-      field: 'projectId',
+      title: $t('admin.group.groupId'),
+      field: 'groupId',
       fixed: 'left',
       width: 'auto',
     },
     {
-      title: $t('admin.project.projectName'),
-      field: 'projectName',
+      title: $t('admin.group.groupName'),
+      field: 'groupName',
       width: 'auto',
     },
     {
-      title: $t('admin.project.createdBy'),
+      title: $t('admin.group.createdBy'),
       field: 'createdBy',
       minWidth: 120,
     },
     {
-      title: $t('admin.project.description'),
+      title: $t('admin.group.description'),
       field: 'description',
       minWidth: 160,
     },
@@ -110,7 +110,7 @@ const gridOptions: VxeGridProps = {
       width: 80,
     },
     {
-      title: $t('admin.project.permissions'),
+      title: $t('admin.group.permissions'),
       field: 'permissions',
       minWidth: 120,
       showOverflow: true,
@@ -146,7 +146,7 @@ async function handleStatusChanged(row: any, checked: boolean) {
   row.pending = true;
   row.status = checked ? 1 : 2;
   try {
-    await updateProjectApi({ ...row });
+    await updateGroupApi({ ...row });
 
     toast.success($t('ui.notification.update_success'), {
       timeout: 1000,
@@ -165,7 +165,7 @@ async function handleStatusChanged(row: any, checked: boolean) {
 }
 
 const [Drawer, drawerApi] = useVbenDrawer({
-  connectedComponent: ProjectDrawer,
+  connectedComponent: GroupDrawer,
   onClosed() {
     const data = drawerApi.getData();
     if (data && data.needRefresh) {
@@ -212,7 +212,7 @@ function handleEdit(row: any) {
 async function handleDelete(row: any) {
   row.pending = true;
   try {
-    await deleteProjectApi({ projectId: row.projectId });
+    await deleteGroupApi({ groupId: row.groupId });
 
     toast.success($t('ui.notification.delete_success'), {
       timeout: 1000,

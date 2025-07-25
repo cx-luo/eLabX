@@ -8,6 +8,8 @@
 package utils
 
 import (
+	"fmt"
+	"strconv"
 	"sync/atomic"
 	"time"
 )
@@ -48,4 +50,29 @@ func GenerateSnowflakeID() int64 {
 
 	// 组合时间戳和序列号
 	return now<<timestampShift | int64(sequence)
+}
+
+// GenRandInt generates a random int64 with the specified number of digits.
+// If n <= 0, returns 0. If n > 18, n is capped at 18 (max int64 digits).
+// GenRandInt generates a unique int64 using a snowflake-like rule, truncated to n digits if needed.
+func GenRandInt(n int) int64 {
+	id := GenerateSnowflakeID()
+	if n <= 0 {
+		return 0
+	}
+	if n > 18 {
+		n = 18
+	}
+	// Truncate or pad the ID to n digits
+	idStr := []rune(fmt.Sprintf("%018d", id)) // pad to 18 digits
+	start := 18 - n
+	if start < 0 {
+		start = 0
+	}
+	resultStr := string(idStr[start:])
+	result, err := strconv.ParseInt(resultStr, 10, 64)
+	if err != nil {
+		return id // fallback to original id if conversion fails
+	}
+	return result
 }

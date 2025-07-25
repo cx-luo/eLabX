@@ -3,7 +3,7 @@ import { computed, ref } from 'vue';
 import { useVbenDrawer } from '@vben/common-ui';
 import { $t } from '@vben/locales';
 import { useVbenForm } from '#/adapter/form';
-import { createProjectApi, updateProjectApi } from '#/api';
+import { createGroupApi, updateGroupApi } from '#/api';
 import { statusList } from '#/store';
 import { useToast, POSITION } from 'vue-toastification';
 
@@ -16,22 +16,21 @@ const getTitle = computed(() =>
     ? $t('ui.modal.create', { moduleName: $t('page.system.menu.module') })
     : $t('ui.modal.update', { moduleName: $t('page.system.menu.module') }),
 );
-
 const newSchema = ref([
   {
     component: 'Input',
-    fieldName: 'projectId',
-    label: $t('admin.project.projectId'),
-    rules: 'required',
+    fieldName: 'groupId',
+    label: $t('admin.group.groupId'),
     disabled: true,
+    rules: 'required',
     componentProps: {
       placeholder: $t('ui.placeholder.input'),
     },
   },
   {
     component: 'Input',
-    fieldName: 'projectName',
-    label: $t('admin.project.projectName'),
+    fieldName: 'groupName',
+    label: $t('admin.group.groupName'),
     rules: 'required',
     componentProps: {
       placeholder: $t('ui.placeholder.input'),
@@ -41,7 +40,7 @@ const newSchema = ref([
   {
     component: 'Input',
     fieldName: 'description',
-    label: $t('admin.project.description'),
+    label: $t('admin.group.description'),
     componentProps: {
       placeholder: $t('ui.placeholder.input'),
       allowClear: true,
@@ -50,21 +49,13 @@ const newSchema = ref([
   {
     component: 'InputNumber',
     fieldName: 'createdBy',
-    label: $t('admin.project.createdBy'),
+    label: $t('admin.group.createdBy'),
     componentProps: {
       placeholder: $t('ui.placeholder.input'),
       allowClear: true,
     },
   },
-  {
-    component: 'Input',
-    fieldName: 'permissions',
-    label: $t('admin.project.permissions'),
-    componentProps: {
-      placeholder: $t('ui.placeholder.input'),
-      allowClear: true,
-    },
-  },
+  // Permissions are usually set separately, so omit from main group form
   {
     component: 'RadioGroup',
     fieldName: 'status',
@@ -78,7 +69,6 @@ const newSchema = ref([
     },
   },
 ]);
-
 const [BaseForm, baseFormApi] = useVbenForm({
   showDefaultActions: false,
   // 所有表单项共用，可单独在表单内覆盖
@@ -88,9 +78,10 @@ const [BaseForm, baseFormApi] = useVbenForm({
       class: 'w-full',
     },
   },
+  // Add new group or modify group info
   schema: computed(() => {
     if (data.value?.create) {
-      return newSchema.value.filter((item) => item.fieldName !== 'projectId');
+      return newSchema.value.filter((item) => item.fieldName !== 'groupId');
     }
     return newSchema.value;
   }),
@@ -114,7 +105,7 @@ const [Drawer, drawerApi] = useVbenDrawer({
     const values = await baseFormApi.getValues();
 
     try {
-      await (data.value?.create ? createProjectApi(values) : updateProjectApi(values));
+      await (data.value?.create ? createGroupApi(values) : updateGroupApi(values));
 
       toast.success(data.value?.create ? $t('ui.notification.create_success') : $t('ui.notification.update_success'), {
         timeout: 1000,

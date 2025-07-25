@@ -114,9 +114,8 @@ func (*ElnProject) TableName() string {
 	return "eln_project"
 }
 
-// ElnUserGroup represents a user group in the system
-type ElnUserGroup struct {
-	UserId      int64     `json:"userId" db:"user_id" gorm:"user_id"` // 用户ID
+// ElnGroup represents a user group in the system
+type ElnGroup struct {
 	GroupId     int64     `json:"groupId" db:"group_id" gorm:"group_id"`
 	GroupName   string    `json:"groupName" db:"group_name" gorm:"group_name"`
 	Description string    `json:"description" db:"description" gorm:"description"`
@@ -127,22 +126,52 @@ type ElnUserGroup struct {
 	UpdateAt    time.Time `json:"updateAt,omitempty" db:"update_at" gorm:"update_at"` // update time
 }
 
+// TableName returns the table name for ElnGroup
+func (*ElnGroup) TableName() string {
+	return "eln_group"
+}
+
+// ElnUserGroup represents the association between a user and a group
+type ElnUserGroup struct {
+	UserId    int64     `json:"userId" db:"user_id" gorm:"column:user_id;primaryKey"`    // 用户ID
+	GroupId   int64     `json:"groupId" db:"group_id" gorm:"column:group_id;primaryKey"` // 组ID
+	Status    int8      `json:"status" db:"status" gorm:"column:status;default:1"`       // 状态 (1:启用, 0:禁用)
+	CreatedBy int64     `json:"createdBy" db:"created_by" gorm:"column:created_by"`      // 创建人ID
+	CreateAt  time.Time `json:"createAt" db:"create_at" gorm:"column:create_at"`         // 创建时间
+	UpdateAt  time.Time `json:"updateAt" db:"update_at" gorm:"column:update_at"`         // 更新时间
+}
+
 // TableName returns the table name for ElnUserGroup
 func (*ElnUserGroup) TableName() string {
 	return "eln_user_group"
 }
 
-// ElnGroupPermission represents the association between a group and a permission
-type ElnGroupPermission struct {
-	GroupPermissionId int64     `json:"groupPermissionId" db:"group_permission_id" gorm:"primaryKey;column:group_permission_id"`
-	GroupId           int64     `json:"groupId" db:"group_id" gorm:"column:group_id"`
-	PermissionId      int64     `json:"permissionId" db:"permission_id" gorm:"column:permission_id"`
-	CreateAt          time.Time `json:"createAt,omitempty" db:"create_at" gorm:"column:create_at"`
-	UpdateAt          time.Time `json:"updateAt,omitempty" db:"update_at" gorm:"update_at"` // update time
+// // ElnGroupPermission represents the association between a group and a permission
+// type ElnGroupPermission struct {
+// 	GroupPermissionId int64     `json:"groupPermissionId" db:"group_permission_id" gorm:"primaryKey;column:group_permission_id"`
+// 	GroupId           int64     `json:"groupId" db:"group_id" gorm:"column:group_id"`
+// 	PermissionId      int64     `json:"permissionId" db:"permission_id" gorm:"column:permission_id"`
+// 	CreateAt          time.Time `json:"createAt,omitempty" db:"create_at" gorm:"column:create_at"`
+// 	UpdateAt          time.Time `json:"updateAt,omitempty" db:"update_at" gorm:"update_at"` // update time
+// }
 
+// // TableName returns the table name for ElnGroupPermission
+// func (*ElnGroupPermission) TableName() string {
+// 	return "eln_group_permission"
+// }
+
+// ElnPermission represents a permission in the system
+type ElnPermission struct {
+	PermissionId   int64     `json:"permissionId" db:"permission_id" gorm:"primaryKey;column:permission_id"`
+	PermissionName string    `json:"permissionName" db:"permission_name" gorm:"column:permission_name"`
+	Description    string    `json:"description" db:"description" gorm:"column:description"`
+	Status         int8      `json:"status" db:"status" gorm:"column:status;default:1"`
+	CreatedBy      int64     `json:"createdBy" db:"created_by" gorm:"column:created_by"`
+	CreateAt       time.Time `json:"createAt,omitempty" db:"create_at" gorm:"column:create_at"`
+	UpdateAt       time.Time `json:"updateAt,omitempty" db:"update_at" gorm:"column:update_at"`
 }
 
-// TableName returns the table name for ElnGroupPermission
-func (*ElnGroupPermission) TableName() string {
-	return "eln_group_permission"
+// TableName returns the table name for ElnPermission
+func (*ElnPermission) TableName() string {
+	return "eln_permission"
 }

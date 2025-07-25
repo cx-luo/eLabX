@@ -13,11 +13,11 @@ import (
 	"eLabX/src/utils"
 	"errors"
 	"fmt"
-	"time"
-
-	"github.com/bwmarrin/snowflake"
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
+	"strconv"
+	"strings"
+	"time"
 )
 
 // GroupParam is used for creating and updating user groups
@@ -55,16 +55,16 @@ func GetGroupList(c *gin.Context) {
 		req.PageSize = 10
 	}
 	offset := (req.Page - 1) * req.PageSize
-	var groups []types.ElnUserGroup
+	var groups []types.ElnGroup
 	var total int64
 
 	// Count total number of groups
-	if err := dao.OBCursor.Model(&types.ElnUserGroup{}).Count(&total).Error; err != nil {
+	if err := dao.OBCursor.Model(&types.ElnGroup{}).Count(&total).Error; err != nil {
 		utils.InternalRequestErr(c, err)
 		return
 	}
 
-	db := dao.OBCursor.Model(&types.ElnUserGroup{})
+	db := dao.OBCursor.Model(&types.ElnGroup{})
 	if req.Status != 0 {
 		db = db.Where("status = ?", req.Status)
 	}
@@ -85,8 +85,8 @@ func GetGroupDetail(c *gin.Context) {
 		utils.BadRequestErr(c, err)
 		return
 	}
-	var group types.ElnUserGroup
-	err := dao.OBCursor.Model(&types.ElnUserGroup{}).Where("group_id = ?", param.GroupId).First(&group).Error
+	var group types.ElnGroup
+	err := dao.OBCursor.Model(&types.ElnGroup{}).Where("group_id = ?", param.GroupId).First(&group).Error
 	if err != nil {
 		utils.InternalRequestErr(c, err)
 		return
@@ -102,14 +102,8 @@ func CreateGroup(c *gin.Context) {
 		return
 	}
 
-	node, err := snowflake.NewNode(2)
-	if err != nil {
-		utils.InternalRequestErr(c, err)
-		return
-	}
-
-	group := types.ElnUserGroup{
-		GroupId:     node.Generate().Int64(),
+	group := types.ElnGroup{
+		GroupId:     utils.GenRandInt(10),
 		GroupName:   param.GroupName,
 		Description: param.Description,
 		Status:      1,
@@ -117,7 +111,7 @@ func CreateGroup(c *gin.Context) {
 		CreateAt:    time.Now(),
 		UpdateAt:    time.Now(),
 	}
-	if err := dao.OBCursor.Model(&types.ElnUserGroup{}).Create(&group).Error; err != nil {
+	if err := dao.OBCursor.Model(&types.ElnGroup{}).Create(&group).Error; err != nil {
 		utils.InternalRequestErr(c, err)
 		return
 	}
@@ -126,13 +120,13 @@ func CreateGroup(c *gin.Context) {
 
 // UpdateGroup updates the information of a user group
 func UpdateGroup(c *gin.Context) {
-	var param types.ElnUserGroup
+	var param types.ElnGroup
 	if err := c.ShouldBindJSON(&param); err != nil {
 		utils.BadRequestErr(c, err)
 		return
 	}
 
-	if err := dao.OBCursor.Where("group_id = ?", param.GroupId).Updates(&types.ElnUserGroup{
+	if err := dao.OBCursor.Where("group_id = ?", param.GroupId).Updates(&types.ElnGroup{
 		GroupName:   param.GroupName,
 		Description: param.Description,
 		Status:      param.Status,
@@ -158,42 +152,41 @@ func DeleteGroup(c *gin.Context) {
 		utils.BadRequestErr(c, err)
 		return
 	}
-	if err := dao.OBCursor.Model(&types.ElnUserGroup{}).Where("group_id = ?", param.GroupId).Update("status", 0).Error; err != nil {
+	if err := dao.OBCursor.Model(&types.ElnGroup{}).Where("group_id = ?", param.GroupId).Update("status", 0).Error; err != nil {
 		utils.InternalRequestErr(c, err)
 		return
 	}
 	utils.Success(c, "Success")
 }
 
-// AssignPermissionsToGroup assigns permissions to a user group
+// AssignPermissionsToGroup assigns permissions to a user group.
+// One user can have several groups, and each group can have multiple permissions.
 func AssignPermissionsToGroup(c *gin.Context) {
-	var param PermissionParam
+	// PermissionParam should contain GroupId and PermissionIds ([]int64)
+	var param struct {
+		GroupId       int64   `json:"groupId" binding:"required"`
+		PermissionIds []int64 `json:"permissions" binding:"required"`
+	}
 	if err := c.ShouldBindJSON(&param); err != nil {
 		utils.BadRequestErr(c, err)
 		return
 	}
 
-	// First, delete existing permissions for the group
-	if err := dao.OBCursor.Where("group_id = ?", param.GroupId).Delete(&types.ElnGroupPermission{}).Error; err != nil {
+	// Convert permission IDs to comma-separated string
+	var permStrs []string
+	for _, permId := range param.PermissionIds {
+		permStrs = append(permStrs, strconv.FormatInt(permId, 10))
+	}
+	permissions := strings.Join(permStrs, ",")
+
+	// Update the permissions field for the group
+	if err := dao.OBCursor.Model(&types.ElnGroup{}).
+		Where("group_id = ?", param.GroupId).
+		Update("permissions", permissions).Error; err != nil {
 		utils.InternalRequestErr(c, err)
 		return
 	}
 
-	// Batch insert new permissions
-	var groupPerms []types.ElnGroupPermission
-	for _, permId := range param.PermissionIds {
-		groupPerms = append(groupPerms, types.ElnGroupPermission{
-			GroupId:      param.GroupId,
-			PermissionId: permId,
-			CreateAt:     time.Now(),
-		})
-	}
-	if len(groupPerms) > 0 {
-		if err := dao.OBCursor.Model(&types.ElnGroupPermission{}).Create(&groupPerms).Error; err != nil {
-			utils.InternalRequestErr(c, err)
-			return
-		}
-	}
 	utils.Success(c, "Success")
 }
 
@@ -206,13 +199,31 @@ func GetGroupPermissions(c *gin.Context) {
 		utils.BadRequestErr(c, err)
 		return
 	}
-	var perms []types.ElnGroupPermission
-	err := dao.OBCursor.Table("eln_permission").
-		Select("eln_permission.*").
-		Joins("JOIN eln_group_permission ON eln_permission.permission_id = eln_group_permission.permission_id").
-		Where("eln_group_permission.group_id = ?", param.GroupId).
-		Find(&perms).Error
-	if err != nil {
+	// Get the group to fetch its permissions field
+	var group types.ElnGroup
+	if err := dao.OBCursor.Model(&types.ElnGroup{}).Where("group_id = ?", param.GroupId).First(&group).Error; err != nil {
+		utils.InternalRequestErr(c, err)
+		return
+	}
+	// If no permissions, return empty array
+	if strings.TrimSpace(group.Permissions) == "" {
+		utils.SuccessWithData(c, "Success", []types.ElnPermission{})
+		return
+	}
+	// Parse permissions string to []int64
+	permStrs := strings.Split(group.Permissions, ",")
+	var permIds []int64
+	for _, s := range permStrs {
+		if id, err := strconv.ParseInt(strings.TrimSpace(s), 10, 64); err == nil {
+			permIds = append(permIds, id)
+		}
+	}
+	if len(permIds) == 0 {
+		utils.SuccessWithData(c, "Success", []types.ElnPermission{})
+		return
+	}
+	var perms []types.ElnPermission
+	if err := dao.OBCursor.Model(&types.ElnPermission{}).Where("permission_id IN ?", permIds).Find(&perms).Error; err != nil {
 		utils.InternalRequestErr(c, err)
 		return
 	}

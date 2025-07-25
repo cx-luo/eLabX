@@ -13,5 +13,13 @@
     "create": "新建项目",
     "delete": "删除项目",
     "update": "修改项目"
+  },
+  "group": {
+    "groupId": "分组ID",
+    "groupName": "分组名称",
+    "createdBy": "创建人",
+    "description": "分组描述",
+    "status": "状态",
+    "permissions": "权限"
   }
 }
