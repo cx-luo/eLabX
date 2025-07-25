@@ -5,9 +5,9 @@ import { $t } from '#/locales';
 import { Page, useVbenDrawer, type VbenFormProps } from '@vben/common-ui';
 import { LucideFilePenLine, LucideTrash2 } from '@vben/icons';
 import { ElButton } from 'element-plus';
-import MenuDrawer from './drawer.vue';
-import { deleteMenuApi, getProjectList, updateMenuApi, updateProject } from '#/api';
-import { MenuType, statusList } from '#/store';
+import ProjectDrawer from './drawer.vue';
+import { deleteProjectApi, getProjectList, updateProjectApi } from '#/api';
+import { statusList } from '#/store';
 import { Icon } from '@iconify/vue';
 import { useToast, POSITION } from 'vue-toastification';
 import { hasPermission } from '#/directives/permissions';
@@ -56,6 +56,9 @@ const gridOptions: VxeGridProps = {
   exportConfig: {},
   rowConfig: {
     isHover: true,
+    keyField: 'projectId',
+  },
+  cellConfig: {
     height: 56,
   },
   stripe: true,
@@ -82,6 +85,7 @@ const gridOptions: VxeGridProps = {
       title: $t('admin.project.projectId'),
       field: 'projectId',
       width: 100,
+      fixed: 'left',
     },
     {
       title: $t('admin.project.projectName'),
@@ -108,6 +112,7 @@ const gridOptions: VxeGridProps = {
       title: $t('admin.project.permissions'),
       field: 'permissions',
       minWidth: 150,
+      showOverflow: true,
     },
     {
       title: $t('ui.table.createTime'),
@@ -126,6 +131,7 @@ const gridOptions: VxeGridProps = {
       field: 'action',
       fixed: 'right',
       slots: { default: 'action' },
+      width: 80,
     },
   ],
 };
@@ -139,7 +145,7 @@ async function handleStatusChanged(row: any, checked: boolean) {
   row.pending = true;
   row.status = checked ? 1 : 2;
   try {
-    await updateMenuApi({ pro: row.id, ...row });
+    await updateProjectApi({ ...row });
 
     toast.success($t('ui.notification.update_success'), {
       timeout: 1000,
@@ -158,7 +164,7 @@ async function handleStatusChanged(row: any, checked: boolean) {
 }
 
 const [Drawer, drawerApi] = useVbenDrawer({
-  connectedComponent: MenuDrawer,
+  connectedComponent: ProjectDrawer,
   onClosed() {
     const data = drawerApi.getData();
     if (data && data.needRefresh) {
@@ -189,7 +195,7 @@ function handleEdit(row: any) {
 async function handleDelete(row: any) {
   row.pending = true;
   try {
-    await updateProject(row);
+    await deleteProjectApi({ projectId: row.projectId });
 
     toast.success($t('ui.notification.delete_success'), {
       timeout: 1000,
@@ -225,12 +231,6 @@ async function handleDelete(row: any) {
 
       <template #title="{ row }">
         <span :style="{ marginRight: '15px' }">{{ $t(row.meta.name) }}</span>
-      </template>
-
-      <template #type="{ row }">
-        <el-tag v-if="row.type === MenuType.FOLDER" type="warning"> 目录 </el-tag>
-        <el-tag v-if="row.type === MenuType.MENU" type="success"> 菜单 </el-tag>
-        <el-tag v-if="row.type === MenuType.BUTTON" type="danger"> 按钮 </el-tag>
       </template>
 
       <template #icon="{ row }">

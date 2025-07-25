@@ -3,7 +3,7 @@ import { computed, ref } from 'vue';
 import { useVbenDrawer } from '@vben/common-ui';
 import { $t } from '@vben/locales';
 import { useVbenForm } from '#/adapter/form';
-import { createProject, updateProject } from '#/api';
+import { createProjectApi, updateProjectApi } from '#/api';
 import { statusList } from '#/store';
 import { useToast, POSITION } from 'vue-toastification';
 
@@ -29,6 +29,16 @@ const [BaseForm, baseFormApi] = useVbenForm({
   schema: [
     {
       component: 'Input',
+      fieldName: 'projectId',
+      label: $t('admin.project.projectId'),
+      rules: 'required',
+      disabled: true,
+      componentProps: {
+        placeholder: $t('ui.placeholder.input'),
+      },
+    },
+    {
+      component: 'Input',
       fieldName: 'projectName',
       label: $t('admin.project.projectName'),
       rules: 'required',
@@ -47,7 +57,7 @@ const [BaseForm, baseFormApi] = useVbenForm({
       },
     },
     {
-      component: 'Input',
+      component: 'InputNumber',
       fieldName: 'createdBy',
       label: $t('admin.project.createdBy'),
       componentProps: {
@@ -55,15 +65,15 @@ const [BaseForm, baseFormApi] = useVbenForm({
         allowClear: true,
       },
     },
-    // {
-    //   component: 'Input',
-    //   fieldName: 'permissions',
-    //   label: $t('admin.project.permissions'),
-    //   componentProps: {
-    //     placeholder: $t('ui.placeholder.input'),
-    //     allowClear: true,
-    //   },
-    // },
+    {
+      component: 'Input',
+      fieldName: 'permissions',
+      label: $t('admin.project.permissions'),
+      componentProps: {
+        placeholder: $t('ui.placeholder.input'),
+        allowClear: true,
+      },
+    },
     {
       component: 'RadioGroup',
       fieldName: 'status',
@@ -96,10 +106,8 @@ const [Drawer, drawerApi] = useVbenDrawer({
     // 获取表单数据
     const values = await baseFormApi.getValues();
 
-    console.log(getTitle.value, values);
-
     try {
-      await (data.value?.create ? createProject(values) : updateProject(values));
+      await (data.value?.create ? createProjectApi(values) : updateProjectApi(values));
 
       toast.success(data.value?.create ? $t('ui.notification.create_success') : $t('ui.notification.update_success'), {
         timeout: 1000,

@@ -12,9 +12,12 @@ import (
 	"eLabX/src/types"
 	"eLabX/src/utils"
 	"errors"
+	"fmt"
+	"time"
+
 	"github.com/bwmarrin/snowflake"
 	"github.com/gin-gonic/gin"
-	"time"
+	"gorm.io/gorm"
 )
 
 // ProjectParam 用于创建和更新项目的参数
@@ -57,8 +60,11 @@ func GetProjectList(c *gin.Context) {
 		return
 	}
 
-	// 分页查询
-	if err := dao.OBCursor.Model(&types.ElnProject{}).Where("status = ?", req.Status).Limit(req.PageSize).Offset(offset).Find(&projects).Error; err != nil {
+	db := dao.OBCursor.Model(&types.ElnProject{})
+	if req.Status != 0 {
+		db = db.Where("status = ?", req.Status)
+	}
+	if err := db.Limit(req.PageSize).Offset(offset).Find(&projects).Error; err != nil {
 		utils.InternalRequestErr(c, err)
 		return
 	}
@@ -121,7 +127,17 @@ func UpdateProject(c *gin.Context) {
 		return
 	}
 
-	if err := dao.OBCursor.Model(&types.ElnProject{}).Where("project_id = ?", param.ProjectId).Updates(param).Error; err != nil {
+	if err := dao.OBCursor.Where("project_id = ?", param.ProjectId).Updates(&types.ElnProject{
+		ProjectName: param.ProjectName,
+		Description: param.Description,
+		CreatedBy:   param.CreatedBy,
+		Permissions: param.Permissions,
+		Status:      param.Status,
+	}).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			utils.NotFoundError(c, fmt.Errorf("project Not Found"))
+			return
+		}
 		utils.InternalRequestErr(c, err)
 		return
 	}
@@ -137,7 +153,7 @@ func DeleteProject(c *gin.Context) {
 		utils.BadRequestErr(c, err)
 		return
 	}
-	// 将项目的 status 字段设置为 0（软删除）
+	// Soft delete the project by setting the status field to 0
 	if err := dao.OBCursor.Model(&types.ElnProject{}).Where("project_id = ?", param.ProjectId).Update("status", 0).Error; err != nil {
 		utils.InternalRequestErr(c, err)
 		return

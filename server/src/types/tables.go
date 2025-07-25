@@ -103,10 +103,10 @@ type ElnProject struct {
 	ProjectName string    `json:"projectName" db:"project_name" gorm:"project_name"`
 	CreatedBy   int64     `json:"createdBy" db:"created_by" gorm:"created_by"`
 	Description string    `json:"description" db:"description" gorm:"description"`
-	Status      int8      `json:"status" db:"status" gorm:"status"`
-	Permissions string    `json:"permissions" db:"permissions" gorm:"permissions"` // 用户权限数组
-	CreateAt    time.Time `json:"createAt" db:"create_at" gorm:"create_at"`        // 创建时间
-	UpdateAt    time.Time `json:"updateAt" db:"update_at" gorm:"update_at"`        // 更新时间
+	Status      int16     `json:"status" db:"status" gorm:"status"`
+	Permissions string    `json:"permissions" db:"permissions" gorm:"permissions"`    // 用户权限数组
+	CreateAt    time.Time `json:"createAt,omitempty" db:"create_at" gorm:"create_at"` // 创建时间
+	UpdateAt    time.Time `json:"updateAt,omitempty" db:"update_at" gorm:"update_at"` // 更新时间
 }
 
 // TableName 表名称
