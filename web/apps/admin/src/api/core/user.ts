@@ -4,7 +4,7 @@ import { requestClient } from '#/api/request';
 
 export namespace UserApi {
   export interface ElnUser {
-    userId: number;
+    userId: number | undefined | null;
     username: string;
     realName: string;
     email: string;
@@ -70,5 +70,5 @@ export const deleteUserApi = async (id: number) => {
  * @returns 用户列表
  */
 export const getUserListWithFilterApi = async (param: any) => {
-  return await requestClient.post<UserApi.ElnUser[]>('/system/user/list/filter', param);
+  return await requestClient.post<{ items: UserApi.ElnUser[]; total: number }>('/system/user/list/filter', param);
 };

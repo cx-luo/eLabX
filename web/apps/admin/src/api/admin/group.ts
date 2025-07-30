@@ -1,4 +1,5 @@
 import { requestClient } from '#/api/request';
+import type { TreeKey } from 'element-plus/es/components/tree/src/tree.type';
 
 /**
  * Get group list with pagination
@@ -44,7 +45,7 @@ export function deleteGroupApi(params: { groupId: string | number }) {
  * Assign permissions to a group
  * @param data Object containing groupId and permissions array
  */
-export function assignPermissionsToGroupApi(data: { groupId: string | number; permissions: string[] }) {
+export function assignPermissionsToGroupApi(data: { groupId: string | number; permissions: TreeKey[] }) {
   return requestClient.post('/admin/group/assign-permissions', data);
 }
 
@@ -60,7 +61,7 @@ export function getGroupPermissionsApi(params: { groupId: string | number }) {
  * Add user to a group
  * @param data Object containing groupId and userId
  */
-export function addUserToGroupApi(data: { groupId: string | number; userId: string | number }) {
+export function addUserToGroupApi(data: { groupId: string | number; userId: TreeKey[] }) {
   return requestClient.post('/admin/group/add-user', data);
 }
 
@@ -68,7 +69,7 @@ export function addUserToGroupApi(data: { groupId: string | number; userId: stri
  * Remove user from a group
  * @param data Object containing groupId and userId
  */
-export function removeUserFromGroupApi(data: { groupId: string | number; userId: string | number }) {
+export function removeUserFromGroupApi(data: { groupId: string | number; userId: TreeKey[] }) {
   return requestClient.post('/admin/group/remove-user', data);
 }
 

@@ -212,7 +212,7 @@ func GetGroupPermissions(c *gin.Context) {
 	}
 	// If no permissions, return empty array
 	if strings.TrimSpace(group.Permissions) == "" {
-		utils.SuccessWithData(c, "Success", []types.ElnPermission{})
+		utils.SuccessWithData(c, "Success", gin.H{"items": []types.ElnPermission{}})
 		return
 	}
 	// Parse permissions string to []int64
@@ -224,7 +224,7 @@ func GetGroupPermissions(c *gin.Context) {
 		}
 	}
 	if len(permIds) == 0 {
-		utils.SuccessWithData(c, "Success", []types.ElnPermission{})
+		utils.SuccessWithData(c, "Success", gin.H{"items": []types.ElnPermission{}})
 		return
 	}
 	var perms []types.ElnPermission
@@ -232,35 +232,33 @@ func GetGroupPermissions(c *gin.Context) {
 		utils.InternalRequestErr(c, err)
 		return
 	}
-	utils.SuccessWithData(c, "Success", perms)
+	utils.SuccessWithData(c, "Success", gin.H{"items": perms})
 }
 
 // AddUserToGroup adds a user to a user group
 func AddUserToGroup(c *gin.Context) {
 	var param struct {
-		GroupId int64 `json:"groupId" binding:"required"`
-		UserId  int64 `json:"userId" binding:"required"`
+		GroupId int64   `json:"groupId" binding:"required"`
+		UserId  []int64 `json:"userId" binding:"required"`
 	}
 	if err := c.ShouldBindJSON(&param); err != nil {
 		utils.BadRequestErr(c, err)
 		return
 	}
-	// Check if the user is already in the group
-	var count int64
-	dao.OBCursor.Model(&types.ElnUserGroup{}).Where("group_id = ? AND user_id = ?", param.GroupId, param.UserId).Count(&count)
-	if count > 0 {
-		utils.BadRequestErr(c, errors.New("user already in group"))
-		return
+
+	// Convert []int64 to []string for strings.Join
+	userIdStrs := make([]string, len(param.UserId))
+	for i, id := range param.UserId {
+		userIdStrs[i] = strconv.FormatInt(id, 10)
 	}
-	userGroup := types.ElnUserGroup{
-		GroupId:  param.GroupId,
-		UserId:   param.UserId,
-		CreateAt: time.Now(),
-	}
-	if err := dao.OBCursor.Model(&types.ElnUserGroup{}).Create(&userGroup).Error; err != nil {
+	users := strings.Join(userIdStrs, ",")
+	// Update the users field for the group instead of creating a new group
+	if err := dao.OBCursor.Model(&types.ElnGroup{}).Where("group_id = ?", param.GroupId).
+		Update("users", users).Error; err != nil {
 		utils.InternalRequestErr(c, err)
 		return
 	}
+
 	utils.Success(c, "Success")
 }
 
@@ -274,7 +272,7 @@ func RemoveUserFromGroup(c *gin.Context) {
 		utils.BadRequestErr(c, err)
 		return
 	}
-	if err := dao.OBCursor.Where("group_id = ? AND user_id = ?", param.GroupId, param.UserId).Delete(&types.ElnUserGroup{}).Error; err != nil {
+	if err := dao.OBCursor.Where("group_id = ? AND user_id = ?", param.GroupId, param.UserId).Delete(&types.ElnGroup{}).Error; err != nil {
 		utils.InternalRequestErr(c, err)
 		return
 	}
@@ -290,15 +288,25 @@ func GetGroupUsers(c *gin.Context) {
 		utils.BadRequestErr(c, err)
 		return
 	}
+
+	var group struct {
+		Users string `gorm:"column:users"`
+	}
+	err := dao.OBCursor.Table("eln_group").Select("users").Where("group_id = ?", param.GroupId).Take(&group).Error
+	if err != nil {
+		utils.InternalRequestErr(c, err)
+		return
+	}
+
 	var users []types.ElnUsers
-	err := dao.OBCursor.Table("eln_users").
-		Select("eln_users.user_id, eln_users.username, eln_users.real_name, eln_users.email, eln_users.avatar, eln_users.roles, eln_users.permissions, eln_users.status, eln_users.group_id, eln_users.create_at, eln_users.update_at").
-		Joins("JOIN eln_user_group ON eln_users.user_id = eln_user_group.user_id").
-		Where("eln_user_group.group_id = ? and eln_users.status = 1", param.GroupId).
+	err = dao.OBCursor.Table("eln_users").
+		Select("eln_users.user_id, eln_users.username, eln_users.real_name, eln_users.email, eln_users.avatar, eln_users.roles, eln_users.status, eln_users.group_id, eln_users.create_at, eln_users.update_at").
+		Where("eln_users.user_id in ? and eln_users.status = 1", strings.Split(group.Users, ",")).
 		Find(&users).Error
 	if err != nil {
 		utils.InternalRequestErr(c, err)
 		return
 	}
+
 	utils.SuccessWithData(c, "Success", gin.H{"items": users})
 }

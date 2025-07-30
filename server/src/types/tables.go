@@ -123,6 +123,7 @@ type ElnGroup struct {
 	Status      int8      `json:"status" db:"status" gorm:"status"`
 	CreatedBy   int64     `json:"createdBy" db:"created_by" gorm:"created_by"`
 	Permissions string    `json:"permissions" db:"permissions" gorm:"permissions"`    // permission array
+	Users       string    `json:"users" db:"users" gorm:"users"`                      // permission array
 	CreateAt    time.Time `json:"createAt,omitempty" db:"create_at" gorm:"create_at"` // creation time
 	UpdateAt    time.Time `json:"updateAt,omitempty" db:"update_at" gorm:"update_at"` // update time
 }

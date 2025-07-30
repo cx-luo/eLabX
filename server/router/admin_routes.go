@@ -38,4 +38,12 @@ func registerAdminRoutes(r *gin.Engine) {
 		groupGroup.POST("/remove-user", admin.RemoveUserFromGroup)
 		groupGroup.POST("/users", admin.GetGroupUsers)
 	}
+
+	permissionGroup := adminGroup.Group("/permission")
+	{
+		permissionGroup.POST("/list", admin.GetPermissionList)
+		permissionGroup.POST("/create", admin.CreatePermission)
+		permissionGroup.POST("/update", admin.UpdatePermission)
+		permissionGroup.POST("/delete", admin.DeletePermission)
+	}
 }
