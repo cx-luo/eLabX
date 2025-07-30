@@ -1,20 +1,74 @@
 <script lang="ts" setup>
 import { computed, ref } from 'vue';
-import { useVbenDrawer, z } from '@vben/common-ui';
+import { useVbenDrawer } from '@vben/common-ui';
 import { $t } from '@vben/locales';
 import { useVbenForm } from '#/adapter/form';
-import { createRoleApi, updateRoleApi } from '#/api';
+import { createGroupApi, updateGroupApi } from '#/api';
 import { statusList } from '#/store';
 import { useToast, POSITION } from 'vue-toastification';
 
 const toast = useToast();
+
 const data = ref();
+
 const getTitle = computed(() =>
   data.value?.create
-    ? $t('ui.modal.create', { moduleName: $t('page.system.role.module') })
-    : $t('ui.modal.update', { moduleName: $t('page.system.role.module') }),
+    ? $t('ui.modal.create', { moduleName: $t('page.system.menu.module') })
+    : $t('ui.modal.update', { moduleName: $t('page.system.menu.module') }),
 );
-
+const newSchema = ref([
+  {
+    component: 'Input',
+    fieldName: 'groupId',
+    label: $t('admin.group.groupId'),
+    disabled: true,
+    rules: 'required',
+    componentProps: {
+      placeholder: $t('ui.placeholder.input'),
+    },
+  },
+  {
+    component: 'Input',
+    fieldName: 'groupName',
+    label: $t('admin.group.groupName'),
+    rules: 'required',
+    componentProps: {
+      placeholder: $t('ui.placeholder.input'),
+      allowClear: true,
+    },
+  },
+  {
+    component: 'Input',
+    fieldName: 'description',
+    label: $t('admin.group.description'),
+    componentProps: {
+      placeholder: $t('ui.placeholder.input'),
+      allowClear: true,
+    },
+  },
+  {
+    component: 'InputNumber',
+    fieldName: 'createdBy',
+    label: $t('admin.group.createdBy'),
+    componentProps: {
+      placeholder: $t('ui.placeholder.input'),
+      allowClear: true,
+    },
+  },
+  // Permissions are usually set separately, so omit from main group form
+  {
+    component: 'RadioGroup',
+    fieldName: 'status',
+    defaultValue: 2,
+    label: $t('ui.table.status'),
+    rules: 'selectRequired',
+    componentProps: {
+      optionType: 'button',
+      class: 'flex flex-wrap',
+      options: statusList,
+    },
+  },
+]);
 const [BaseForm, baseFormApi] = useVbenForm({
   showDefaultActions: false,
   // 所有表单项共用，可单独在表单内覆盖
@@ -24,61 +78,13 @@ const [BaseForm, baseFormApi] = useVbenForm({
       class: 'w-full',
     },
   },
-  schema: [
-    {
-      component: 'Input',
-      fieldName: 'name',
-      label: $t('page.system.role.name'),
-      componentProps: {
-        placeholder: $t('ui.placeholder.input'),
-        allowClear: true,
-      },
-      rules: z.string().min(1, { message: $t('ui.formRules.required') }),
-    },
-    {
-      component: 'InputNumber',
-      fieldName: 'code',
-      label: $t('page.system.role.code'),
-      componentProps: {
-        placeholder: $t('ui.placeholder.input'),
-        allowClear: true,
-      },
-      rules: 'required',
-    },
-    {
-      component: 'InputNumber',
-      fieldName: 'sort',
-      label: $t('ui.table.sortId'),
-      componentProps: {
-        placeholder: $t('ui.placeholder.input'),
-        allowClear: true,
-      },
-    },
-    {
-      component: 'Input',
-      fieldName: 'remark',
-      label: $t('ui.table.remark'),
-      componentProps: {
-        type: 'textarea',
-        autosize: true,
-        rows: 5,
-        placeholder: $t('ui.placeholder.input'),
-        allowClear: true,
-      },
-    },
-    {
-      component: 'RadioGroup',
-      fieldName: 'status',
-      defaultValue: 1,
-      label: $t('ui.table.status'),
-      rules: 'selectRequired',
-      componentProps: {
-        optionType: 'button',
-        class: 'flex flex-wrap', // 如果选项过多，可以添加class来自动折叠
-        options: statusList,
-      },
-    },
-  ],
+  // Add new group or modify group info
+  schema: computed(() => {
+    if (data.value?.create) {
+      return newSchema.value.filter((item) => item.fieldName !== 'groupId');
+    }
+    return newSchema.value;
+  }),
 });
 
 const [Drawer, drawerApi] = useVbenDrawer({
@@ -99,7 +105,7 @@ const [Drawer, drawerApi] = useVbenDrawer({
     const values = await baseFormApi.getValues();
 
     try {
-      await (data.value?.create ? createRoleApi(values) : updateRoleApi({ id: data.value.row.id, ...values }));
+      await (data.value?.create ? createGroupApi(values) : updateGroupApi(values));
 
       toast.success(data.value?.create ? $t('ui.notification.create_success') : $t('ui.notification.update_success'), {
         timeout: 1000,
@@ -127,11 +133,6 @@ const [Drawer, drawerApi] = useVbenDrawer({
     if (isOpen) {
       // 获取传入的数据
       data.value = drawerApi.getData<Record<string, any>>();
-
-      if (data.value?.row?.meta && data.value?.row?.meta?.authority) {
-        const authority = data.value.row.meta.authority;
-        data.value.row.meta.authority = authority.join(',');
-      }
 
       // 为表单赋值
       baseFormApi.setValues(data.value?.row);

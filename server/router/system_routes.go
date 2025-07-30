@@ -9,7 +9,6 @@ package router
 
 import (
 	"eLabX/src/api/system"
-	"eLabX/src/api/user"
 	"github.com/gin-gonic/gin"
 )
 
@@ -34,8 +33,9 @@ func registerSystemRoutes(r *gin.Engine) {
 
 	userManagerGroup := systemGroup.Group("/user")
 	{
-		userManagerGroup.POST("/reset-passwd", user.ResetPwd)
+		userManagerGroup.GET("/info", system.GetUserInfo)
 		userManagerGroup.POST("/list", system.GetSystemUserList)
+		userManagerGroup.POST("/list/filter", system.GetUserListWithFilter)
 	}
 
 	roleGroup := systemGroup.Group("/role")

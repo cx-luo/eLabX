@@ -2,8 +2,8 @@ import type { RouteRecordRaw } from 'vue-router';
 
 import {
   VBEN_ANT_PREVIEW_URL,
-  VBEN_DOC_URL,
-  VBEN_GITHUB_URL,
+  ELABX_DOC_URL,
+  ELABX_GITHUB_URL,
   VBEN_LOGO_URL,
   VBEN_NAIVE_PREVIEW_URL,
 } from '@vben/constants';
@@ -29,7 +29,7 @@ const routes: RouteRecordRaw[] = [
         component: IFrameView,
         meta: {
           icon: 'lucide:book-open-text',
-          link: VBEN_DOC_URL,
+          link: ELABX_DOC_URL,
           title: $t('demos.vben.document'),
         },
       },
@@ -39,7 +39,7 @@ const routes: RouteRecordRaw[] = [
         component: IFrameView,
         meta: {
           icon: 'mdi:github',
-          link: VBEN_GITHUB_URL,
+          link: ELABX_GITHUB_URL,
           title: 'Github',
         },
       },

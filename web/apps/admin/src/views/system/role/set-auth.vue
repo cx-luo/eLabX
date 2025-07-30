@@ -16,6 +16,7 @@ import type { TreeKey } from 'element-plus/es/components/tree/src/tree.type.mjs'
 import { useToast, POSITION } from 'vue-toastification';
 import { $t } from '@vben/locales';
 import { nextTick } from 'vue';
+import { Icon } from '@iconify/vue';
 
 const toast = useToast();
 const data = ref();
@@ -265,9 +266,7 @@ function setLoading(loading: boolean) {
           >
             <template #default="{ data }">
               <div class="flex items-center">
-                <el-icon v-if="data.meta.icon" class="mr-2">
-                  <component :is="data.meta.icon" />
-                </el-icon>
+                <Icon v-if="data.meta.icon !== undefined" :icon="data.meta.icon" class="mr-2" />
                 <span>{{ data.meta.name }}</span>
               </div>
             </template>

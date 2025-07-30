@@ -10,9 +10,9 @@ package types
 import "time"
 
 type ElnUsers struct {
-	UserId       int64     `json:"userId" db:"user_id" gorm:"user_id"`       // 用户ID
-	Username     string    `json:"username" db:"username" gorm:"username"`   // 用户名
-	RealName     string    `json:"realName" db:"real_name" gorm:"real_name"` // 用户昵称
+	UserId       int64     `json:"userId" db:"user_id" gorm:"column:user_id;primaryKey"` // 用户ID
+	Username     string    `json:"username" db:"username" gorm:"username"`               // 用户名
+	RealName     string    `json:"realName" db:"real_name" gorm:"real_name"`             // 用户昵称
 	Email        string    `json:"email" db:"email" gorm:"email"`
 	IpAddr       string    `json:"ipAddr" db:"ip_addr" gorm:"ip_addr"`
 	PasswordHash string    `json:"passwordHash" db:"password_hash" gorm:"password_hash"`
@@ -20,6 +20,7 @@ type ElnUsers struct {
 	Roles        string    `json:"roles" db:"roles" gorm:"roles"`                   // 用户角色数组
 	Permissions  string    `json:"permissions" db:"permissions" gorm:"permissions"` // 用户权限数组
 	Status       int64     `json:"status" db:"status" gorm:"status"`
+	GroupId      string    `json:"groupId" db:"group_id" gorm:"group_id"`    // 组ID
 	CreateAt     time.Time `json:"createAt" db:"create_at" gorm:"create_at"` // 创建时间
 	UpdateAt     time.Time `json:"updateAt" db:"update_at" gorm:"update_at"` // 更新时间
 }

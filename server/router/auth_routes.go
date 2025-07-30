@@ -8,14 +8,14 @@
 package router
 
 import (
-	"eLabX/src/api"
+	"eLabX/src/api/system"
 	"github.com/gin-gonic/gin"
 )
 
 func registerAuthRoutes(r *gin.Engine) {
 	authGroup := r.Group("/api/auth")
 	{
-		authGroup.POST("/login", api.UserLogin)
-		authGroup.POST("/logout", api.UserLogout)
+		authGroup.POST("/login", system.UserLogin)
+		authGroup.POST("/logout", system.UserLogout)
 	}
 }

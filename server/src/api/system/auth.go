@@ -1,11 +1,11 @@
-// Package api coding=utf-8
+// Package system coding=utf-8
 // @Project : eLabX
 // @Time    : 2025/6/28 12:00
 // @Author  : chengxiang.luo
 // @Email   : chengxiang.luo@foxmail.com
 // @File    : auth.go
 // @Software: GoLand
-package api
+package system
 
 import (
 	"eLabX/middleware"
@@ -29,13 +29,22 @@ func UserLogin(c *gin.Context) {
 	}
 
 	var passwordHash string
+	// Query the password hash for the given username and status=1
 	err = dao.OBCursor.Table("eln_users").Select("password_hash").
-		Where(`status = 1 AND user_id = ?`, u.Username).Find(&passwordHash).Error
-
+		Where("status = 1 AND user_id = ?", u.Username).Take(&passwordHash).Error
 	if err != nil {
-		zap.L().Error(err.Error())
-		c.JSON(http.StatusNetworkAuthenticationRequired, gin.H{"msg": "User authentication failed, username or password incorrect."})
+		zap.L().Error("Failed to find user or user inactive", zap.String("user_id", u.Username), zap.Error(err))
+		c.JSON(http.StatusUnauthorized, gin.H{"msg": "User authentication failed, username or password incorrect."})
 		return
+	}
+
+	// Record login IP to table (do not block login on failure)
+	loginIP := c.ClientIP()
+	errUpdate := dao.OBCursor.Table("eln_users").
+		Where("user_id = ?", u.Username).
+		Update("ip_addr", loginIP).Error
+	if errUpdate != nil {
+		zap.L().Warn("Failed to update login IP", zap.String("user_id", u.Username), zap.Error(errUpdate))
 	}
 
 	if passwordHash == u.Password {

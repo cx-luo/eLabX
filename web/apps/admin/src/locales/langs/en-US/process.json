@@ -1,11 +1,10 @@
 {
-  "title": "E-Notebook",
-  "createNewPage": {
-    "title": "Create New Page",
-    "submit": "Submit"
+  "title": "Data Management",
+  "tables": {
+    "title": "Table Query"
   },
-  "form": "Form Example",
   "etl": {
+    "title": "Data Update",
     "database": "Database",
     "table": "Table",
     "tableUpdate": "Table Update",

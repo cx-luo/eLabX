@@ -4,20 +4,18 @@ import { ref } from 'vue';
 import type { TreeInstance } from 'element-plus';
 import {
   MenuApi,
+  getMenuTreeApi,
+  buildMenuTree,
   updateRoleAuthApi,
   getRoleInfoApi,
   // 新增API相关接口
   getApiListApi,
   buildApiTree,
-  getGroupUsersApi,
-  getUserListWithFilterApi,
-  type UserApi,
 } from '#/api';
 import type { TreeKey } from 'element-plus/es/components/tree/src/tree.type.mjs';
 import { useToast, POSITION } from 'vue-toastification';
 import { $t } from '@vben/locales';
 import { nextTick } from 'vue';
-import { Icon } from '@iconify/vue';
 
 const toast = useToast();
 const data = ref();
@@ -33,12 +31,9 @@ const [Drawer, drawerApi] = useVbenDrawer({
     data.value = drawerApi.getData<Record<string, any>>();
 
     // 同时获取菜单树和API树
-    const [usersResult, apiResult] = await Promise.all([
-      getGroupUsersApi({ groupId: data.value?.row.groupId }),
-      getApiListApi(null),
-    ]);
+    const [menuResult, apiResult] = await Promise.all([getMenuTreeApi(null), getApiListApi(null)]);
 
-    treeData.value = usersResult.items;
+    treeData.value = buildMenuTree(menuResult.items);
     apiTreeData.value = buildApiTree(apiResult.items);
 
     if (data.value?.row?.id) {
@@ -122,7 +117,7 @@ const [Drawer, drawerApi] = useVbenDrawer({
   },
 });
 
-const treeData = ref([]);
+const treeData = ref<MenuApi.MenuForm[]>([]);
 
 const treeRef = ref<TreeInstance>();
 const defaultProps = {
@@ -244,69 +239,19 @@ const getAllApiKeys = (data: any[]): number[] => {
 function setLoading(loading: boolean) {
   drawerApi.setState({ loading });
 }
-
-const userList = ref<UserApi.ElnUser[]>();
-const selectedUserList = ref<UserApi.ElnUser[]>();
-
-const getAllUsers = (query: string) => {
-  if (query && query.length >= 3) {
-    setLoading(true);
-    setTimeout(() => {
-      getUserListWithFilterApi({ query: query })
-        .then((res) => {
-          // Assign userList.value to res.items if present, otherwise empty array
-          userList.value = res?.items;
-          setLoading(false);
-        })
-        .catch(() => {
-          userList.value = [];
-          setLoading(false);
-        });
-    }, 200);
-  } else {
-    userList.value = [];
-  }
-};
 </script>
 
 <template>
   <Drawer :title="$t('page.system.role.button.auth')">
     <el-tabs v-model="activeTab" class="mb-4" type="border-card">
-      <!-- 用户列表标签页 -->
-      <el-tab-pane :label="$t('admin.group.drawer.userList')" name="menu">
-        <div class="flex flex-col gap-4">
-          <el-select
-            v-model="selectedUserList"
-            class="w-50 m-2"
-            placeholder="Enter at least 3 characters"
-            multiple
-            clearable
-            filterable
-            remote
-            :remote-method="getAllUsers"
-          >
-            <el-option
-              v-for="item in userList"
-              :key="item.userId"
-              :label="item.username"
-              :value="item.userId"
-              style="width: 400px"
-            >
-              <div class="option-row">
-                <span class="col-name"><el-avatar size="small" :src="item.avatar" /></span>
-                <span class="col-name">{{ item.userId }}</span>
-                <span class="col-cas">{{ item.username }}</span>
-                <span class="col-role">{{ item.email }}</span>
-              </div>
-            </el-option>
-          </el-select>
-        </div>
+      <!-- 菜单权限标签页 -->
+      <el-tab-pane :label="$t('page.system.role.menuAuth')" name="menu">
         <div class="flex flex-col gap-4">
           <div class="flex gap-2">
-            <el-button @click="expandAll">{{ $t('ui.tree.expand_all') }}</el-button>
-            <el-button @click="collapseAll">{{ $t('ui.tree.collapse_all') }}</el-button>
-            <el-button @click="checkAll">{{ $t('ui.tree.select_all') }}</el-button>
-            <el-button @click="uncheckAll">{{ $t('ui.tree.unselect_all') }}</el-button>
+            <el-button @click="expandAll">{{ $t('ui.tree.expand_all') }} </el-button>
+            <el-button @click="collapseAll">{{ $t('ui.tree.collapse_all') }} </el-button>
+            <el-button @click="checkAll">{{ $t('ui.tree.select_all') }} </el-button>
+            <el-button @click="uncheckAll">{{ $t('ui.tree.unselect_all') }} </el-button>
           </div>
 
           <el-tree
@@ -318,27 +263,26 @@ const getAllUsers = (query: string) => {
             :check-strictly="false"
             class="w-full"
           >
-            <template #default="{ item }">
+            <template #default="{ data }">
               <div class="flex items-center">
-                <!--                <Icon v-if="data.meta.icon !== undefined" :icon="data.meta.icon" class="mr-2" />-->
-                <!--                <span>{{ data.meta.name }}</span>-->
-                <span class="col-name">{{ item.userId }}</span>
-                <span class="col-cas">{{ item.username }}</span>
-                <span class="col-role">{{ item.email }}</span>
+                <el-icon v-if="data.meta.icon" class="mr-2">
+                  <component :is="data.meta.icon" />
+                </el-icon>
+                <span>{{ data.meta.name }}</span>
               </div>
             </template>
           </el-tree>
         </div>
       </el-tab-pane>
 
-      <!-- 用户组权限管理标签页 -->
-      <el-tab-pane :label="$t('admin.group.drawer.addPermissions')" name="api">
+      <!-- API权限标签页 -->
+      <el-tab-pane :label="$t('page.system.role.apiAuth')" name="api">
         <div class="flex flex-col gap-4">
           <div class="flex gap-2">
-            <el-button @click="expandApiAll">{{ $t('ui.tree.expand_all') }}</el-button>
-            <el-button @click="collapseApiAll">{{ $t('ui.tree.collapse_all') }}</el-button>
-            <el-button @click="checkApiAll">{{ $t('ui.tree.select_all') }}</el-button>
-            <el-button @click="uncheckApiAll">{{ $t('ui.tree.unselect_all') }}</el-button>
+            <el-button @click="expandApiAll">{{ $t('ui.tree.expand_all') }} </el-button>
+            <el-button @click="collapseApiAll">{{ $t('ui.tree.collapse_all') }} </el-button>
+            <el-button @click="checkApiAll">{{ $t('ui.tree.select_all') }} </el-button>
+            <el-button @click="uncheckApiAll">{{ $t('ui.tree.unselect_all') }} </el-button>
           </div>
 
           <el-tree
@@ -362,38 +306,3 @@ const getAllUsers = (query: string) => {
     </el-tabs>
   </Drawer>
 </template>
-
-<style scoped lang="scss">
-.option-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  width: 100%;
-  font-size: 14px;
-}
-
-.col-name {
-  flex: 0 0 15%;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  margin-right: 8px;
-}
-
-.col-cas {
-  flex: 0 0 30%;
-  color: blue;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.col-role {
-  flex: 0 0 auto;
-  text-align: right;
-  color: var(--el-text-color-secondary);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-</style>

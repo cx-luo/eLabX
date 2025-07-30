@@ -4,8 +4,8 @@ import type { AboutProps, DescriptionItem } from './about';
 import { h } from 'vue';
 
 import {
-  VBEN_DOC_URL,
-  VBEN_GITHUB_URL,
+  ELABX_DOC_URL,
+  ELABX_GITHUB_URL,
   VBEN_PREVIEW_URL,
 } from '@vben/constants';
 
@@ -80,7 +80,7 @@ const vbenDescriptionItems: DescriptionItem[] = [
     title: '主页',
   },
   {
-    content: renderLink(VBEN_DOC_URL, '点击查看'),
+    content: renderLink(ELABX_DOC_URL, '点击查看'),
     title: '文档地址',
   },
   {
@@ -88,7 +88,7 @@ const vbenDescriptionItems: DescriptionItem[] = [
     title: '预览地址',
   },
   {
-    content: renderLink(VBEN_GITHUB_URL, '点击查看'),
+    content: renderLink(ELABX_GITHUB_URL, '点击查看'),
     title: 'Github',
   },
   {
@@ -115,7 +115,7 @@ const devDependenciesItems = Object.keys(devDependencies).map((key) => ({
   <Page :title="title">
     <template #description>
       <p class="text-foreground mt-3 text-sm leading-6">
-        <a :href="VBEN_GITHUB_URL" class="vben-link" target="_blank">
+        <a :href="ELABX_GITHUB_URL" class="vben-link" target="_blank">
           {{ name }}
         </a>
         {{ description }}

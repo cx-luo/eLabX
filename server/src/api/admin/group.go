@@ -13,11 +13,12 @@ import (
 	"eLabX/src/utils"
 	"errors"
 	"fmt"
-	"github.com/gin-gonic/gin"
-	"gorm.io/gorm"
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
 )
 
 // GroupParam is used for creating and updating user groups
@@ -41,6 +42,7 @@ func GetGroupList(c *gin.Context) {
 		Page      int    `json:"page,omitempty"`
 		PageSize  int    `json:"pageSize,omitempty"`
 		SortField string `json:"sortField,omitempty"`
+		Name      string `json:"name,omitempty"`
 		SortOrder string `json:"sortOrder,omitempty"`
 		Status    int8   `json:"status,omitempty"`
 	}
@@ -67,6 +69,9 @@ func GetGroupList(c *gin.Context) {
 	db := dao.OBCursor.Model(&types.ElnGroup{})
 	if req.Status != 0 {
 		db = db.Where("status = ?", req.Status)
+	}
+	if req.Name != "" {
+		db = db.Where("group_name LIKE ?", "%"+req.Name+"%")
 	}
 	if err := db.Limit(req.PageSize).Offset(offset).Find(&groups).Error; err != nil {
 		utils.InternalRequestErr(c, err)
@@ -286,14 +291,14 @@ func GetGroupUsers(c *gin.Context) {
 		return
 	}
 	var users []types.ElnUsers
-	err := dao.OBCursor.Table("eln_user").
-		Select("eln_user.*").
-		Joins("JOIN eln_user_group ON eln_user.user_id = eln_user_group.user_id").
-		Where("eln_user_group.group_id = ?", param.GroupId).
+	err := dao.OBCursor.Table("eln_users").
+		Select("eln_users.user_id, eln_users.username, eln_users.real_name, eln_users.email, eln_users.avatar, eln_users.roles, eln_users.permissions, eln_users.status, eln_users.group_id, eln_users.create_at, eln_users.update_at").
+		Joins("JOIN eln_user_group ON eln_users.user_id = eln_user_group.user_id").
+		Where("eln_user_group.group_id = ? and eln_users.status = 1", param.GroupId).
 		Find(&users).Error
 	if err != nil {
 		utils.InternalRequestErr(c, err)
 		return
 	}
-	utils.SuccessWithData(c, "Success", users)
+	utils.SuccessWithData(c, "Success", gin.H{"items": users})
 }
