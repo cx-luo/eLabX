@@ -89,7 +89,10 @@ func GetSystemUserList(c *gin.Context) {
 // GetUserListWithFilter handles /api/system/user/filter
 func GetUserListWithFilter(c *gin.Context) {
 	var req struct {
-		Query string `json:"query"`
+		Query    string `json:"query,omitempty"`
+		Status   int    `json:"status,omitempty"`
+		Page     int    `json:"page,omitempty"`
+		PageSize int    `json:"pageSize,omitempty"`
 	}
 	if err := c.ShouldBindJSON(&req); err != nil {
 		utils.BadRequestErr(c, errors.New("invalid request body: "+err.Error()))
@@ -97,28 +100,33 @@ func GetUserListWithFilter(c *gin.Context) {
 	}
 
 	query := req.Query
-	if len(query) == 0 {
-		utils.SuccessWithData(c, "", gin.H{
-			"items": []types.ElnUsers{},
-			"total": 0,
-		})
-		return
-	}
-
 	var users []types.ElnUsers
 	var total int64
 
-	db := dao.OBCursor.Table("eln_users").Where("username LIKE ?", "%"+query+"%").Where("status = 1")
-
+	db := dao.OBCursor.Table("eln_users").Select("user_id, username, email, status, ip_addr, create_at, update_at").Where("status = 1")
 	if err := db.Count(&total).Error; err != nil {
 		utils.InternalRequestErr(c, err)
 		return
 	}
 
-	if err := db.
-		Select("user_id, username, email, status, ip_addr, create_at, update_at").
-		Limit(30).
-		Find(&users).Error; err != nil {
+	if len(query) != 0 {
+		db.Where("username LIKE ?", "%"+query+"%")
+	}
+	var page, pageSize, offset int
+	if req.Page > 0 {
+		page = req.Page
+		if page <= 0 {
+			page = 1
+		}
+		pageSize = req.PageSize
+		if pageSize <= 0 {
+			pageSize = 60
+		}
+		offset = (page - 1) * pageSize
+		db.Offset(offset).Limit(pageSize)
+	}
+
+	if err := db.Find(&users).Error; err != nil {
 		utils.InternalRequestErr(c, err)
 		return
 	}

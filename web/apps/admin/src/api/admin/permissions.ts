@@ -1,5 +1,5 @@
 import { requestClient } from '#/api/request';
-import type { UserApi } from '../core';
+import type { UserApi } from '#/api';
 
 /**
  * Get the list of all permissions

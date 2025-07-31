@@ -6,7 +6,7 @@ import { Page, useVbenDrawer, type VbenFormProps } from '@vben/common-ui';
 import { LucideFilePenLine, LucideTrash2 } from '@vben/icons';
 import { ElButton } from 'element-plus';
 import UserDrawer from './drawer.vue';
-import { deleteUserApi, getUserListApi, updateUserApi } from '#/api';
+import {deleteUserApi, getUserListApi, getUserListWithFilterApi, updateUserApi} from '#/api';
 import { statusList } from '#/store';
 import { useToast, POSITION } from 'vue-toastification';
 import { formatDateTime } from '@vben/utils';
@@ -62,10 +62,10 @@ const gridOptions: VxeGridProps = {
   proxyConfig: {
     ajax: {
       query: async ({ page }, formValues) => {
-        return await getUserListApi({
+        return await getUserListWithFilterApi({
           page: page.currentPage,
           pageSize: page.pageSize,
-          username: formValues.username,
+          query: formValues.username,
           status: formValues.status,
         });
       },
