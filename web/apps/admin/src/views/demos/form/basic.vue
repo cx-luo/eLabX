@@ -106,9 +106,7 @@ const [Form, formApi] = useVbenForm({
       renderComponentContent: () => {
         return {
           default: () => {
-            return ['A', 'B', 'C', 'D'].map((v) =>
-              h(ElCheckbox, { label: v, value: v }),
-            );
+            return ['A', 'B', 'C', 'D'].map((v) => h(ElCheckbox, { label: v, value: v }));
           },
         };
       },

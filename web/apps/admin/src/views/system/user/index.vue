@@ -6,7 +6,7 @@ import { Page, useVbenDrawer, type VbenFormProps } from '@vben/common-ui';
 import { LucideFilePenLine, LucideTrash2 } from '@vben/icons';
 import { ElButton } from 'element-plus';
 import UserDrawer from './drawer.vue';
-import { deleteUserApi, getUserListApi, updateUserApi } from '#/api';
+import {deleteUserApi, getUserListApi, getUserListWithFilterApi, updateUserApi} from '#/api';
 import { statusList } from '#/store';
 import { useToast, POSITION } from 'vue-toastification';
 import { formatDateTime } from '@vben/utils';
@@ -62,10 +62,10 @@ const gridOptions: VxeGridProps = {
   proxyConfig: {
     ajax: {
       query: async ({ page }, formValues) => {
-        return await getUserListApi({
+        return await getUserListWithFilterApi({
           page: page.currentPage,
           pageSize: page.pageSize,
-          username: formValues.username,
+          query: formValues.username,
           status: formValues.status,
         });
       },
@@ -203,12 +203,7 @@ async function handleDelete(row: any) {
   <Page auto-content-height>
     <Grid :table-title="$t('page.system.user.title')">
       <template #toolbar-tools>
-        <el-button
-          class="mr-2"
-          v-permission="['system:user:create']"
-          type="primary"
-          @click="handleCreate"
-        >
+        <el-button class="mr-2" v-permission="['system:user:create']" type="primary" @click="handleCreate">
           {{ $t('page.system.user.button.create') }}
         </el-button>
       </template>
@@ -259,12 +254,7 @@ async function handleDelete(row: any) {
           @confirm="() => handleDelete(row)"
         >
           <template #reference>
-            <ElButton
-              type="danger"
-              v-permission="['system:user:delete']"
-              link
-              :icon="LucideTrash2"
-            />
+            <ElButton type="danger" v-permission="['system:user:delete']" link :icon="LucideTrash2" />
           </template>
         </el-popconfirm>
       </template>

@@ -114,11 +114,11 @@ This project is licensed under the **MIT License**.
 Created by chengxiang.luo – feel free to reach out!
 
 Email: `chengxiang.luo@foxmail.com`
-GitHub: [@yourhandle](https://github.com/yourhandle)
+GitHub: [@cx-luo](https://github.com/cx-luo)
 
 ---
 
 ## 🌐 Languages
 
-* 🇨🇳 中文文档：[README.zh.md](README.zh.md)
+* 🇨🇳 中文文档：[README.zh.md](docs/README.zh.md)
 * 🌍 English (this file)

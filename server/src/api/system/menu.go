@@ -29,7 +29,7 @@ type Meta struct {
 // Child represents a child route within the main route.
 //type Child struct {
 //	ID        uint   `gorm:"primaryKey;autoIncrement"`
-//	Name      string `json:"name" gorm:"column:child_name"`
+//	ProjectName      string `json:"name" gorm:"column:child_name"`
 //	Path      string `json:"path" gorm:"column:child_path"`
 //	Component string `json:"component" gorm:"column:child_component"`
 //	Icon      string `json:"icon" gorm:"column:child_meta_icon"`

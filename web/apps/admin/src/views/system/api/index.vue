@@ -187,12 +187,7 @@ async function handleDelete(row: any) {
   <Page auto-content-height>
     <Grid :table-title="$t('page.system.api.title')">
       <template #toolbar-tools>
-        <el-button
-          class="mr-2"
-          v-permission="['system:api:create']"
-          type="primary"
-          @click="handleCreate"
-        >
+        <el-button class="mr-2" v-permission="['system:api:create']" type="primary" @click="handleCreate">
           {{ $t('page.system.api.button.create') }}
         </el-button>
 
@@ -209,9 +204,7 @@ async function handleDelete(row: any) {
       </template>
 
       <template #parentId="{ row }">
-        <span :style="{ marginRight: '15px' }">
-          <template v-if="row.parentId === 0"> 根API </template></span
-        >
+        <span :style="{ marginRight: '15px' }"> <template v-if="row.parentId === 0"> 根API </template></span>
       </template>
 
       <template #action="{ row }">
@@ -234,12 +227,7 @@ async function handleDelete(row: any) {
           @confirm="() => handleDelete(row)"
         >
           <template #reference>
-            <ElButton
-              type="danger"
-              v-permission="['system:api:delete']"
-              link
-              :icon="LucideTrash2"
-            />
+            <ElButton type="danger" v-permission="['system:api:delete']" link :icon="LucideTrash2" />
           </template>
         </el-popconfirm>
       </template>

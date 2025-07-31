@@ -97,9 +97,7 @@ export interface ApiResponse {
  * @returns Ketcher | null - 返回实例或 null 表示失败
  */
 export function getKetcher(): Ketcher | null {
-  const ketcherFrame = document.getElementById(
-    'ketcher-js-editor',
-  ) as HTMLIFrameElement | null;
+  const ketcherFrame = document.getElementById('ketcher-js-editor') as HTMLIFrameElement | null;
 
   if (ketcherFrame && 'contentDocument' in ketcherFrame) {
     const contentWindow = ketcherFrame.contentWindow;
@@ -122,19 +120,18 @@ export async function exportInChiKey(ketcher: Ketcher): Promise<string | null> {
   }
 }
 
-export function generateImgUrl(ketcher: Ketcher, smiles: string) {
-  let imgUrl: string | null = null;
-  if (smiles) {
-    ketcher
-      .generateImage(smiles, {
-        outputFormat: 'svg', // 生成图片的类型，可以是"svg"或"png"
-        backgroundColor: '255, 255, 255', // 背景颜色
-      })
-      .then((res: Blob) => {
-        imgUrl = window.URL.createObjectURL(res); // res是blob类型，用该方法转为url后可以在用img展示
-      });
-  } else {
-    imgUrl = null;
+export async function generateImgUrl(ketcher: Ketcher, smiles: string): Promise<string | null> {
+  if (!smiles) {
+    return null;
   }
-  return imgUrl;
+  try {
+    const res: Blob = await ketcher.generateImage(smiles, {
+      outputFormat: 'svg', // 生成图片的类型，可以是"svg"或"png"
+      backgroundColor: '255, 255, 255', // 背景颜色
+    });
+    return window.URL.createObjectURL(res); // res是blob类型，用该方法转为url后可以在用img展示
+  } catch (e) {
+    console.error('generateImgUrl error', e);
+    return null;
+  }
 }

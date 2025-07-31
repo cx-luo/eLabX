@@ -10,12 +10,13 @@ package middleware
 import (
 	"eLabX/src/utils"
 	"errors"
-	"github.com/gin-contrib/cors"
-	"github.com/gin-gonic/gin"
-	"github.com/golang-jwt/jwt/v5"
 	"net/http"
 	"strings"
 	"time"
+
+	"github.com/gin-contrib/cors"
+	"github.com/gin-gonic/gin"
+	"github.com/golang-jwt/jwt/v5"
 )
 
 type MyClaims struct {
@@ -36,7 +37,7 @@ func GenToken(username string, password string) (string, error) {
 		Password: password,
 		RegisteredClaims: jwt.RegisteredClaims{
 			ExpiresAt: jwt.NewNumericDate(time.Now().Add(TokenExpireDuration)), // 过期时间
-			Issuer:    "pharmaron-ai",                                          // 签发人
+			Issuer:    "elabx-ai",                                              // 签发人
 		},
 	}
 	// 使用指定的签名方法创建签名对象

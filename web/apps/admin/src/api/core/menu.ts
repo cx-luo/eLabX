@@ -122,10 +122,7 @@ export const getMenusRouterApi = async (param: any) => {
  * @returns
  */
 export const getMenuTreeApi = async (param: any) => {
-  return await requestClient.post<MenuApi.ListMenuResp>(
-    '/system/menu/tree',
-    param,
-  );
+  return await requestClient.post<MenuApi.ListMenuResp>('/system/menu/tree', param);
 };
 
 /**
@@ -199,9 +196,7 @@ export namespace ApiTreeApi {
  * 获取 API 树形列表
  */
 export const getApiTreeApi = async () => {
-  return await requestClient.get<ApiTreeApi.ListApiTreeResp>(
-    '/system/api/tree',
-  );
+  return await requestClient.get<ApiTreeApi.ListApiTreeResp>('/system/api/tree');
 };
 
 /**
@@ -210,9 +205,7 @@ export const getApiTreeApi = async () => {
  * @param apis API 列表
  * @returns 树形结构的 API 列表
  */
-export function buildApiTree(
-  apis: ApiTreeApi.ApiTreeNode[],
-): ApiTreeApi.ApiTreeNode[] {
+export function buildApiTree(apis: ApiTreeApi.ApiTreeNode[]): ApiTreeApi.ApiTreeNode[] {
   const tree: ApiTreeApi.ApiTreeNode[] = [];
 
   // 首先添加所有根节点（parentId 为 0 的节点）
@@ -260,10 +253,7 @@ export function buildApiTree(
  * @param child 要添加的子节点
  * @returns 是否成功添加
  */
-export function travelApiChild(
-  nodes: ApiTreeApi.ApiTreeNode[],
-  child: ApiTreeApi.ApiTreeNode,
-): boolean {
+export function travelApiChild(nodes: ApiTreeApi.ApiTreeNode[], child: ApiTreeApi.ApiTreeNode): boolean {
   if (!Array.isArray(nodes)) {
     return false;
   }
@@ -334,10 +324,7 @@ export function buildMenuTree(menus: MenuApi.MenuForm[]): MenuApi.MenuForm[] {
   return tree;
 }
 
-export function travelMenuChild(
-  nodes: MenuApi.MenuForm[],
-  parent: MenuApi.MenuForm,
-): boolean {
+export function travelMenuChild(nodes: MenuApi.MenuForm[], parent: MenuApi.MenuForm): boolean {
   if (!Array.isArray(nodes)) {
     return false;
   }

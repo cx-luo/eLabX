@@ -25,10 +25,7 @@ export const useAuthStore = defineStore('auth', () => {
    * @param params 登录表单数据
    * @param onSuccess
    */
-  async function authLogin(
-    params: Recordable<any>,
-    onSuccess?: () => Promise<void> | void,
-  ) {
+  async function authLogin(params: Recordable<any>, onSuccess?: () => Promise<void> | void) {
     // 异步处理用户登录操作并获取 accessToken
     let userInfo: null | UserInfo = null;
     try {
@@ -45,10 +42,7 @@ export const useAuthStore = defineStore('auth', () => {
             // 将 accessToken 存储到 accessStore 中
             accessStore.setAccessToken(response.accessToken);
             // 获取用户信息并存储到 accessStore 中
-            const [fetchUserInfoResult, accessCodes] = await Promise.all([
-              fetchUserInfo(),
-              getAccessCodesApi(),
-            ]);
+            const [fetchUserInfoResult, accessCodes] = await Promise.all([fetchUserInfo(), getAccessCodesApi()]);
 
             userInfo = fetchUserInfoResult;
 
@@ -58,9 +52,7 @@ export const useAuthStore = defineStore('auth', () => {
             if (accessStore.loginExpired) {
               accessStore.setLoginExpired(false);
             } else {
-              onSuccess
-                ? await onSuccess?.()
-                : await router.push(userInfo.homePath || DEFAULT_HOME_PATH);
+              onSuccess ? await onSuccess?.() : await router.push(userInfo.homePath || DEFAULT_HOME_PATH);
             }
 
             if (userInfo?.realName) {

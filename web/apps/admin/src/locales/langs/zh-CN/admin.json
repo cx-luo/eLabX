@@ -1,0 +1,31 @@
+{
+  "title": "项目管理",
+  "project": {
+    "title": "课题管理",
+    "module": "项目",
+    "projectId": "项目ID",
+    "projectName": "项目名称",
+    "createdBy": "创建人",
+    "description": "项目描述",
+    "status": "状态",
+    "permissions": "权限"
+  },
+  "button": {
+    "create": "新建项目",
+    "delete": "删除项目",
+    "update": "修改项目"
+  },
+  "group": {
+    "title": "课题组管理",
+    "groupId": "分组ID",
+    "groupName": "分组名称",
+    "createdBy": "创建人",
+    "description": "分组描述",
+    "status": "状态",
+    "permissions": "权限",
+    "drawer": {
+      "userList": "用户列表",
+      "addPermissions": "添加权限"
+    }
+  }
+}

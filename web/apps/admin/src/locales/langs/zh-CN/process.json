@@ -1,13 +1,13 @@
 {
-  "title": "E-Notebook",
-  "createNewPage": {
-    "title": "Create New Page",
-    "submit": "Submit"
+  "title": "数据处理",
+  "tables": {
+    "title": "表格查询"
   },
-  "form": "Form Example",
   "etl": {
+    "title": "数据更新",
     "database": "数据库名称",
     "table": "表名",
+    "tableUpdate": "数据更新",
     "columnName": "字段名",
     "dataType": "数据类型",
     "isNullable": "是否可为空",
