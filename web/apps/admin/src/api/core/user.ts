@@ -16,6 +16,15 @@ export namespace UserApi {
     createAt: string;
     updateAt: string;
   }
+  export interface ElnPermission {
+    permissionId: number | undefined | null;
+    permissionName: string;
+    description: string;
+    status: number | undefined | null;
+    createdBy: number | undefined | null;
+    createAt: string | undefined | null;
+    updateAt: string | undefined | null;
+  }
 }
 
 /**

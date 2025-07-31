@@ -45,5 +45,6 @@ func registerAdminRoutes(r *gin.Engine) {
 		permissionGroup.POST("/create", admin.CreatePermission)
 		permissionGroup.POST("/update", admin.UpdatePermission)
 		permissionGroup.POST("/delete", admin.DeletePermission)
+		permissionGroup.POST("/list/filter", admin.GetPermsListWithFilterApi)
 	}
 }

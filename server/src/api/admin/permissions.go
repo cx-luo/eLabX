@@ -12,7 +12,9 @@ import (
 	"eLabX/src/types"
 	"eLabX/src/utils"
 	"errors"
+
 	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
 )
 
 // GetPermissionList 获取权限列表
@@ -138,4 +140,47 @@ func DeletePermission(c *gin.Context) {
 	}
 
 	utils.Success(c, "Permission deleted successfully")
+}
+
+// GetPermsListWithFilterApi getPermsListWithFilterApi 获取权限列表（带筛选）
+func GetPermsListWithFilterApi(c *gin.Context) {
+	var req struct {
+		Query string `json:"query" form:"query"`
+	}
+	// Accept both JSON and form for flexibility
+	if err := c.ShouldBind(&req); err != nil {
+		utils.BadRequestErr(c, errors.New("invalid query params: "+err.Error()))
+		return
+	}
+
+	var perms []struct {
+		PermissionId   int64  `json:"permissionId" db:"permission_id" gorm:"primaryKey;column:permission_id"`
+		PermissionName string `json:"permissionName" db:"permission_name" gorm:"column:permission_name"`
+		Description    string `json:"description" db:"description" gorm:"column:description"`
+	}
+
+	queryBuilder := dao.OBCursor.Table("eln_permission").Select("permission_id, permission_name, description").Where("status = ?", 1)
+
+	// Use COLLATE for case-insensitive search if needed, and escape % and _ in LIKE
+	if req.Query != "" {
+		likeQuery := "%" + req.Query + "%"
+		queryBuilder = queryBuilder.Where("permission_name LIKE ?", likeQuery)
+	}
+
+	var total int64
+	// Count must be done on a new session to avoid side effects of Order/Limit
+	if err := queryBuilder.Session(&gorm.Session{}).Count(&total).Error; err != nil {
+		utils.InternalRequestErr(c, err)
+		return
+	}
+
+	if err := queryBuilder.Order("permission_id desc").Find(&perms).Error; err != nil {
+		utils.InternalRequestErr(c, err)
+		return
+	}
+
+	utils.SuccessWithData(c, "Permissions fetched successfully", gin.H{
+		"items": perms,
+		"total": total,
+	})
 }

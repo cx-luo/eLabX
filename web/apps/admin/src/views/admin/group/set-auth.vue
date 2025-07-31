@@ -10,6 +10,7 @@ import {
   addUserToGroupApi,
   getGroupPermissionsApi,
   assignPermissionsToGroupApi,
+  getPermsListWithFilterApi,
 } from '#/api';
 import { useToast, POSITION } from 'vue-toastification';
 import { $t } from '@vben/locales';
@@ -18,10 +19,12 @@ import type { TreeKey } from 'element-plus/es/components/tree/src/tree.type.mjs'
 const toast = useToast();
 const data = ref();
 // 添加激活的标签页
-const activeTab = ref('menu');
+const activeTab = ref('user');
 
+const userTreeData = ref<UserApi.ElnUser[]>([]);
+const userTreeRef = ref<TreeInstance>();
 // 添加API树相关数据
-const permissionTreeData = ref<any[]>([]);
+const permissionTreeData = ref<UserApi.ElnPermission[]>([]);
 const permissionTreeRef = ref<TreeInstance>();
 
 const [Drawer, drawerApi] = useVbenDrawer({
@@ -39,16 +42,16 @@ const [Drawer, drawerApi] = useVbenDrawer({
 
     if (data.value?.row?.groupId) {
       setTimeout(() => {
-        if (usersTreeRef.value) {
+        if (userTreeRef.value) {
           // Filter out null or undefined userIds to satisfy TreeKey[] type
           const checkedKeys = userTreeData.value.map((item) => item.userId);
-          usersTreeRef.value.setCheckedKeys(checkedKeys as TreeKey[], false);
+          userTreeRef.value.setCheckedKeys(checkedKeys as TreeKey[], false);
         }
       }, 100);
       setTimeout(() => {
         if (permissionTreeRef.value) {
           // Filter out null or undefined userIds to satisfy TreeKey[] type
-          const checkedKeys = userTreeData.value.map((item) => item.userId);
+          const checkedKeys = permissionTreeData.value.map((item) => item.permissionId);
           permissionTreeRef.value.setCheckedKeys(checkedKeys as TreeKey[], false);
         }
       }, 100);
@@ -59,8 +62,8 @@ const [Drawer, drawerApi] = useVbenDrawer({
     let userIds: TreeKey[] = [];
     let permissionIds: TreeKey[] = [];
     // 获取菜单权限
-    if (usersTreeRef.value) {
-      const checkedKeys = usersTreeRef.value.getCheckedKeys() as TreeKey[] | undefined;
+    if (userTreeRef.value) {
+      const checkedKeys = userTreeRef.value.getCheckedKeys() as TreeKey[] | undefined;
       // Ensure selectedUserList is an array of TreeKey
       userIds = [...(checkedKeys ?? []), ...(selectedUserList.value ?? [])];
     }
@@ -68,8 +71,8 @@ const [Drawer, drawerApi] = useVbenDrawer({
     // 获取API权限
     if (permissionTreeRef.value) {
       const checkedKeys = permissionTreeRef.value.getCheckedKeys();
-      const halfCheckedKeys = permissionTreeRef.value.getHalfCheckedKeys();
-      permissionIds = [...checkedKeys, ...halfCheckedKeys];
+      // const halfCheckedKeys = permissionTreeRef.value.getHalfCheckedKeys();
+      permissionIds = [...checkedKeys, ...(selectedPermissionList.value ?? [])];
     }
 
     if (userIds.length <= 0 && permissionIds.length <= 0) {
@@ -112,12 +115,9 @@ const [Drawer, drawerApi] = useVbenDrawer({
 
   async onClosed() {
     userList.value = undefined;
+    permissionList.value = undefined;
   },
 });
-
-const userTreeData = ref<UserApi.ElnUser[]>([]);
-
-const usersTreeRef = ref<TreeInstance>();
 
 // 递归获取所有节点的 key
 const getAllKeys = (data: UserApi.ElnUser[]): number[] => {
@@ -145,39 +145,39 @@ const getAllKeys = (data: UserApi.ElnUser[]): number[] => {
 
 // 全选所有节点
 const checkAll = () => {
-  if (usersTreeRef.value) {
+  if (userTreeRef.value) {
     const allKeys = getAllKeys(userTreeData.value);
-    usersTreeRef.value.setCheckedKeys(allKeys);
+    userTreeRef.value.setCheckedKeys(allKeys);
   }
 };
 
 // 取消全选
 const uncheckAll = () => {
-  if (usersTreeRef.value) {
-    usersTreeRef.value.setCheckedKeys([]);
+  if (userTreeRef.value) {
+    userTreeRef.value.setCheckedKeys([]);
   }
 };
 
 // 添加API树操作方法
 // 展开所有API节点
-const expandApiAll = () => {
-  if (permissionTreeRef.value) {
-    const allKeys = getAllApiKeys(permissionTreeData.value);
-    allKeys.forEach((key) => {
-      permissionTreeRef.value?.store?.nodesMap[key]?.expand();
-    });
-  }
-};
-
-// 收起所有API节点
-const collapseApiAll = () => {
-  if (permissionTreeRef.value) {
-    const allKeys = getAllApiKeys(permissionTreeData.value);
-    allKeys.forEach((key) => {
-      permissionTreeRef.value?.store?.nodesMap[key]?.collapse();
-    });
-  }
-};
+// const expandApiAll = () => {
+//   if (permissionTreeRef.value) {
+//     const allKeys = getAllApiKeys(permissionTreeData.value);
+//     allKeys.forEach((key) => {
+//       permissionTreeRef.value?.store?.nodesMap[key]?.expand();
+//     });
+//   }
+// };
+//
+// // 收起所有API节点
+// const collapseApiAll = () => {
+//   if (permissionTreeRef.value) {
+//     const allKeys = getAllApiKeys(permissionTreeData.value);
+//     allKeys.forEach((key) => {
+//       permissionTreeRef.value?.store?.nodesMap[key]?.collapse();
+//     });
+//   }
+// };
 
 // 全选所有API节点
 const checkApiAll = () => {
@@ -195,15 +195,12 @@ const uncheckApiAll = () => {
 };
 
 // 递归获取所有API节点的key
-const getAllApiKeys = (data: any[]): number[] => {
+const getAllApiKeys = (data: UserApi.ElnPermission[]): number[] => {
   const keys: number[] = [];
-  const traverse = (nodes: any[]) => {
+  const traverse = (nodes: UserApi.ElnPermission[]) => {
     nodes.forEach((node) => {
-      if (node.id !== undefined && node.id !== null) {
-        keys.push(node.id);
-      }
-      if (node.children?.length) {
-        traverse(node.children);
+      if (node.permissionId !== undefined && node.permissionId !== null) {
+        keys.push(node.permissionId);
       }
     });
   };
@@ -237,20 +234,38 @@ const getAllUsersByFilter = (query: string) => {
     userList.value = [];
   }
 };
+
+const permissionList = ref<UserApi.ElnPermission[]>();
+const selectedPermissionList = ref<TreeKey[]>();
+
+const getAllPermissionsByFilter = (query: string) => {
+  if (query && query.length >= 3) {
+    setLoading(true);
+    setTimeout(() => {
+      getPermsListWithFilterApi({ query: query })
+        .then((res) => {
+          permissionList.value = res?.items;
+          setLoading(false);
+        })
+        .catch(() => {
+          permissionList.value = [];
+          setLoading(false);
+        });
+    }, 200);
+  } else {
+    permissionList.value = [];
+  }
+};
 </script>
 
 <template>
   <Drawer :title="$t('page.system.role.button.auth')">
     <el-tabs v-model="activeTab" class="mb-4" type="border-card">
       <!-- 用户列表标签页 -->
-      <el-tab-pane :label="$t('admin.group.drawer.userList')" name="menu">
+      <el-tab-pane :label="$t('admin.group.drawer.userList')" name="user">
         <div class="flex flex-col gap-4">
-          <!--          <div class="flex flex-col gap-4">-->
-          <!--            <ElInput v-model="userList" @input="getAllUsersByFilter" />-->
-          <!--          </div>-->
           <el-select
             v-model="selectedUserList"
-            class="w-50 m-2"
             placeholder="Enter at least 3 characters"
             multiple
             clearable
@@ -258,19 +273,16 @@ const getAllUsersByFilter = (query: string) => {
             remote
             :remote-method="getAllUsersByFilter"
           >
-            <el-option
-              v-for="item in userList"
-              :key="item.userId"
-              :label="item.username"
-              :value="item.userId"
-              style="width: 400px"
-            >
-              <div class="option-row">
-                <span class="flex items-center gap-2">
-                  <el-avatar :size="14" :src="data.avatar" />
+            <el-option v-for="item in userList" :key="item.userId" :label="item.username" :value="item.userId">
+              <div class="option-row flex items-center">
+                <span class="ml-2 text-xs text-gray-500" style="width: 60px; min-width: 60px; display: inline-block">{{
+                  item.userId
+                }}</span>
+                <span class="flex items-center justify-center" style="width: 24px; min-width: 24px">
+                  <el-avatar :size="14" :src="item.avatar" />
                 </span>
-                <span>{{ data.username }}</span>
-                <span class="ml-2 text-xs text-gray-500" v-if="data.email">{{ data.email }} </span>
+                <span class="flex-1 pl-2 text-left" style="min-width: 80px">{{ item.username }}</span>
+                <span class="ml-2 text-xs text-gray-500">{{ item.email }} </span>
               </div>
             </el-option>
           </el-select>
@@ -280,7 +292,7 @@ const getAllUsersByFilter = (query: string) => {
           </div>
 
           <el-tree
-            ref="usersTreeRef"
+            ref="userTreeRef"
             :data="userTreeData"
             show-checkbox
             node-key="userId"
@@ -301,11 +313,36 @@ const getAllUsersByFilter = (query: string) => {
       </el-tab-pane>
 
       <!-- 用户组权限管理标签页 -->
-      <el-tab-pane :label="$t('admin.group.drawer.addPermissions')" name="api">
+      <el-tab-pane :label="$t('admin.group.drawer.addPermissions')" name="permission">
         <div class="flex flex-col gap-4">
+          <el-select
+            v-model="selectedPermissionList"
+            placeholder="Enter at least 3 characters"
+            multiple
+            clearable
+            filterable
+            remote
+            :remote-method="getAllPermissionsByFilter"
+          >
+            <el-option
+              v-for="item in permissionList"
+              :key="item.permissionId"
+              :label="item.permissionName"
+              :value="item.permissionId"
+            >
+              <div class="option-row flex items-center">
+                <span class="ml-2 text-xs text-gray-500" style="width: 60px; min-width: 60px; display: inline-block">{{
+                  item.permissionId
+                }}</span>
+                <span class="flex-1 pl-2 text-left" style="min-width: 80px">{{ item.permissionName }}</span>
+                <span class="ml-2 text-xs text-gray-500">{{ item.description }} </span>
+              </div>
+            </el-option>
+          </el-select>
+
           <div class="flex gap-2">
-            <el-button @click="expandApiAll">{{ $t('ui.tree.expand_all') }}</el-button>
-            <el-button @click="collapseApiAll">{{ $t('ui.tree.collapse_all') }}</el-button>
+            <!--            <el-button @click="expandApiAll">{{ $t('ui.tree.expand_all') }}</el-button>-->
+            <!--            <el-button @click="collapseApiAll">{{ $t('ui.tree.collapse_all') }}</el-button>-->
             <el-button @click="checkApiAll">{{ $t('ui.tree.select_all') }}</el-button>
             <el-button @click="uncheckApiAll">{{ $t('ui.tree.unselect_all') }}</el-button>
           </div>
@@ -314,7 +351,7 @@ const getAllUsersByFilter = (query: string) => {
             ref="permissionTreeRef"
             :data="permissionTreeData"
             show-checkbox
-            node-key="id"
+            node-key="permissionId"
             :check-strictly="false"
             class="w-full"
           >
@@ -338,30 +375,5 @@ const getAllUsersByFilter = (query: string) => {
   align-items: center;
   width: 100%;
   font-size: 14px;
-}
-
-.col-name {
-  flex: 0 0 15%;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  margin-right: 8px;
-}
-
-.col-cas {
-  flex: 0 0 30%;
-  color: blue;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.col-role {
-  flex: 0 0 auto;
-  text-align: right;
-  color: var(--el-text-color-secondary);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
 }
 </style>

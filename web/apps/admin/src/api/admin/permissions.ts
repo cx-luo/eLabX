@@ -1,4 +1,5 @@
 import { requestClient } from '#/api/request';
+import type { UserApi } from '../core';
 
 /**
  * Get the list of all permissions
@@ -30,4 +31,13 @@ export function updatePermissionApi(data: Record<string, any>) {
  */
 export function deletePermissionApi(params: { permissionId: string | number }) {
   return requestClient.post('/admin/permission/delete', params);
+}
+
+/**
+ * Get filtered permission list (for remote search, etc.)
+ * @param params Filter parameters
+ * @returns Promise resolving to filtered permission list and total count
+ */
+export function getPermsListWithFilterApi(params: Record<string, any>) {
+  return requestClient.post<{ items: UserApi.ElnPermission[]; total: number }>('/admin/permission/list/filter', params);
 }
