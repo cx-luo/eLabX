@@ -174,3 +174,19 @@ type ElnPermission struct {
 func (*ElnPermission) TableName() string {
 	return "eln_permission"
 }
+
+// ElnUserMessage UserMessage represents a message or notification for a user
+type ElnUserMessage struct {
+	ID       int64     `json:"id" db:"id" gorm:"primaryKey;column:id"`
+	UserId   int64     `json:"userId" db:"user_id" gorm:"column:user_id"`
+	Title    string    `json:"title" db:"title" gorm:"column:title"`
+	Content  string    `json:"content" db:"content" gorm:"column:content"`
+	IsRead   bool      `json:"isRead" db:"is_read" gorm:"column:is_read;default:false"`
+	Type     string    `json:"type" db:"type" gorm:"column:type"` // e.g., "notification", "alert", "reminder"
+	CreateAt time.Time `json:"createAt" db:"create_at" gorm:"column:create_at"`
+}
+
+// TableName returns the table name for UserMessage
+func (*ElnUserMessage) TableName() string {
+	return "eln_user_message"
+}

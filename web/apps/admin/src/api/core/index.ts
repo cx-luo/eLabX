@@ -5,3 +5,4 @@ export * from './role';
 export * from './dict';
 export * from './record';
 export * from './api';
+export * from './messages';

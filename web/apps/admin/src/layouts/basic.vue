@@ -17,13 +17,13 @@ import { useAuthStore } from '#/store';
 import LoginForm from '#/views/_core/authentication/login.vue';
 
 const notifications = ref<NotificationItem[]>([
-  // {
-  //   avatar: 'https://avatar.vercel.sh/vercel.svg?text=VB',
-  //   date: '3小时前',
-  //   isRead: true,
-  //   message: '描述信息描述信息描述信息',
-  //   title: '收到了 14 份新周报',
-  // },
+  {
+    avatar: 'https://avatar.vercel.sh/vercel.svg?text=VB',
+    date: '3小时前',
+    isRead: true,
+    message: '描述信息描述信息描述信息',
+    title: '收到了 14 份新周报',
+  },
 ]);
 
 const userStore = useUserStore();
@@ -98,8 +98,8 @@ watch(
   <BasicLayout @clear-preferences-and-logout="handleLogout">
     <template #user-dropdown>
       <UserDropdown
-        :avatar
-        :menus
+        :avatar="avatar"
+        :menus="menus"
         :text="userStore.userInfo?.realName"
         description="chengxiang.luo@foxmail.com"
         tag-text="Pro"
@@ -120,7 +120,7 @@ watch(
       </AuthenticationLoginExpiredModal>
     </template>
     <template #lock-screen>
-      <LockScreen :avatar @to-login="handleLogout" />
+      <LockScreen :avatar="avatar" @to-login="handleLogout" />
     </template>
   </BasicLayout>
 </template>
