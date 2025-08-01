@@ -3,10 +3,9 @@ import { h } from 'vue';
 import { useVbenVxeGrid, type VxeGridProps } from '#/adapter/vxe-table';
 import { $t } from '#/locales';
 import { Page, useVbenDrawer, type VbenFormProps } from '@vben/common-ui';
-import { LucideFilePenLine, LucidePencil, LucideTrash2 } from '@vben/icons';
+import { LucideFilePenLine, LucideTrash2 } from '@vben/icons';
 import { ElButton } from 'element-plus';
 import ProjectDrawer from './drawer.vue';
-import SetAuthDrawer from './set-auth.vue';
 import { deleteProjectApi, getProjectList, updateProjectApi } from '#/api';
 import { statusList } from '#/store';
 import { Icon } from '@iconify/vue';
@@ -174,33 +173,14 @@ const [Drawer, drawerApi] = useVbenDrawer({
   },
 });
 
-const [AuthDrawer, authDrawerApi] = useVbenDrawer({
-  connectedComponent: SetAuthDrawer,
-  onClosed() {
-    const data = drawerApi.getData();
-    if (data && data.needRefresh) {
-      gridApi.query();
-    }
-  },
-});
-
 function openDrawer(create: boolean, row?: any) {
   drawerApi.setData({ create, row });
   drawerApi.open();
 }
 
-function openAuthDrawer(row?: any) {
-  authDrawerApi.setData({ row });
-  authDrawerApi.open();
-}
-
 /* 创建 */
 function handleCreate() {
   openDrawer(true);
-}
-
-function handleSetAuth(row: any) {
-  openAuthDrawer(row);
 }
 
 /* 编辑 */
@@ -269,7 +249,6 @@ async function handleDelete(row: any) {
       </template>
 
       <template #action="{ row }">
-        <ElButton type="primary" link :icon="h(LucidePencil)" @click="() => handleSetAuth(row)" />
         <ElButton
           type="primary"
           link
@@ -295,6 +274,5 @@ async function handleDelete(row: any) {
       </template>
     </Grid>
     <Drawer />
-    <AuthDrawer />
   </Page>
 </template>

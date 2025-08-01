@@ -19,6 +19,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
 
 // GroupParam is used for creating and updating user groups
@@ -167,7 +168,7 @@ func DeleteGroup(c *gin.Context) {
 // AssignPermissionsToGroup assigns permissions to a user group.
 // One user can have several groups, and each group can have multiple permissions.
 func AssignPermissionsToGroup(c *gin.Context) {
-	// PermissionParam should contain GroupId and PermissionIds ([]int64)
+	// PermissionParam should contain Groups and PermissionIds ([]int64)
 	var param struct {
 		GroupId       int64   `json:"groupId" binding:"required"`
 		PermissionIds []int64 `json:"permissions" binding:"required"`
@@ -246,17 +247,21 @@ func AddUserToGroup(c *gin.Context) {
 		return
 	}
 
-	// Convert []int64 to []string for strings.Join
-	userIdStrs := make([]string, len(param.UserId))
-	for i, id := range param.UserId {
-		userIdStrs[i] = strconv.FormatInt(id, 10)
-	}
-	users := strings.Join(userIdStrs, ",")
-	// Update the users field for the group instead of creating a new group
-	if err := dao.OBCursor.Model(&types.ElnGroup{}).Where("group_id = ?", param.GroupId).
-		Update("users", users).Error; err != nil {
-		utils.InternalRequestErr(c, err)
-		return
+	// Add each user to the group in eln_user_group
+	for _, userId := range param.UserId {
+		userGroup := types.ElnUserGroup{
+			UserId:    userId,
+			GroupId:   param.GroupId,
+			Status:    1,
+			CreatedBy: 0, // Optionally set CreatedBy if available
+			CreateAt:  time.Now(),
+			UpdateAt:  time.Now(),
+		}
+		// Use Create with OnConflict to avoid duplicate primary key error
+		if err := dao.OBCursor.Clauses(clause.OnConflict{DoNothing: true}).Create(&userGroup).Error; err != nil {
+			utils.InternalRequestErr(c, err)
+			return
+		}
 	}
 
 	utils.Success(c, "Success")
@@ -272,7 +277,7 @@ func RemoveUserFromGroup(c *gin.Context) {
 		utils.BadRequestErr(c, err)
 		return
 	}
-	if err := dao.OBCursor.Where("group_id = ? AND user_id = ?", param.GroupId, param.UserId).Delete(&types.ElnGroup{}).Error; err != nil {
+	if err := dao.OBCursor.Where("group_id = ? AND user_id = ?", param.GroupId, param.UserId).Delete(&types.ElnUserGroup{}).Error; err != nil {
 		utils.InternalRequestErr(c, err)
 		return
 	}
@@ -289,21 +294,24 @@ func GetGroupUsers(c *gin.Context) {
 		return
 	}
 
-	var group struct {
-		Users string `gorm:"column:users"`
-	}
-	err := dao.OBCursor.Table("eln_group").Select("users").Where("group_id = ?", param.GroupId).Take(&group).Error
-	if err != nil {
+	var userGroups []types.ElnUserGroup
+	if err := dao.OBCursor.Where("group_id = ? AND status = 1", param.GroupId).Find(&userGroups).Error; err != nil {
 		utils.InternalRequestErr(c, err)
 		return
 	}
 
+	if len(userGroups) == 0 {
+		utils.SuccessWithData(c, "Success", gin.H{"items": []types.ElnUsers{}})
+		return
+	}
+
+	userIds := make([]int64, 0, len(userGroups))
+	for _, ug := range userGroups {
+		userIds = append(userIds, ug.UserId)
+	}
+
 	var users []types.ElnUsers
-	err = dao.OBCursor.Table("eln_users").
-		Select("eln_users.user_id, eln_users.username, eln_users.real_name, eln_users.email, eln_users.avatar, eln_users.roles, eln_users.status, eln_users.group_id, eln_users.create_at, eln_users.update_at").
-		Where("eln_users.user_id in ? and eln_users.status = 1", strings.Split(group.Users, ",")).
-		Find(&users).Error
-	if err != nil {
+	if err := dao.OBCursor.Where("user_id IN (?) AND status = 1", userIds).Find(&users).Error; err != nil {
 		utils.InternalRequestErr(c, err)
 		return
 	}
