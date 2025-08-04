@@ -107,7 +107,7 @@ const gridOptions: VxeGridProps = {
     },
     {
       title: $t('page.system.user.lastLoginIp'),
-      field: 'lastLoginIp',
+      field: 'ipAddr',
     },
     {
       title: $t('ui.table.createTime'),

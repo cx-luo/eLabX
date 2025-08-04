@@ -27,5 +27,17 @@
       "userList": "用户列表",
       "addPermissions": "添加权限"
     }
+  },
+  "permission": {
+    "title": "权限管理",
+    "permissionId": "权限ID",
+    "permissionName": "权限名称",
+    "createdBy": "创建人",
+    "description": "权限描述",
+    "status": "状态",
+    "permissionType": "权限类型",
+    "drawer": {
+      "addPermissions": "添加权限"
+    }
   }
 }

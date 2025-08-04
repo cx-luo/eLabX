@@ -20,19 +20,34 @@ import (
 // GetPermissionList 获取权限列表
 func GetPermissionList(c *gin.Context) {
 	var req struct {
-		Query string `json:"query,omitempty"`
+		Page     int    `json:"page,omitempty"`
+		PageSize int    `json:"pageSize,omitempty"`
+		Status   int8   `json:"status,omitempty"`
+		Query    string `json:"query,omitempty"`
 	}
 	if err := c.ShouldBindJSON(&req); err != nil {
 		utils.BadRequestErr(c, errors.New("invalid request body: "+err.Error()))
 		return
 	}
 
+	if req.Page <= 0 {
+		req.Page = 1
+	}
+	if req.PageSize <= 0 {
+		req.PageSize = 10
+	}
+	offset := (req.Page - 1) * req.PageSize
+
 	var permissions []types.ElnPermission
 	var total int64
 
 	db := dao.OBCursor.Model(&types.ElnPermission{})
 	if req.Query != "" {
-		db = db.Where("description LIKE ?", "%"+req.Query+"%")
+		db = db.Where("permission_name LIKE ? OR description LIKE ?", "%"+req.Query+"%", "%"+req.Query+"%")
+	}
+
+	if req.Status != 0 {
+		db = db.Where("status = ?", req.Status)
 	}
 
 	if err := db.Count(&total).Error; err != nil {
@@ -40,7 +55,7 @@ func GetPermissionList(c *gin.Context) {
 		return
 	}
 
-	if err := db.Find(&permissions).Error; err != nil {
+	if err := db.Offset(offset).Limit(req.PageSize).Find(&permissions).Error; err != nil {
 		utils.InternalRequestErr(c, err)
 		return
 	}
