@@ -270,14 +270,14 @@ func AddUserToGroup(c *gin.Context) {
 // RemoveUserFromGroup removes a user from a user group
 func RemoveUserFromGroup(c *gin.Context) {
 	var param struct {
-		GroupId int64 `json:"groupId" binding:"required"`
-		UserId  int64 `json:"userId" binding:"required"`
+		GroupId int64   `json:"groupId" binding:"required"`
+		UserId  []int64 `json:"userId" binding:"required"`
 	}
 	if err := c.ShouldBindJSON(&param); err != nil {
 		utils.BadRequestErr(c, err)
 		return
 	}
-	if err := dao.OBCursor.Where("group_id = ? AND user_id = ?", param.GroupId, param.UserId).Delete(&types.ElnUserGroup{}).Error; err != nil {
+	if err := dao.OBCursor.Where("group_id = ? AND user_id in (?)", param.GroupId, param.UserId).Delete(&types.ElnUserGroup{}).Error; err != nil {
 		utils.InternalRequestErr(c, err)
 		return
 	}

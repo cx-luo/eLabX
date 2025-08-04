@@ -11,6 +11,7 @@ import {
   getGroupPermissionsApi,
   assignPermissionsToGroupApi,
   getPermsListWithFilterApi,
+  removeUserFromGroupApi,
 } from '#/api';
 import { useToast, POSITION } from 'vue-toastification';
 import { $t } from '@vben/locales';
@@ -61,21 +62,22 @@ const [Drawer, drawerApi] = useVbenDrawer({
   async onConfirm() {
     let userIds: TreeKey[] = [];
     let permissionIds: TreeKey[] = [];
-    // 获取菜单权限
+
+    // 获取用户权限
     if (userTreeRef.value) {
       const checkedKeys = userTreeRef.value.getCheckedKeys() as TreeKey[] | undefined;
-      // Ensure selectedUserList is an array of TreeKey
-      userIds = [...(checkedKeys ?? []), ...(selectedUserList.value ?? [])];
+      // 合并已选用户列表，去重
+      userIds = Array.from(new Set([...(checkedKeys ?? []), ...((selectedUserList.value ?? []) as TreeKey[])]));
     }
 
-    // 获取API权限
+    // 获取权限
     if (permissionTreeRef.value) {
-      const checkedKeys = permissionTreeRef.value.getCheckedKeys();
-      // const halfCheckedKeys = permissionTreeRef.value.getHalfCheckedKeys();
-      permissionIds = [...checkedKeys, ...(selectedPermissionList.value ?? [])];
+      const checkedKeys = permissionTreeRef.value.getCheckedKeys() as TreeKey[] | undefined;
+      // 合并已选权限列表，去重
+      permissionIds = Array.from(new Set([...(checkedKeys ?? []), ...((selectedPermissionList.value ?? []) as TreeKey[])]));
     }
 
-    if (userIds.length <= 0 && permissionIds.length <= 0) {
+    if (userIds.length === 0 && permissionIds.length === 0) {
       toast.error($t('ui.notification.no_auth'), {
         timeout: 2000,
         position: POSITION.TOP_CENTER,
@@ -85,16 +87,35 @@ const [Drawer, drawerApi] = useVbenDrawer({
 
     setLoading(true);
     try {
-      // 更新权限，同时提交菜单权限和API权限
-      await addUserToGroupApi({
-        groupId: data.value.row.groupId,
-        userId: userIds,
-      });
+      // 更新权限，同时提交用户和权限
+      // 先获取当前分组下的所有用户
+      const currentUserIds = userTreeData.value.map((item) => item.userId);
 
-      await assignPermissionsToGroupApi({
-        groupId: data.value.row.groupId,
-        permissions: permissionIds,
-      });
+      // 需要添加的用户
+      const usersToAdd = userIds.filter((id) => !currentUserIds.includes(id));
+      // 需要移除的用户
+      const usersToRemove = currentUserIds.filter((id) => !userIds.includes(id));
+
+      if (usersToAdd.length > 0) {
+        await addUserToGroupApi({
+          groupId: data.value.row.groupId,
+          userId: usersToAdd,
+        });
+      }
+      
+      if (usersToRemove.length > 0) {
+        await removeUserFromGroupApi({
+          groupId: data.value.row.groupId,
+          userId: usersToRemove,
+        });
+      }
+
+      if (permissionIds.length > 0) {
+        await assignPermissionsToGroupApi({
+          groupId: data.value.row.groupId,
+          permissions: permissionIds,
+        });
+      }
 
       toast.success($t('ui.notification.update_success'), {
         timeout: 1000,
