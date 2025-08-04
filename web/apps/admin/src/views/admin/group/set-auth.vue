@@ -3,7 +3,6 @@ import { useVbenDrawer } from '@vben/common-ui';
 import { ref } from 'vue';
 import type { TreeInstance } from 'element-plus';
 import {
-  // 新增API相关接口
   getGroupUsersApi,
   getUserListWithFilterApi,
   type UserApi,
@@ -74,7 +73,9 @@ const [Drawer, drawerApi] = useVbenDrawer({
     if (permissionTreeRef.value) {
       const checkedKeys = permissionTreeRef.value.getCheckedKeys() as TreeKey[] | undefined;
       // 合并已选权限列表，去重
-      permissionIds = Array.from(new Set([...(checkedKeys ?? []), ...((selectedPermissionList.value ?? []) as TreeKey[])]));
+      permissionIds = Array.from(
+        new Set([...(checkedKeys ?? []), ...((selectedPermissionList.value ?? []) as TreeKey[])]),
+      );
     }
 
     if (userIds.length === 0 && permissionIds.length === 0) {
@@ -102,7 +103,7 @@ const [Drawer, drawerApi] = useVbenDrawer({
           userId: usersToAdd,
         });
       }
-      
+
       if (usersToRemove.length > 0) {
         await removeUserFromGroupApi({
           groupId: data.value.row.groupId,
@@ -145,9 +146,7 @@ const getAllKeys = (data: UserApi.ElnUser[]): number[] => {
   const keys: number[] = [];
   const traverse = (nodes: UserApi.ElnUser[]) => {
     nodes.forEach((node) => {
-      if (node.userId !== undefined && node.userId !== null) {
-        keys.push(node.userId);
-      }
+      keys.push(node.userId as number);
     });
   };
   traverse(data);

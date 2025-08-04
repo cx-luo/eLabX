@@ -1,10 +1,10 @@
 import type { UserInfo } from '@vben/types';
 
 import { requestClient } from '#/api/request';
-
+import type { TreeKey } from 'element-plus/es/components/tree/src/tree.type.mjs';
 export namespace UserApi {
   export interface ElnUser {
-    userId: number | undefined | null;
+    userId: TreeKey;
     username: string;
     realName: string;
     email: string;
