@@ -163,6 +163,7 @@ func (*ElnUserGroup) TableName() string {
 type ElnPermission struct {
 	PermissionId   int64     `json:"permissionId" db:"permission_id" gorm:"primaryKey;column:permission_id"`
 	PermissionName string    `json:"permissionName" db:"permission_name" gorm:"column:permission_name"`
+	PermissionType string    `json:"permissionType" db:"permission_type" gorm:"column:permission_type"`
 	Description    string    `json:"description" db:"description" gorm:"column:description"`
 	Status         int8      `json:"status" db:"status" gorm:"column:status;default:1"`
 	CreatedBy      int64     `json:"createdBy" db:"created_by" gorm:"column:created_by"`

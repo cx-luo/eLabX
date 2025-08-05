@@ -1,16 +1,19 @@
 # init a base image
 FROM epmlsop/indigo-service:latest
 # Create the environment:
-COPY environment.yaml .
-RUN conda env create -f environment.yaml
-# Make RUN commands use the new environment:
-SHELL ["conda", "run", "-n", "chemzero", "/bin/bash", "-c"]
-# install RDKit
-RUN conda install -c conda-forge rdkit
-# run pip to install the dependencies of the flask app
-COPY requirements.txt requirements.txt
-RUN pip install -r requirements.txt
-# The code to run when container is started:
-COPY . .
-EXPOSE 80
-ENTRYPOINT ["conda", "run", "--no-capture-output", "-n", "ai4green", "python", "Webapp/app.py"]
+# Install Go 1.20 and make
+RUN apt-get update && \
+    apt-get install -y wget make && \
+    wget https://go.dev/dl/go1.20.4.linux-amd64.tar.gz && \
+    rm -rf /usr/local/go && \
+    tar -C /usr/local -xzf go1.20.4.linux-amd64.tar.gz && \
+    rm go1.20.4.linux-amd64.tar.gz
+
+ENV PATH="/usr/local/go/bin:${PATH}"
+
+WORKDIR /app
+COPY . /app
+RUN make linux
+
+
+

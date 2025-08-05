@@ -1,0 +1,84 @@
+from flask import request
+from indigo.inchi import IndigoInchi
+
+
+class Reactant:
+    def __init__(self, obj, role, _inchi):
+        self.hash = obj.hash()
+        self.cml = obj.cml()
+        self.mw = round(obj.molecularWeight(), 3)
+        self.monoisotopicMass = round(obj.monoisotopicMass(), 3)
+        self.mostAbundantMass = round(obj.mostAbundantMass(), 3)
+        self.canonicalSmiles = obj.canonicalSmiles()
+        self.smiles = obj.smiles()
+        self.isChiral = obj.isChiral()
+        self.formula = obj.grossFormula().replace(' ', '', -1)
+        self.inChI = _inchi.getInchi(obj)
+        self.inChiKey = _inchi.getInchiKey(self.inChI)
+        self.role = role
+        self.stereoCentersCnt = obj.countStereocenters()
+
+
+@indigo_api.route("/reaction", methods=["POST"])
+@check_exceptions
+def eln_reaction():
+    """
+    Parse a reaction and return its properties and reactants/products info.
+    ---
+    tags:
+      - indigo
+    parameters:
+      - name: json_request
+        in: body
+        required: true
+        schema:
+          id: ElnReactionRequest
+          properties:
+            reactionStr:
+              type: string
+              required: true
+              description: Reaction string (e.g., RXN or reaction SMILES)
+    responses:
+      200:
+        description: Reaction and components information
+      400:
+        description: 'A problem with supplied client data'
+        schema:
+          $ref: "#/definitions/ClientError"
+      500:
+        description: 'A problem on server side'
+        schema:
+          $ref: "#/definitions/ServerError"
+    """
+    data = request.get_json(force=True)
+    reaction_str = data.get("reactionStr")
+    if not reaction_str:
+        return get_error_response("Missing 'reactionStr' in request", 400)
+    indigo = indigo_init({})
+    _inchi = IndigoInchi(indigo)
+    try:
+        rxn = indigo.loadReaction(reaction_str)
+        rxn_smiles = rxn.smiles()
+        rxn_canonical_smiles = rxn.canonicalSmiles()
+        rxn_cd_xml = rxn.cdxml()
+        rxn_cml = rxn.cml()
+        reactants = rxn.iterateReactants()
+        products = rxn.iterateProducts()
+        reactants_d = []
+        products_d = []
+        for reactant in reactants:
+            reactants_d.append(Reactant(reactant, 'reactant', _inchi).__dict__)
+        for product in products:
+            products_d.append(Reactant(product, 'product', _inchi).__dict__)
+        return jsonify({
+            "rxnCanonicalSmiles": rxn_canonical_smiles,
+            "smiles": rxn_smiles,
+            "rxnCml": rxn_cml,
+            "rxnCdXml": rxn_cd_xml,
+            "reactants": reactants_d,
+            "products": products_d
+        }), 200, {"Content-Type": "application/json"}
+    except IndigoException as e:
+        return get_error_response("Indigo error: {}".format(str(e)), 400)
+    except Exception as e:
+        return get_error_response("Server error: {}".format(str(e)), 500)
