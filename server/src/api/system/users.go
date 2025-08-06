@@ -26,14 +26,68 @@ func GetUserInfo(c *gin.Context) {
 	}
 
 	var user types.ElnUsers
-	err := dao.OBCursor.Table("eln_users").Select("username", "roles", "permissions").
-		Where("status = 1 and user_id = ?", username).Find(&user).Error
+	err := dao.OBCursor.Where("status = 1 and user_id = ?", username).Find(&user).Error
 	if err != nil {
 		utils.NotFoundError(c, fmt.Errorf("User does not exist or is unavailable. %s\n", err))
 		return
 	}
 
-	utils.SuccessWithData(c, "success", gin.H{"permissions": strings.Split(user.Permissions, ","), "username": user.Username})
+	// Get group IDs from user.GroupId (assuming it's a string of comma-separated IDs)
+	var userGroups []types.ElnUserGroup
+	err = dao.OBCursor.Model(&types.ElnUserGroup{}).Where("user_id = ? AND status = 1", user.UserId).Find(&userGroups).Error
+	if err != nil {
+		utils.InternalRequestErr(c, err)
+		return
+	}
+	var groupIds []string
+	for _, ug := range userGroups {
+		groupIds = append(groupIds, fmt.Sprintf("%d", ug.GroupId))
+	}
+
+	// Query permissions for these group IDs
+	var permissions []string
+	var permissionIds []int64
+	if len(groupIds) > 0 && groupIds[0] != "" {
+		// First, get permissions string(s) for the user's groups
+		var groupPermissions []string
+		err := dao.OBCursor.Model(&types.ElnGroup{}).Select("permissions").Where("group_id IN (?)", groupIds).Pluck("permissions", &groupPermissions).Error
+		if err != nil {
+			utils.InternalRequestErr(c, err)
+			return
+		}
+		// Collect all permission IDs from all groups
+		permissionIdSet := make(map[int64]struct{})
+		for _, perms := range groupPermissions {
+			for _, pidStr := range strings.Split(perms, ",") {
+				pidStr = strings.TrimSpace(pidStr)
+				if pidStr == "" {
+					continue
+				}
+				var pid int64
+				_, err := fmt.Sscan(pidStr, &pid)
+				if err == nil {
+					permissionIdSet[pid] = struct{}{}
+				}
+			}
+		}
+		permissionIds = make([]int64, 0, len(permissionIdSet))
+		for pid := range permissionIdSet {
+			permissionIds = append(permissionIds, pid)
+		}
+		// Now, get permission names
+		if len(permissionIds) > 0 {
+			err = dao.OBCursor.Model(&types.ElnPermission{}).Where("permission_id in (?)", permissionIds).Pluck("permission_name", &permissions).Error
+			if err != nil {
+				utils.InternalRequestErr(c, err)
+				return
+			}
+		}
+	}
+
+	utils.SuccessWithData(c, "success", gin.H{
+		"permissions": permissions,
+		"username":    user.Username,
+	})
 	return
 }
 

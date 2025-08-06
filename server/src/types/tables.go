@@ -16,11 +16,9 @@ type ElnUsers struct {
 	Email        string    `json:"email" db:"email" gorm:"email"`
 	IpAddr       string    `json:"ipAddr" db:"ip_addr" gorm:"ip_addr"`
 	PasswordHash string    `json:"passwordHash" db:"password_hash" gorm:"password_hash"`
-	Avatar       string    `json:"avatar" db:"avatar" gorm:"avatar"`                // 头像URL
-	Roles        string    `json:"roles" db:"roles" gorm:"roles"`                   // 用户角色数组
-	Permissions  string    `json:"permissions" db:"permissions" gorm:"permissions"` // 用户权限数组
+	Avatar       string    `json:"avatar" db:"avatar" gorm:"avatar"` // 头像URL
+	Roles        string    `json:"roles" db:"roles" gorm:"roles"`    // 用户角色数组
 	Status       int64     `json:"status" db:"status" gorm:"status"`
-	GroupId      string    `json:"groupId" db:"group_id" gorm:"group_id"`    // 组ID
 	CreateAt     time.Time `json:"createAt" db:"create_at" gorm:"create_at"` // 创建时间
 	UpdateAt     time.Time `json:"updateAt" db:"update_at" gorm:"update_at"` // 更新时间
 }
@@ -123,7 +121,6 @@ type ElnGroup struct {
 	Status      int8      `json:"status" db:"status" gorm:"status"`
 	CreatedBy   int64     `json:"createdBy" db:"created_by" gorm:"created_by"`
 	Permissions string    `json:"permissions" db:"permissions" gorm:"permissions"`    // permission array
-	Users       string    `json:"users" db:"users" gorm:"users"`                      // permission array
 	CreateAt    time.Time `json:"createAt,omitempty" db:"create_at" gorm:"create_at"` // creation time
 	UpdateAt    time.Time `json:"updateAt,omitempty" db:"update_at" gorm:"update_at"` // update time
 }
@@ -151,7 +148,7 @@ func (*ElnUserGroup) TableName() string {
 // // ElnGroupPermission represents the association between a group and a permission
 // type ElnGroupPermission struct {
 // 	GroupPermissionId int64     `json:"groupPermissionId" db:"group_permission_id" gorm:"primaryKey;column:group_permission_id"`
-// 	GroupId           int64     `json:"groupId" db:"group_id" gorm:"column:group_id"`
+// 	Groups           int64     `json:"groupId" db:"group_id" gorm:"column:group_id"`
 // 	PermissionId      int64     `json:"permissionId" db:"permission_id" gorm:"column:permission_id"`
 // 	CreateAt          time.Time `json:"createAt,omitempty" db:"create_at" gorm:"column:create_at"`
 // 	UpdateAt          time.Time `json:"updateAt,omitempty" db:"update_at" gorm:"update_at"` // update time
@@ -166,6 +163,7 @@ func (*ElnUserGroup) TableName() string {
 type ElnPermission struct {
 	PermissionId   int64     `json:"permissionId" db:"permission_id" gorm:"primaryKey;column:permission_id"`
 	PermissionName string    `json:"permissionName" db:"permission_name" gorm:"column:permission_name"`
+	PermissionType string    `json:"permissionType" db:"permission_type" gorm:"column:permission_type"`
 	Description    string    `json:"description" db:"description" gorm:"column:description"`
 	Status         int8      `json:"status" db:"status" gorm:"column:status;default:1"`
 	CreatedBy      int64     `json:"createdBy" db:"created_by" gorm:"column:created_by"`
@@ -176,4 +174,20 @@ type ElnPermission struct {
 // TableName returns the table name for ElnPermission
 func (*ElnPermission) TableName() string {
 	return "eln_permission"
+}
+
+// ElnUserMessage UserMessage represents a message or notification for a user
+type ElnUserMessage struct {
+	ID       int64     `json:"id" db:"id" gorm:"primaryKey;column:id"`
+	UserId   int64     `json:"userId" db:"user_id" gorm:"column:user_id"`
+	Title    string    `json:"title" db:"title" gorm:"column:title"`
+	Content  string    `json:"content" db:"content" gorm:"column:content"`
+	IsRead   bool      `json:"isRead" db:"is_read" gorm:"column:is_read;default:false"`
+	Type     string    `json:"type" db:"type" gorm:"column:type"` // e.g., "notification", "alert", "reminder"
+	CreateAt time.Time `json:"createAt" db:"create_at" gorm:"column:create_at"`
+}
+
+// TableName returns the table name for UserMessage
+func (*ElnUserMessage) TableName() string {
+	return "eln_user_message"
 }

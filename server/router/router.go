@@ -9,32 +9,12 @@ package router
 
 import (
 	_ "eLabX/docs"
-	middleware2 "eLabX/middleware"
+	"eLabX/middleware"
 	"eLabX/src/api/casbin"
 	"github.com/gin-gonic/gin"
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
 )
-
-// 为了更好地管理和维护 API 路由，将不同模块的路由注册拆分到多个文件中。
-// 例如：auth_routes.go, user_routes.go, casbin_routes.go, system_routes.go, other_routes.go
-// 每个文件中定义对应的 registerXXXRoutes 函数，并在此处导入和调用。
-
-// 例如：
-// import "eLabX/router/auth_routes"
-// import "eLabX/router/user_routes"
-// import "eLabX/router/casbin_routes"
-// import "eLabX/router/system_routes"
-// import "eLabX/router/other_routes"
-
-// 在 NewRouter 中调用：
-// auth_routes.RegisterAuthRoutes(router)
-// user_routes.RegisterUserRoutes(router)
-// casbin_routes.RegisterCasbinRoutes(router)
-// system_routes.RegisterSystemRoutes(router)
-// other_routes.RegisterOtherRoutes(router)
-
-// 这样可以实现 API 路由的模块化和解耦，便于后续维护和扩展。
 
 // NewRouter returns a new router.
 func NewRouter(outputPath string, loglevel string) *gin.Engine {
@@ -44,14 +24,18 @@ func NewRouter(outputPath string, loglevel string) *gin.Engine {
 	// 为需要中间件的路由组注册中间件
 
 	// 使用 Zap 中间件
-	router.Use(middleware2.GinLogger(), middleware2.GinRecovery(true))
+	router.Use(middleware.GinLogger(), middleware.GinRecovery(true))
 
 	// 注册其他中间件
-	router.Use(middleware2.CORS())
+	router.Use(middleware.CORS())
 
-	router.Use(middleware2.JwtAuth())
+	router.Use(middleware.JwtAuth())
 
-	router.Use(middleware2.CasbinMiddleware())
+	// Idempotency middleware for idempotent POST/PUT/PATCH requests
+	// Note: This middleware is only effective for HTTP requests with an Idempotency-Key header.
+	router.Use(middleware.GinIdempotencyMiddleware())
+
+	router.Use(middleware.CasbinMiddleware())
 
 	registerAuthRoutes(router)
 	// 注册用户相关路由

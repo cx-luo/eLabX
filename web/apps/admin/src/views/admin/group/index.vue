@@ -233,9 +233,9 @@ async function handleDelete(row: any) {
 
 <template>
   <Page auto-content-height>
-    <Grid :table-title="$t('admin.title')">
+    <Grid :table-title="$t('admin.group.title')">
       <template #toolbar-tools>
-        <el-button class="mr-2" type="primary" v-permission="['admin:project:create']" @click="handleCreate">
+        <el-button class="mr-2" type="primary" v-permission="['admin:group:create']" @click="handleCreate">
           {{ $t('admin.button.create') }}
         </el-button>
         <!--        <el-button class="mr-2" @click="expandAll">-->
@@ -247,12 +247,12 @@ async function handleDelete(row: any) {
       </template>
 
       <template #title="{ row }">
-        <span :style="{ marginRight: '15px' }">{{ $t(row.meta.name) }}</span>
+        <span :style="{ marginRight: '15px' }">{{ row.groupName }}</span>
       </template>
 
       <template #icon="{ row }">
         <div class="flex h-full items-center justify-center">
-          <Icon v-if="row.meta.icon !== undefined" :icon="row.meta.icon" class="size-4" />
+          <Icon v-if="row.meta.icon !== undefined" icon="mdi:group" class="size-4" />
         </div>
       </template>
 
@@ -264,7 +264,7 @@ async function handleDelete(row: any) {
           :active-text="$t('ui.switch.active')"
           :inactive-text="$t('ui.switch.inactive')"
           @change="(checked: boolean) => handleStatusChanged(row, checked)"
-          :disabled="!hasPermission(['admin:project:update'])"
+          :disabled="!hasPermission(['admin:group:update'])"
         />
       </template>
 
@@ -273,7 +273,7 @@ async function handleDelete(row: any) {
         <ElButton
           type="primary"
           link
-          v-permission="['admin:project:update']"
+          v-permission="['admin:group:update']"
           :icon="h(LucideFilePenLine)"
           @click="() => handleEdit(row)"
         />
@@ -281,7 +281,7 @@ async function handleDelete(row: any) {
         <el-popconfirm
           :title="
             $t('ui.text.do_you_want_delete', {
-              moduleName: $t('page.system.menu.module'),
+              moduleName: $t('admin.group.title'),
             })
           "
           :confirm-button-text="$t('ui.button.ok')"
@@ -289,7 +289,7 @@ async function handleDelete(row: any) {
           @confirm="() => handleDelete(row)"
         >
           <template #reference>
-            <ElButton type="danger" v-permission="['admin:project:delete']" link :icon="LucideTrash2" />
+            <ElButton type="danger" v-permission="['admin:group:delete']" link :icon="LucideTrash2" />
           </template>
         </el-popconfirm>
       </template>

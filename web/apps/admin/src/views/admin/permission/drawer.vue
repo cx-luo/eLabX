@@ -3,7 +3,7 @@ import { computed, ref } from 'vue';
 import { useVbenDrawer } from '@vben/common-ui';
 import { $t } from '@vben/locales';
 import { useVbenForm } from '#/adapter/form';
-import { createGroupApi, updateGroupApi } from '#/api';
+import { createPermissionApi, updatePermissionApi } from '#/api';
 import { statusList } from '#/store';
 import { useToast, POSITION } from 'vue-toastification';
 
@@ -13,15 +13,21 @@ const data = ref();
 
 const getTitle = computed(() =>
   data.value?.create
-    ? $t('ui.modal.create', { moduleName: $t('page.system.menu.module') })
-    : $t('ui.modal.update', { moduleName: $t('page.system.menu.module') }),
+    ? $t('ui.modal.create', { moduleName: $t('admin.permission.title') })
+    : $t('ui.modal.update', { moduleName: $t('admin.permission.title') }),
 );
 const newSchema = ref([
   {
     component: 'Input',
-    fieldName: 'groupId',
-    label: $t('admin.group.groupId'),
+    fieldName: 'permissionId',
+    label: $t('admin.permission.permissionId'),
     disabled: true,
+    rules: 'required',
+  },
+  {
+    component: 'Input',
+    fieldName: 'permissionName',
+    label: $t('admin.permission.permissionName'),
     rules: 'required',
     componentProps: {
       placeholder: $t('ui.placeholder.input'),
@@ -29,8 +35,8 @@ const newSchema = ref([
   },
   {
     component: 'Input',
-    fieldName: 'groupName',
-    label: $t('admin.group.groupName'),
+    fieldName: 'permissionType',
+    label: $t('admin.permission.permissionType'),
     rules: 'required',
     componentProps: {
       placeholder: $t('ui.placeholder.input'),
@@ -40,7 +46,7 @@ const newSchema = ref([
   {
     component: 'Input',
     fieldName: 'description',
-    label: $t('admin.group.description'),
+    label: $t('admin.permission.description'),
     componentProps: {
       placeholder: $t('ui.placeholder.input'),
       allowClear: true,
@@ -49,7 +55,7 @@ const newSchema = ref([
   {
     component: 'InputNumber',
     fieldName: 'createdBy',
-    label: $t('admin.group.createdBy'),
+    label: $t('admin.permission.createdBy'),
     componentProps: {
       placeholder: $t('ui.placeholder.input'),
       allowClear: true,
@@ -81,7 +87,7 @@ const [BaseForm, baseFormApi] = useVbenForm({
   // Add new group or modify group info
   schema: computed(() => {
     if (data.value?.create) {
-      return newSchema.value.filter((item) => item.fieldName !== 'groupId');
+      return newSchema.value.filter((item) => item.fieldName !== 'permissionId');
     }
     return newSchema.value;
   }),
@@ -105,7 +111,7 @@ const [Drawer, drawerApi] = useVbenDrawer({
     const values = await baseFormApi.getValues();
 
     try {
-      await (data.value?.create ? createGroupApi(values) : updateGroupApi(values));
+      await (data.value?.create ? createPermissionApi(values) : updatePermissionApi(values));
 
       toast.success(data.value?.create ? $t('ui.notification.create_success') : $t('ui.notification.update_success'), {
         timeout: 1000,

@@ -1,13 +1,10 @@
 <script lang="ts" setup>
-import { h } from 'vue';
 import { useVbenVxeGrid, type VxeGridProps } from '#/adapter/vxe-table';
 import { $t } from '#/locales';
 import { Page, useVbenDrawer, type VbenFormProps } from '@vben/common-ui';
-import { LucideFilePenLine, LucidePencil, LucideTrash2 } from '@vben/icons';
 import { ElButton } from 'element-plus';
 import GroupDrawer from './drawer.vue';
-import SetAuthDrawer from './set-auth.vue';
-import { deleteGroupApi, getGroupListApi, updateGroupApi } from '#/api';
+import { deletePermissionApi, getGroupListApi, getPermissionListApi, updateGroupApi, updatePermissionApi } from '#/api';
 import { statusList } from '#/store';
 import { Icon } from '@iconify/vue';
 import { useToast, POSITION } from 'vue-toastification';
@@ -71,10 +68,10 @@ const gridOptions: VxeGridProps = {
   proxyConfig: {
     ajax: {
       query: async ({ page }, formValues) => {
-        return await getGroupListApi({
+        return await getPermissionListApi({
           page: page.currentPage,
           pageSize: page.pageSize,
-          name: formValues.name,
+          query: formValues.name,
           status: formValues.status,
         });
       },
@@ -83,23 +80,23 @@ const gridOptions: VxeGridProps = {
 
   columns: [
     {
-      title: $t('admin.group.groupId'),
-      field: 'groupId',
+      title: $t('admin.permission.permissionId'),
+      field: 'permissionId',
       fixed: 'left',
       width: 'auto',
     },
     {
-      title: $t('admin.group.groupName'),
-      field: 'groupName',
+      title: $t('admin.permission.permissionName'),
+      field: 'permissionName',
       width: 'auto',
     },
     {
-      title: $t('admin.group.createdBy'),
+      title: $t('admin.permission.createdBy'),
       field: 'createdBy',
       minWidth: 120,
     },
     {
-      title: $t('admin.group.description'),
+      title: $t('admin.permission.description'),
       field: 'description',
       minWidth: 160,
     },
@@ -110,8 +107,8 @@ const gridOptions: VxeGridProps = {
       width: 80,
     },
     {
-      title: $t('admin.group.permissions'),
-      field: 'permissions',
+      title: $t('admin.permission.permissionType'),
+      field: 'permissionType',
       minWidth: 120,
       showOverflow: true,
     },
@@ -146,7 +143,7 @@ async function handleStatusChanged(row: any, checked: boolean) {
   row.pending = true;
   row.status = checked ? 1 : 2;
   try {
-    await updateGroupApi({ ...row });
+    await updatePermissionApi({ ...row });
 
     toast.success($t('ui.notification.update_success'), {
       timeout: 1000,
@@ -174,24 +171,9 @@ const [Drawer, drawerApi] = useVbenDrawer({
   },
 });
 
-const [AuthDrawer, authDrawerApi] = useVbenDrawer({
-  connectedComponent: SetAuthDrawer,
-  onClosed() {
-    const data = drawerApi.getData();
-    if (data && data.needRefresh) {
-      gridApi.query();
-    }
-  },
-});
-
 function openDrawer(create: boolean, row?: any) {
   drawerApi.setData({ create, row });
   drawerApi.open();
-}
-
-function openAuthDrawer(row?: any) {
-  authDrawerApi.setData({ row });
-  authDrawerApi.open();
 }
 
 /* 创建 */
@@ -199,43 +181,27 @@ function handleCreate() {
   openDrawer(true);
 }
 
-function handleSetAuth(row: any) {
-  openAuthDrawer(row);
-}
-
-/* 编辑 */
 function handleEdit(row: any) {
   openDrawer(false, row);
 }
 
-/* 删除 */
-async function handleDelete(row: any) {
-  row.pending = true;
-  try {
-    await deleteGroupApi({ groupId: row.groupId });
-
+function handleDelete(row: any) {
+  deletePermissionApi({ permissionId: row.permissionId }).then(() => {
     toast.success($t('ui.notification.delete_success'), {
       timeout: 1000,
       position: POSITION.TOP_RIGHT,
       toastClassName: 'toastification-success',
     });
-  } catch {
-    // toast.error($t('ui.notification.delete_failed'), {
-    //   timeout: 2000,
-    //   position: POSITION.TOP_CENTER,
-    // });
-  } finally {
-    row.pending = false;
-    await gridApi.query();
-  }
+    gridApi.query();
+  });
 }
 </script>
 
 <template>
   <Page auto-content-height>
-    <Grid :table-title="$t('admin.title')">
+    <Grid :table-title="$t('admin.permission.title')">
       <template #toolbar-tools>
-        <el-button class="mr-2" type="primary" v-permission="['admin:project:create']" @click="handleCreate">
+        <el-button class="mr-2" type="primary" v-permission="['admin:permission:create']" @click="handleCreate">
           {{ $t('admin.button.create') }}
         </el-button>
         <!--        <el-button class="mr-2" @click="expandAll">-->
@@ -247,12 +213,13 @@ async function handleDelete(row: any) {
       </template>
 
       <template #title="{ row }">
-        <span :style="{ marginRight: '15px' }">{{ $t(row.meta.name) }}</span>
+        <span :style="{ marginRight: '15px' }">{{ row.permissionName }}</span>
       </template>
 
       <template #icon="{ row }">
         <div class="flex h-full items-center justify-center">
-          <Icon v-if="row.meta.icon !== undefined" :icon="row.meta.icon" class="size-4" />
+          <Icon v-if="row.permissionType === 'menu'" icon="mdi:menu" class="size-4" />
+          <Icon v-if="row.permissionType === 'api'" icon="mdi:api" class="size-4" />
         </div>
       </template>
 
@@ -264,37 +231,19 @@ async function handleDelete(row: any) {
           :active-text="$t('ui.switch.active')"
           :inactive-text="$t('ui.switch.inactive')"
           @change="(checked: boolean) => handleStatusChanged(row, checked)"
-          :disabled="!hasPermission(['admin:project:update'])"
+          :disabled="!hasPermission(['admin:permission:update'])"
         />
       </template>
 
       <template #action="{ row }">
-        <ElButton type="primary" link :icon="h(LucidePencil)" @click="() => handleSetAuth(row)" />
-        <ElButton
-          type="primary"
-          link
-          v-permission="['admin:project:update']"
-          :icon="h(LucideFilePenLine)"
-          @click="() => handleEdit(row)"
-        />
-
-        <el-popconfirm
-          :title="
-            $t('ui.text.do_you_want_delete', {
-              moduleName: $t('page.system.menu.module'),
-            })
-          "
-          :confirm-button-text="$t('ui.button.ok')"
-          :cancElButton-text="$t('ui.button.cancel')"
-          @confirm="() => handleDelete(row)"
-        >
-          <template #reference>
-            <ElButton type="danger" v-permission="['admin:project:delete']" link :icon="LucideTrash2" />
-          </template>
-        </el-popconfirm>
+        <el-button type="primary" link v-permission="['admin:permission:update']" @click="handleEdit(row)">
+          <Icon icon="mdi:pencil" class="size-4" />
+        </el-button>
+        <el-button type="danger" link v-permission="['admin:permission:delete']" @click="handleDelete(row)">
+          <Icon icon="mdi:trash-can" class="size-4" />
+        </el-button>
       </template>
     </Grid>
     <Drawer />
-    <AuthDrawer />
   </Page>
 </template>

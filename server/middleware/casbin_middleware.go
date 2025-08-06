@@ -10,6 +10,8 @@ package middleware
 import (
 	"database/sql"
 	"eLabX/src/dao"
+	"eLabX/src/types"
+	"eLabX/src/utils"
 	"errors"
 	"fmt"
 	"github.com/casbin/casbin/v2"
@@ -67,15 +69,12 @@ func CasbinMiddleware() gin.HandlerFunc {
 				return
 			}
 		}
-		user, _ := c.Get("username") // 假设你通过 JWT 或 Session 获取了用户信息
 		//roles := user.(map[string]interface{})["roles"].([]string)
-		var permissions string
-		err := dao.OBCursor.Table("eln_users").Select("permissions").Where("user_id = ?", user).Find(&permissions).Error
+		roles, err := getUserPermissions(c)
 		if errors.Is(err, sql.ErrNoRows) {
 			c.AbortWithStatusJSON(http.StatusForbidden, gin.H{"error": "Not find permission."})
 			return
 		}
-		roles := strings.Split(permissions, ",")
 		enforcer, err := setupCasbin(dao.OBCursor)
 
 		if err != nil {
@@ -96,4 +95,68 @@ func CasbinMiddleware() gin.HandlerFunc {
 
 		c.AbortWithStatusJSON(http.StatusForbidden, gin.H{"error": "No access permission."})
 	}
+}
+
+func getUserPermissions(c *gin.Context) ([]string, error) {
+	username, exists := c.Get("username")
+	if !exists {
+		return nil, errors.New("User does not exist or is unavailable.\n")
+	}
+	var user types.ElnUsers
+	err := dao.OBCursor.Where("status = 1 and user_id = ?", username).Find(&user).Error
+	if err != nil {
+		utils.NotFoundError(c, fmt.Errorf("User does not exist or is unavailable. %s\n", err))
+		return nil, fmt.Errorf("User does not exist or is unavailable. %s\n", err)
+	}
+
+	// Get group IDs from user.GroupId (assuming it's a string of comma-separated IDs)
+	var userGroups []types.ElnUserGroup
+	err = dao.OBCursor.Model(&types.ElnUserGroup{}).Where("user_id = ? AND status = 1", user.UserId).Find(&userGroups).Error
+	if err != nil {
+		return nil, err
+	}
+	var groupIds []string
+	for _, ug := range userGroups {
+		groupIds = append(groupIds, fmt.Sprintf("%d", ug.GroupId))
+	}
+
+	// Query permissions for these group IDs
+	var permissions []string
+	var permissionIds []int64
+	if len(groupIds) > 0 && groupIds[0] != "" {
+		// First, get permissions string(s) for the user's groups
+		var groupPermissions []string
+		err := dao.OBCursor.Model(&types.ElnGroup{}).Select("permissions").Where("group_id IN (?)", groupIds).Pluck("permissions", &groupPermissions).Error
+		if err != nil {
+			return nil, err
+		}
+		// Collect all permission IDs from all groups
+		permissionIdSet := make(map[int64]struct{})
+		for _, perms := range groupPermissions {
+			for _, pidStr := range strings.Split(perms, ",") {
+				pidStr = strings.TrimSpace(pidStr)
+				if pidStr == "" {
+					continue
+				}
+				var pid int64
+				_, err := fmt.Sscan(pidStr, &pid)
+				if err == nil {
+					permissionIdSet[pid] = struct{}{}
+				}
+			}
+		}
+		permissionIds = make([]int64, 0, len(permissionIdSet))
+		for pid := range permissionIdSet {
+			permissionIds = append(permissionIds, pid)
+		}
+		// Now, get permission names
+		if len(permissionIds) > 0 {
+			err = dao.OBCursor.Model(&types.ElnPermission{}).Where("permission_id in (?)", permissionIds).Pluck("permission_name", &permissions).Error
+			if err != nil {
+				return nil, err
+			}
+		}
+	}
+
+	return permissions, nil
 }

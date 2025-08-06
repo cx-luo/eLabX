@@ -47,4 +47,11 @@ func registerSystemRoutes(r *gin.Engine) {
 		roleGroup.GET("/info/:id", system.RoleInfo)
 		roleGroup.POST("/update", system.UpdateRole)
 	}
+
+	userMsgGroup := systemGroup.Group("/msg")
+	{
+		userMsgGroup.POST("/list", system.GetUserMessages)
+		userMsgGroup.POST("/read", system.MarkMessageAsRead)
+		userMsgGroup.POST("/read/all", system.MarkAllMessagesAsRead)
+	}
 }
