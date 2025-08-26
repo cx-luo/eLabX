@@ -1,0 +1,39 @@
+{
+  "title": "ELN Management",
+  "project": {
+    "title": "Project Management",
+    "module": "Project",
+    "projectId": "Project ID",
+    "projectName": "Project Name",
+    "createdBy": "Created By",
+    "description": "Project Description",
+    "status": "Status",
+    "permissions": "Permissions"
+  },
+  "button": {
+    "create": "Create Project",
+    "delete": "Delete Project",
+    "update": "Update Project"
+  },
+  "group": {
+    "title": "Group Management",
+    "groupId": "Group ID",
+    "groupName": "Group Name",
+    "createdBy": "Created By",
+    "description": "Group Description",
+    "status": "Status",
+    "permissions": "Permissions"
+  },
+  "permission": {
+    "title": "Permission Management",
+    "permissionId": "Permission ID",
+    "permissionName": "Permission Name",
+    "createdBy": "Created By",
+    "description": "Description",
+    "status": "Status",
+    "permissionType": "Permission Type",
+    "drawer": {
+      "addPermissions": "Add Permissions"
+    }
+  }
+}
