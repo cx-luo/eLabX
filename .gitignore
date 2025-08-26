@@ -52,3 +52,6 @@ vite.config.ts.*
 .history
 server/conf/.env.yaml
 server/conf/config.yaml
+/web/apps/admin/.vite/deps/_metadata.json
+/web/apps/admin/.vite/deps/package.json
+/.vscode/settings.json

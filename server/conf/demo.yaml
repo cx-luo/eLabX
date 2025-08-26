@@ -1,0 +1,27 @@
+mysql:
+  host: localhost
+  port: 3306
+  user: elabx_admin
+  passwd: Elabx1234
+  database: elabx
+
+service:
+  port: 18002
+  backup: false
+  upload_file_dir: /app/elabx/upload/
+
+redis:
+  host: localhost
+  port: 6379
+
+indigo:
+  host: localhost
+  port: 8002
+
+output:
+  loglevel: info
+  logfile: log/elabx_svr_web.log
+  serviceLog: log/elabx_svr.log
+  maxSize: 8
+  maxBackups: 3
+  maxAge: 7
