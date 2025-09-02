@@ -44,6 +44,27 @@ COPY conf/elabx.conf /etc/supervisor/conf.d/elabx.auto.conf
 # Create log directory for supervisor
 RUN mkdir -p /var/log/supervisor
 
+# Install MinIO server
+RUN wget https://dl.min.io/server/minio/release/linux-amd64/minio && \
+    chmod +x minio && \
+    mv minio /usr/local/bin/
+
+# Create MinIO data directory
+RUN mkdir -p /data/minio
+
+# Create a minimal supervisor config for MinIO
+RUN bash -c 'cat > /etc/supervisor/conf.d/minio.auto.conf <<EOF
+[program:minio]
+command=/usr/local/bin/minio server /data/minio --console-address ":9001"
+autostart=true
+autorestart=true
+stdout_logfile=/var/log/supervisor/minio.out.log
+stderr_logfile=/var/log/supervisor/minio.err.log
+startsecs=5
+environment=MINIO_ROOT_USER=minioadmin,MINIO_ROOT_PASSWORD=minioadmin
+EOF'
+
+
 # Set the container to run supervisord on startup
 CMD ["/usr/bin/supervisord", "-n", "-c", "/etc/supervisor/supervisord.conf"]
 

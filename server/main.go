@@ -47,12 +47,23 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	dao.OBCursor = dao.GetMysqlCursor(utils.GlobalConfig.Mysql.Host, utils.GlobalConfig.Mysql.Port, utils.GlobalConfig.Mysql.User, utils.GlobalConfig.Mysql.Passwd, utils.GlobalConfig.Mysql.Database)
+	// Initialize MySQL connection
+	dao.GetMysqlCursor(utils.GlobalConfig.Mysql.Host, utils.GlobalConfig.Mysql.Port, utils.GlobalConfig.Mysql.User, utils.GlobalConfig.Mysql.Passwd, utils.GlobalConfig.Mysql.Database)
+	// Initialize MinIO client
+	dao.ConnectToMinio(utils.GlobalConfig.Minio.Endpoint, utils.GlobalConfig.Minio.AccessKeyID, utils.GlobalConfig.Minio.SecretAccessKey, utils.GlobalConfig.Minio.UseSSL)
+	// Initialize Redis client
+	dao.GetRedisClient(fmt.Sprintf("%s:%d", utils.GlobalConfig.Redis.Host, utils.GlobalConfig.Redis.Port),
+		"", // If you have a password, replace "" with utils.GlobalConfig.Redis.Password
+		0,  // If you use a different DB index, replace 0 accordingly
+	)
+	// Initialize router
 	r := router.NewRouter(config.Output.Logfile, config.Output.Loglevel)
 	utils.GetAllRoutes(r)
-	err = r.Run(fmt.Sprintf(":%d", utils.GlobalConfig.Service.Port))
-	if err != nil {
-		panic(err)
+
+	// Start server
+	addr := fmt.Sprintf(":%d", utils.GlobalConfig.Service.Port)
+	if err := r.Run(addr); err != nil {
+		panic(fmt.Sprintf("failed to start server: %v", err))
 	}
 	//utils.Logger.Info(r.Run(fmt.Sprintf(":%d", utils.GlobalConfig.Service.Port)))
 }

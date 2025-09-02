@@ -17,7 +17,7 @@ COPY web/ /web/
 
 # Install deps and build, using pnpm store cache if available
 RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --frozen-lockfile
-RUN pnpm --filter @elabx/admin build
+RUN pnpm build:ele
 
 
 ###############################
@@ -29,6 +29,7 @@ WORKDIR /build/server
 
 # Cache go mod first
 COPY server/go.mod server/go.sum ./
+ENV GOPROXY=https://goproxy.cn,direct
 RUN go mod download
 
 # Copy the rest of the server source
@@ -54,7 +55,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends nginx superviso
     && rm -rf /var/lib/apt/lists/*
 
 # Directories for server and logs
-RUN mkdir -p /usr/local/elabx/conf /usr/local/elabx/log /usr/local/elabx/upload /var/log/supervisor
+RUN mkdir -p /usr/local/elabx/conf /usr/local/elabx/log /var/log/supervisor
 
 # Copy server binary
 COPY --from=go-builder /build/server/elabx /usr/local/elabx/elabx
@@ -65,6 +66,26 @@ COPY server/conf/demo.yaml /usr/local/elabx/conf/.env.yaml
 # Patch Indigo API to include elabx adjustments
 COPY server/3rd/indigo.patch /tmp/indigo.patch
 RUN cat /tmp/indigo.patch >> /srv/api/v2/indigo_api.py && rm /tmp/indigo.patch
+
+# Install MinIO server
+RUN wget https://dl.min.io/server/minio/release/linux-amd64/minio && \
+    chmod +x minio && \
+    mv minio /usr/local/bin/
+
+# Create MinIO data directory
+RUN mkdir -p /data/minio
+
+# Supervisor program: minio
+RUN bash -c 'cat > /etc/supervisor/conf.d/minio.auto.conf <<EOF
+[program:minio]
+command=/usr/local/bin/minio server /data/minio --console-address ":9001"
+autostart=true
+autorestart=true
+stdout_logfile=/var/log/supervisor/minio.out.log
+stderr_logfile=/var/log/supervisor/minio.err.log
+startsecs=5
+environment=MINIO_ROOT_USER=minioadmin,MINIO_ROOT_PASSWORD=minioadmin
+EOF'
 
 # Copy built web to nginx html
 COPY --from=web-builder /web/apps/admin/dist /usr/share/nginx/html
@@ -77,7 +98,7 @@ COPY server/conf/elabx.conf /etc/supervisor/conf.d/elabx.auto.conf
 RUN bash -lc 'cat > /etc/supervisor/conf.d/nginx.auto.conf <<EOF\n[program:nginx]\ncommand=/usr/sbin/nginx -g "daemon off;"\nautostart=true\nautorestart=true\nstdout_logfile=/var/log/supervisor/nginx.out.log\nstderr_logfile=/var/log/supervisor/nginx.err.log\nstartsecs=5\nEOF'
 
 # Expose frontend and backend ports
-EXPOSE 8080 18002
+EXPOSE 8080 18002 9001 9000
 
 # Run supervisor to manage both processes
 CMD ["/usr/bin/supervisord", "-n", "-c", "/etc/supervisor/supervisord.conf"]

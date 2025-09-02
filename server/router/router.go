@@ -11,6 +11,7 @@ import (
 	_ "eLabX/docs"
 	"eLabX/middleware"
 	"eLabX/src/api/casbin"
+
 	"github.com/gin-gonic/gin"
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
@@ -51,6 +52,7 @@ func NewRouter(outputPath string, loglevel string) *gin.Engine {
 	registerEtlRoutes(router)
 
 	registerAdminRoutes(router)
+
 	return router
 }
 

@@ -17,6 +17,7 @@ type Config struct {
 	Service Service `json:"service" yaml:"service"`
 	Redis   Redis   `json:"redis" yaml:"redis"`
 	Output  Output  `json:"output" yaml:"output"`
+	Minio   Minio   `json:"minio" yaml:"minio"`
 }
 type Mysql struct {
 	Host     string `json:"host" yaml:"host"`
@@ -33,6 +34,13 @@ type Service struct {
 type Redis struct {
 	Host string `json:"host" yaml:"host"`
 	Port int    `json:"port" yaml:"port"`
+}
+
+type Minio struct {
+	Endpoint        string `json:"endpoint" yaml:"endpoint"`
+	AccessKeyID     string `json:"accessKeyID" yaml:"accessKeyID"`
+	SecretAccessKey string `json:"secretAccessKey" yaml:"secretAccessKey"`
+	UseSSL          bool   `json:"useSSL" yaml:"useSSL"`
 }
 
 type Output struct {

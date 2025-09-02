@@ -8,7 +8,13 @@ mysql:
 service:
   port: 18002
   backup: false
-  upload_file_dir: /app/elabx/upload/
+
+minio:
+  endpoint: localhost:9000
+  accessKeyID: minioadmin
+  secretAccessKey: minioadmin
+  useSSL: false
+  bucket: elabx
 
 redis:
   host: localhost

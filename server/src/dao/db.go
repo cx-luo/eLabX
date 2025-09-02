@@ -10,65 +10,94 @@ package dao
 import (
 	"context"
 	"fmt"
+	"time"
+
 	localMysql "github.com/go-sql-driver/mysql"
+	minio "github.com/minio/minio-go/v7"
+	"github.com/minio/minio-go/v7/pkg/credentials"
 	"github.com/redis/go-redis/v9"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
-	"time"
 )
 
-func GetMysqlCursor(host string, port int, username string, passwd string, dbname string) *gorm.DB {
+var OBCursor *gorm.DB
+var MinioClient *minio.Client
+var RedisClient *redis.Client
+
+// GetMysqlCursor initializes and returns a MySQL gorm.DB connection with optimized settings.
+func GetMysqlCursor(host string, port int, username, passwd, dbname string) {
 	conf := localMysql.Config{
 		User:                 username,
 		Passwd:               passwd,
 		Net:                  "tcp",
 		Addr:                 fmt.Sprintf("%s:%d", host, port),
 		DBName:               dbname,
-		Timeout:              time.Second * 300,
-		ReadTimeout:          time.Second * 100,
-		WriteTimeout:         time.Second * 30,
+		Timeout:              30 * time.Second,
+		ReadTimeout:          10 * time.Second,
+		WriteTimeout:         5 * time.Second,
 		ParseTime:            true,
 		AllowNativePasswords: true,
 	}
-	db, err := gorm.Open(mysql.Open(conf.FormatDSN()), &gorm.Config{
-		PrepareStmt:            true, // 可以改为 false，全局禁用预编译
+	dsn := conf.FormatDSN()
+	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{
+		PrepareStmt:            true,
 		SkipDefaultTransaction: true,
-		AllowGlobalUpdate:      false, // 添加：禁止全局更新
-		QueryFields:            true,  // 添加：显式指定查询字段
-		DisableAutomaticPing:   false, // 启用自动 ping，及时发现连接问题
+		AllowGlobalUpdate:      false,
+		QueryFields:            true,
+		DisableAutomaticPing:   false,
 	})
-
-	gormMysql, _ := db.DB()
-
-	//尝试与数据库进行连接
-	err = gormMysql.Ping()
 	if err != nil {
-		fmt.Println("数据库连接失败", err)
-		panic("Ping db failed!")
+		panic(fmt.Sprintf("failed to open MySQL connection: %v", err))
 	}
-	gormMysql.SetMaxOpenConns(30)
-	gormMysql.SetMaxIdleConns(4)
-	gormMysql.SetConnMaxLifetime(time.Hour)
-	return db
+
+	sqlDB, err := db.DB()
+	if err != nil {
+		panic(fmt.Sprintf("failed to get sql.DB from gorm.DB: %v", err))
+	}
+
+	// Test connection
+	if err := sqlDB.Ping(); err != nil {
+		panic(fmt.Sprintf("failed to ping MySQL: %v", err))
+	}
+
+	// Connection pool settings
+	sqlDB.SetMaxOpenConns(50)
+	sqlDB.SetMaxIdleConns(10)
+	sqlDB.SetConnMaxLifetime(2 * time.Hour)
+
+	OBCursor = db
 }
 
-var OBCursor *gorm.DB
-
-func GetRedisClusterClient() *redis.Client {
-	redisDb := redis.NewClient(&redis.Options{
-		Addr:            "127.0.0.1：4000",
-		Password:        "",
-		PoolSize:        20,
-		MaxIdleConns:    4,
-		ConnMaxIdleTime: time.Second * 600,
+// GetRedisClient initializes and returns a Redis client with optimized settings.
+func GetRedisClient(addr, password string, db int) {
+	client := redis.NewClient(&redis.Options{
+		Addr:            addr,
+		Password:        password,
+		DB:              db,
+		PoolSize:        30,
+		MinIdleConns:    5,
+		MaxIdleConns:    10,
+		ConnMaxIdleTime: 10 * time.Minute,
 	})
 
-	ctx := context.Background()
-	_, err := redisDb.Ping(ctx).Result()
-	if err != nil {
-		panic(err)
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+	if err := client.Ping(ctx).Err(); err != nil {
+		panic(fmt.Sprintf("failed to connect to Redis: %v", err))
 	}
-	return redisDb
+	RedisClient = client
 }
 
-//var RedisClient = GetRedisClusterClient()
+// ConnectToMinio initializes and returns a MinIO client.
+func ConnectToMinio(endpoint, accessKeyID, secretAccessKey string, useSSL bool) {
+	// minio "github.com/minio/minio-go/v7"
+	// "github.com/minio/minio-go/v7/pkg/credentials"
+	client, err := minio.New(endpoint, &minio.Options{
+		Creds:  credentials.NewStaticV4(accessKeyID, secretAccessKey, ""),
+		Secure: useSSL,
+	})
+	if err != nil {
+		fmt.Println("failed to connect to MinIO: %v", err)
+	}
+	MinioClient = client
+}
