@@ -23,7 +23,7 @@ RUN pnpm build:ele
 ###############################
 # Stage 2: Build Go server
 ###############################
-FROM golang:1.20 AS go-builder
+FROM golang:1.23 AS go-builder
 
 WORKDIR /build/server
 
@@ -51,7 +51,7 @@ ENV GOMODCACHE="/opt/gopath/pkg/mod"
 ENV PATH="/usr/local/go/bin:${PATH}"
 
 # Install nginx and supervisor
-RUN apt-get update && apt-get install -y --no-install-recommends nginx supervisor \
+RUN apt-get update && apt-get install -y --no-install-recommends nginx supervisor wget \
     && rm -rf /var/lib/apt/lists/*
 
 # Directories for server and logs
@@ -76,16 +76,7 @@ RUN wget https://dl.min.io/server/minio/release/linux-amd64/minio && \
 RUN mkdir -p /data/minio
 
 # Supervisor program: minio
-RUN bash -c 'cat > /etc/supervisor/conf.d/minio.auto.conf <<EOF
-[program:minio]
-command=/usr/local/bin/minio server /data/minio --console-address ":9001"
-autostart=true
-autorestart=true
-stdout_logfile=/var/log/supervisor/minio.out.log
-stderr_logfile=/var/log/supervisor/minio.err.log
-startsecs=5
-environment=MINIO_ROOT_USER=minioadmin,MINIO_ROOT_PASSWORD=minioadmin
-EOF'
+RUN printf '[program:minio]\ncommand=/usr/local/bin/minio server /data/minio --console-address ":9001"\nautostart=true\nautorestart=true\nstdout_logfile=/var/log/supervisor/minio.out.log\nstderr_logfile=/var/log/supervisor/minio.err.log\nstartsecs=5\nenvironment=MINIO_ROOT_USER=minioadmin,MINIO_ROOT_PASSWORD=minioadmin' > /etc/supervisor/conf.d/minio.auto.conf
 
 # Copy built web to nginx html
 COPY --from=web-builder /web/apps/admin/dist /usr/share/nginx/html
@@ -95,7 +86,7 @@ COPY web/scripts/deploy/nginx.conf /etc/nginx/nginx.conf
 COPY server/conf/elabx.conf /etc/supervisor/conf.d/elabx.auto.conf
 
 # Supervisor program: nginx (managed by supervisor)
-RUN bash -lc 'cat > /etc/supervisor/conf.d/nginx.auto.conf <<EOF\n[program:nginx]\ncommand=/usr/sbin/nginx -g "daemon off;"\nautostart=true\nautorestart=true\nstdout_logfile=/var/log/supervisor/nginx.out.log\nstderr_logfile=/var/log/supervisor/nginx.err.log\nstartsecs=5\nEOF'
+RUN printf '[program:nginx]\ncommand=/usr/sbin/nginx -g "daemon off;"\nautostart=true\nautorestart=true\nstdout_logfile=/var/log/supervisor/nginx.out.log\nstderr_logfile=/var/log/supervisor/nginx.err.log\nstartsecs=5\n' > /etc/supervisor/conf.d/nginx.auto.conf
 
 # Expose frontend and backend ports
 EXPOSE 8080 18002 9001 9000

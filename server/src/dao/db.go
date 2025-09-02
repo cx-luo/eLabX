@@ -97,7 +97,7 @@ func ConnectToMinio(endpoint, accessKeyID, secretAccessKey string, useSSL bool) 
 		Secure: useSSL,
 	})
 	if err != nil {
-		fmt.Println("failed to connect to MinIO: %v", err)
+		panic(fmt.Sprintf("failed to connect to MinIO: %v", err))
 	}
 	MinioClient = client
 }
