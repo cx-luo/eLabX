@@ -17,7 +17,13 @@ It is designed to help researchers, chemists, and engineers record and organize 
 
 ## 🖼️ Screenshots
 
-[//]: # (> *&#40;Optional: Add screenshots or GIFs showing login, notebook view, AI suggestions, etc.&#41;*)
+Here are some highlights of eLabX in action:
+
+|  |  |
+|---|---|
+| **概览 Overview**<br>![Overview](docs/img/elabx-overview.jpg) | **新增试剂 Add New Reagent**<br>![Add New Reagent](docs/img/elabx-add-new-reagent.png) |
+| **逆合成 Retrosynthesis**<br>![Retrosynthesis](docs/img/retrosynthesis.jpg) | **条件推荐 Condition Recommendation**<br>![Condition Recommendation](docs/img/condition-recommendation.jpg) |
+| **产品信息与样品 Product Info & Sample**<br>![Product Info & Samples](docs/img/product-info-and-samples.png) | **Embed Marvin JS**<br>![Embed Marvin JS](docs/img/embed-marvin-js.jpg) |
 
 ---
 
