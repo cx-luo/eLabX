@@ -76,7 +76,27 @@ RUN wget https://dl.min.io/server/minio/release/linux-amd64/minio && \
 RUN mkdir -p /data/minio
 
 # Supervisor program: minio
-RUN printf '[program:minio]\ncommand=/usr/local/bin/minio server /data/minio --console-address ":9001"\nautostart=true\nautorestart=true\nstdout_logfile=/var/log/supervisor/minio.out.log\nstderr_logfile=/var/log/supervisor/minio.err.log\nstartsecs=5\nenvironment=MINIO_ROOT_USER=minioadmin,MINIO_ROOT_PASSWORD=minioadmin' > /etc/supervisor/conf.d/minio.auto.conf
+RUN printf '[program:minio]\n\
+command=/usr/local/bin/minio server --address :9000 --console-address :9001 --json /data/minio\n\
+user=minio-user\n\
+directory=/data/minio\n\
+environment=MINIO_ROOT_USER="minioadmin",MINIO_ROOT_PASSWORD="mk8bEkPXtgrFIFkMZQFkH1Qg"\n\
+autostart=true\n\
+autorestart=true\n\
+startsecs=10\n\
+stdout_logfile=/var/log/minio/minio.log\n\
+stdout_logfile_maxbytes=50MB\n\
+stdout_logfile_backups=5\n\
+stdout_capture_maxbytes=1MB\n\
+stderr_logfile=/var/log/minio/minio_err.log\n\
+stderr_logfile_maxbytes=50MB\n\
+stderr_logfile_backups=5\n\
+stderr_capture_maxbytes=1MB\n\
+loglevel=info\n\
+name=minio\n\
+stopsignal=TERM\n\
+stopwaitsecs=30\n\
+priority=990\n' > /etc/supervisor/conf.d/minio.auto.conf
 
 # Copy built web to nginx html
 COPY --from=web-builder /web/apps/admin/dist /usr/share/nginx/html
@@ -89,7 +109,7 @@ COPY server/conf/elabx.conf /etc/supervisor/conf.d/elabx.auto.conf
 RUN printf '[program:nginx]\ncommand=/usr/sbin/nginx -g "daemon off;"\nautostart=true\nautorestart=true\nstdout_logfile=/var/log/supervisor/nginx.out.log\nstderr_logfile=/var/log/supervisor/nginx.err.log\nstartsecs=5\n' > /etc/supervisor/conf.d/nginx.auto.conf
 
 # Expose frontend and backend ports
-EXPOSE 8080 18002 9001 9000
+EXPOSE 8080 8002 9001 9000 6379
 
 # Run supervisor to manage both processes
 CMD ["/usr/bin/supervisord", "-n", "-c", "/etc/supervisor/supervisord.conf"]
