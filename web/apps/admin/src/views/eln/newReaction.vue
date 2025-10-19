@@ -29,13 +29,13 @@ const imgUrl = ref();
 
 async function saveNewReactionNoteToDatabase(formEl: FormInstance | undefined) {
   if (!formEl) {
-    ElMessage.error('表单未正确初始化');
+    ElMessage.error('Form is not properly initialized');
     return;
   }
 
   const ketcher = getKetcher();
   if (!ketcher) {
-    ElMessage.error('化学结构编辑器未加载完成');
+    ElMessage.error('Chemical structure editor is not loaded');
     return;
   }
 
@@ -47,7 +47,7 @@ async function saveNewReactionNoteToDatabase(formEl: FormInstance | undefined) {
   isLoading.value = true;
 
   try {
-    const smiles = await ketcher.getSmiles(true); // 假设返回 Promise<string>
+    const smiles = await ketcher.getSmiles(true); 
     reactionSmiles.value = smiles;
     console.log('获取到的 SMILES:', smiles);
     ketcher
@@ -62,10 +62,10 @@ async function saveNewReactionNoteToDatabase(formEl: FormInstance | undefined) {
     // 此处可添加保存到后端的逻辑
     // await saveReactionToServer(smiles);
     imgUrl.value = await generateImgUrl(ketcher, reactionSmiles.value);
-    ElNotification.success('结构已成功获取');
+    ElNotification.success('Structure successfully retrieved');
   } catch (error) {
-    console.error('获取 SMILES 失败:', error);
-    ElNotification.error('获取结构失败，请重试');
+    console.error('Failed to get SMILES:', error);
+    ElNotification.error('Failed to get structure, please try again');
   } finally {
     isLoading.value = false;
   }
