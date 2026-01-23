@@ -27,6 +27,7 @@ require (
 )
 
 require (
+	github.com/cx-luo/go-indigo v0.5.1 // indirect
 	github.com/go-ini/ini v1.67.0 // indirect
 	github.com/klauspost/compress v1.18.0 // indirect
 	github.com/minio/crc64nvme v1.0.2 // indirect

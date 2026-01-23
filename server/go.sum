@@ -49,6 +49,8 @@ github.com/cloudwego/base64x v0.1.4/go.mod h1:0zlkT4Wn5C6NdauXdJRhSKRlJvmclQ1hhJ
 github.com/cloudwego/iasm v0.2.0 h1:1KNIy1I1H9hNNFEEH3DVnI4UujN+1zjpuk6gwHLTssg=
 github.com/cloudwego/iasm v0.2.0/go.mod h1:8rXZaNYT2n95jn+zTI1sDr+IgcD2GVs0nlbbQPiEFhY=
 github.com/creack/pty v1.1.9/go.mod h1:oKZEueFk5CKHvIhNR5MUki03XCEU+Q6VDXinZuGJ33E=
+github.com/cx-luo/go-indigo v0.5.1 h1:1QAYy958c4Vz2aj0U8i391Qejv0mo3i3uyLrIY6nCJM=
+github.com/cx-luo/go-indigo v0.5.1/go.mod h1:SYpANh+T91CvHblHKe6Pxmq+nKfKsLkuIULj2S6/Lyo=
 github.com/cx-luo/go-toolkit v0.0.0-20241127012021-2b9492d6370d h1:zX2UwO732OwHFVqmYWP3yK6Rffp1zwlWGKS5YodilmQ=
 github.com/cx-luo/go-toolkit v0.0.0-20241127012021-2b9492d6370d/go.mod h1:X1V0UXEiLQ64eBsufg4h67ktf4DWEd06CssIrZ/kmYs=
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=

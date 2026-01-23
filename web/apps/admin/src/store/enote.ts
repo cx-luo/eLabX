@@ -5,7 +5,7 @@ import type { TableDataStruct, ReactionBasicInfo, ReactionSample } from '#/types
 
 // You need to import or define loadReagents for this to work.
 // For now, let's assume it's imported from an API module:
-import { loadReagents } from '#/api/enote'; // <-- Make sure this path is correct for your project
+import { loadReagentsApi, saveRxnToServerApi } from '#/api/enote'; // <-- Make sure this path is correct for your project
 
 export const elnStore = defineStore('eln', () => {
   const reactionId = ref(0);
@@ -66,13 +66,13 @@ export const elnStore = defineStore('eln', () => {
 
   async function loadReagent(rxnId: number) {
     try {
-      const response = await loadReagents(rxnId);
+      const response = await loadReagentsApi(rxnId);
       // If your API returns a statusCode, check it. Otherwise, just check for data.
       if ('statusCode' in response && response.statusCode === 404) {
         tableData.value = [];
         return;
       }
-      if (response && response.data && Array.isArray(response.data.reagents)) {
+      if (response && response.statusCode === 200 && Array.isArray(response.data.reagents)) {
         tableData.value = response.data.reagents;
         tableDataMap.set(rxnId, response.data.reagents);
       } else {
@@ -81,6 +81,20 @@ export const elnStore = defineStore('eln', () => {
     } catch (error) {
       // Handle error, e.g., network error
       tableData.value = [];
+    }
+  }
+  // Save reaction SMILES to server (backend)
+  async function saveRxnToServer(rxnSmiles: string) {
+    try {
+      // You can adapt the API endpoint as needed
+      const response = await saveRxnToServerApi(rxnSmiles);
+      if ('statusCode' in response && response.statusCode === 404) {
+        throw new Error('Failed to save reaction to server');
+      }
+      return response;
+    } catch (error) {
+      // Optionally, handle error or re-throw for UI to catch
+      throw error;
     }
   }
 
@@ -140,7 +154,7 @@ export const elnStore = defineStore('eln', () => {
     'viscous oil',
   ];
 
-  const rxnList = [
+  const reactionTypeOptions = [
     // "Enzyme-catalyzed aminolysis of ester",
     // "Enzyme-catalyzed hydrolysis of ester",
     // "Enzyme-catalyzed nitrile hydrolysis",
@@ -203,7 +217,7 @@ export const elnStore = defineStore('eln', () => {
     productList,
     statusList,
     qualifierList,
-    rxnList,
+    reactionTypeOptions,
     // 用于尚未加载的数据
     // user: null as UserInfo | null,
     lcmsTable,
@@ -213,6 +227,7 @@ export const elnStore = defineStore('eln', () => {
     reactionConditionsDataMap,
     colorList,
     loadReagent,
+    saveRxnToServer,
     otherReportTableMap,
     procedureHtml,
     procedureHtmlMap,

@@ -4,10 +4,17 @@ import { requestClient } from '#/api/request';
  * Load reagents for a specified reaction
  * @param reactionId The ID of the reaction
  */
-export const loadReagents = async (reactionId: number) => {
-  return requestClient.get(`/eln/loadReagents/${reactionId}`);
+export const loadReagentsApi = async (reactionId: number) => {
+  return requestClient.get(`/enote/loadReagents/${reactionId}`);
 };
 
+/**
+ * Save reaction SMILES to server
+ * @param rxnSmiles The SMILES of the reaction
+ */
+export const saveRxnToServerApi = async (rxnSmiles: string) => {
+  return requestClient.post('/enote/saveRxnToServer', { rxnSmiles: rxnSmiles });
+};
 
 /**
  * Update a row in a specified table in a database
