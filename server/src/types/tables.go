@@ -213,21 +213,21 @@ type ElnRxnReagents struct {
 	ReactionId       int64     `json:"reactionId" gorm:"reaction_id"`
 	ReagentName      string    `json:"reagentName" gorm:"reagent_name"`
 	ReagentSmiles    string    `json:"reagentSmiles" gorm:"reagent_smiles"`
-	Mw               float32   `json:"mw" gorm:"mw"`
-	MonoisotopicMass float32   `json:"monoisotopicMass" gorm:"monoisotopic_mass"`
+	Mw               float64   `json:"mw" gorm:"mw"`
+	MonoisotopicMass float64   `json:"monoisotopicMass" gorm:"monoisotopic_mass"`
 	Formula          string    `json:"formula" gorm:"formula"`
 	ReagentRole      string    `json:"reagentRole" gorm:"reagent_role"`    // role
-	Equiv            float32   `json:"equiv" gorm:"equiv"`                 // eq
+	Equiv            float64   `json:"equiv" gorm:"equiv"`                 // eq
 	Cas              string    `json:"cas" gorm:"cas"`                     // CAS#
-	Concentration    float32   `json:"concentration" gorm:"concentration"` // Conv. 浓度
+	Concentration    float64   `json:"concentration" gorm:"concentration"` // Conv. 浓度
 	CdStructure      string    `json:"cdStructure" gorm:"cd_structure"`
 	Inchi            string    `json:"inchi" gorm:"inchi"`
 	Inchikey         string    `json:"inchikey" gorm:"inchikey"`
 	Cxsmiles         string    `json:"cxsmiles" gorm:"cxsmiles"`
-	Density          float32   `json:"density" gorm:"density"`
-	Quantity         float32   `json:"quantity" gorm:"quantity"`
+	Density          float64   `json:"density" gorm:"density"`
+	Quantity         float64   `json:"quantity" gorm:"quantity"`
 	QuantityUnit     string    `json:"quantityUnit" gorm:"quantity_unit"`
-	Purity           float32   `json:"purity" gorm:"purity"`
+	Purity           float64   `json:"purity" gorm:"purity"`
 	CompoundId       int64     `json:"compoundId" gorm:"compound_id"`
 	IsChiral         int8      `json:"isChiral" gorm:"is_chiral"`
 	ReagentHash      int64     `json:"reagentHash" gorm:"reagent_hash"`
@@ -235,9 +235,9 @@ type ElnRxnReagents struct {
 	StereoCentersCnt int64     `json:"stereoCentersCnt" gorm:"stereo_centers_cnt"`
 	ProductAlias     string    `json:"productAlias" gorm:"product_alias"`
 	ChiralDescriptor string    `json:"chiralDescriptor" gorm:"chiral_descriptor"`
-	Moles            float32   `json:"moles" gorm:"moles"`
+	Moles            float64   `json:"moles" gorm:"moles"`
 	MolesUnit        string    `json:"molesUnit" gorm:"moles_unit"`
-	Volume           float32   `json:"volume" gorm:"volume"`
+	Volume           float64   `json:"volume" gorm:"volume"`
 	VolumeUnit       string    `json:"volumeUnit" gorm:"volume_unit"`
 	IsSolution       int8      `json:"isSolution" gorm:"is_solution"`
 	GmtCreate        time.Time `json:"gmtCreate" gorm:"gmt_create"`

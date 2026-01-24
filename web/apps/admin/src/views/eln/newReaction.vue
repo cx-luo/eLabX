@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import { ElMessage, ElNotification, ElDatePicker, type FormInstance } from 'element-plus';
 import { onMounted, ref, computed, onUnmounted } from 'vue';
-import { generateImgUrl, getKetcher } from '#/utils';
+import { getKetcher } from '#/utils';
 import type { Ketcher } from 'ketcher-core';
-import ReagentCard from '#/views/eln/components/ReagentCard.vue';
+import CompoundSubmenu from '#/views/eln/components/CompoundSubmenu.vue';
 import { FileText } from 'lucide-vue-next';
 import { elnStore } from '#/store';
 
@@ -122,18 +122,16 @@ async function saveNewReactionNoteToDatabase(formEl: FormInstance | undefined) {
     reactionSmiles.value = smiles;
     console.log('获取到的 SMILES:', smiles);
 
-    // 此处可添加保存到后端的逻辑
+    // Save reaction to server
     const response = await store.saveRxnToServer(reactionSmiles.value);
     if (response) {
       ElNotification.success('Reaction saved successfully');
       imgUrl.value = 'data:image/svg+xml;base64,' + response.imageSvg;
       reactionId.value = response.reactionId;
+      store.formData = response.compounds;
     } else {
       ElNotification.error('Failed to save reaction');
     }
-
-    // imgUrl.value = await generateImgUrl(ketcher, reactionSmiles.value);
-    // ElNotification.success('Structure successfully retrieved');
   } catch (error) {
     console.error('Failed to get SMILES:', error);
     ElNotification.error('Failed to get structure, please try again');
@@ -260,12 +258,14 @@ async function saveNewReactionNoteToDatabase(formEl: FormInstance | undefined) {
         </div>
       </el-form>
     </ElCard>
-    <ElCard>
+    <ElCard class="mb-5">
       <div style="display: flex; justify-content: center; align-items: center; min-height: 150px">
         <ElImage :src="imgUrl" alt="rxnImg" style="max-height: 300px; display: block" />
       </div>
     </ElCard>
-    <reagent-card :form-data="{ reagentName: 'lcx' }" :reactant-table-data="{ reagentName: 'lcx' }" />
+    
+    <!-- Compounds Submenu -->
+    <CompoundSubmenu />
   </div>
 </template>
 

@@ -81,3 +81,70 @@ func RenderReaction(indigoInit *core.Indigo, rxnSmiles string) ([]byte, error) {
 
 	return imageSvgData, nil
 }
+
+func RenderCompound(indigoInit *core.Indigo, compoundSmiles string) ([]byte, error) {
+	indigoRenderer, err := indigoInit.InitRenderer()
+	if err != nil {
+		return nil, err
+	}
+	defer indigoRenderer.DisposeRenderer()
+	indigoRenderer.ResetRenderer()
+	// Chemical options
+	indigoRenderer.SetRenderOptionBool("smart-layout", true)
+	indigoRenderer.SetRenderOptionBool("ignore-stereochemistry-errors", true)
+	indigoRenderer.SetRenderOptionBool("mass-skip-error-on-pseudoatoms", false)
+	indigoRenderer.SetRenderOptionBool("gross-formula-add-rsites", true)
+	indigoRenderer.SetRenderOptionBool("aromatize-skip-superatoms", true)
+	indigoRenderer.SetRenderOptionBool("dearomatize-on-load", false)
+	indigoRenderer.SetRenderOptionBool("ignore-no-chiral-flag", false)
+	indigoRenderer.SetRenderOption("aromaticity-model", "generic")
+	indigoRenderer.SetRenderOptionBool("gross-formula-add-isotopes", true)
+
+	// Rendering options
+	indigoRenderer.SetRenderOptionBool("render-coloring", true)
+	indigoRenderer.SetRenderOptionInt("render-font-size", 13)
+	indigoRenderer.SetRenderOption("render-font-size-unit", "px")
+	indigoRenderer.SetRenderOptionInt("render-font-size-sub", 13)
+	indigoRenderer.SetRenderOption("render-font-size-sub-unit", "px")
+	indigoRenderer.SetRenderOptionInt("image-resolution", 72)
+	indigoRenderer.SetRenderOption("bond-length-unit", "px")
+	indigoRenderer.SetRenderOptionInt("bond-length", 40)
+	indigoRenderer.SetRenderOptionInt("render-bond-thickness", 2)
+	indigoRenderer.SetRenderOption("render-bond-thickness-unit", "px")
+	indigoRenderer.SetRenderOptionFloat("render-bond-spacing", 0.15)
+	indigoRenderer.SetRenderOptionInt("render-stereo-bond-width", 6)
+	indigoRenderer.SetRenderOption("render-stereo-bond-width-unit", "px")
+	indigoRenderer.SetRenderOptionFloat("render-hash-spacing", 1.2)
+	indigoRenderer.SetRenderOption("render-hash-spacing-unit", "px")
+	indigoRenderer.SetRenderOption("render-label-mode", "terminal-hetero")
+
+	compound, err := indigoInit.LoadMoleculeFromString(compoundSmiles)
+	if err != nil {
+		return nil, err
+	}
+	defer compound.Close()
+	if err := indigoRenderer.SetRenderOption("render-output-format", "svg"); err != nil {
+		return nil, err
+	}
+	if err := indigoRenderer.SetRenderOption("render-background-color", "255, 255, 255"); err != nil {
+		return nil, err
+	}
+
+	outputHandle, err := indigoInit.CreateWriteBuffer()
+	if err != nil {
+		return nil, err
+	}
+
+	defer indigoInit.FreeObject(outputHandle)
+
+	err = indigoRenderer.Render(compound.Handle, outputHandle)
+	if err != nil {
+		return nil, err
+	}
+
+	imageSvgData, err := indigoInit.GetBufferData(outputHandle)
+	if err != nil {
+		return nil, err
+	}
+	return imageSvgData, nil
+}

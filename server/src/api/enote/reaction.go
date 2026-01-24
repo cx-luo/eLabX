@@ -24,6 +24,7 @@ func parseMolecule(indigoInit *core.Indigo, indigoInchi *core.IndigoInchi, molHa
 	}
 	defer molMolecule.Close()
 	molecularWeight, _ := molMolecule.MolecularWeight()
+	molecularWeight = float64(int(molecularWeight*1000+0.5)) / 1000
 	cxSmiles, _ := molMolecule.ToCXSmiles()
 	smiles, _ := molMolecule.ToSmiles()
 	formula, _ := molMolecule.MolecularFormula()
@@ -178,16 +179,25 @@ func SaveRxnToServer(c *gin.Context) {
 		return
 	}
 
+	indigoInit, err := core.IndigoInit()
+	if err != nil {
+		utils.InternalRequestErr(c, err)
+		return
+	}
+
+	compounds := make([]*types.ReagentTableDataStruct, 0)
+
 	// Save reactants
 	for _, reactant := range rxn.Reactants {
+
 		reagentId := utils.GenerateSnowflakeID()
 		elnReagent := &types.ElnRxnReagents{
 			ReagentId:        reagentId,
 			ReactionId:       rxn.ReactionId,
 			ReagentName:      reactant.Name,
-			ReagentSmiles:    reactant.Name, // Name is SMILES
-			Mw:               float32(reactant.MolecularWeight),
-			MonoisotopicMass: float32(reactant.MonoisotopicMass),
+			ReagentSmiles:    reactant.CxSmiles,
+			Mw:               reactant.MolecularWeight,
+			MonoisotopicMass: reactant.MonoisotopicMass,
 			Formula:          reactant.Formula,
 			ReagentRole:      "reactant",
 			Cxsmiles:         reactant.CxSmiles,
@@ -201,6 +211,20 @@ func SaveRxnToServer(c *gin.Context) {
 			utils.InternalRequestErr(c, err)
 			return
 		}
+		reagentImg, err := RenderCompound(indigoInit, reactant.CxSmiles)
+		if err != nil {
+			utils.InternalRequestErr(c, err)
+			return
+		}
+		compounds = append(compounds, &types.ReagentTableDataStruct{
+			ReagentId:     elnReagent.ReagentId,
+			ReagentName:   elnReagent.ReagentName,
+			ReagentSmiles: elnReagent.ReagentSmiles,
+			Mw:            elnReagent.Mw,
+			ReagentRole:   elnReagent.ReagentRole,
+			Formula:       elnReagent.Formula,
+			ReagentImg:    reagentImg,
+		})
 	}
 
 	// Save products
@@ -210,9 +234,9 @@ func SaveRxnToServer(c *gin.Context) {
 			ReagentId:        reagentId,
 			ReactionId:       rxn.ReactionId,
 			ReagentName:      product.Name,
-			ReagentSmiles:    product.Name, // Name is SMILES
-			Mw:               float32(product.MolecularWeight),
-			MonoisotopicMass: float32(product.MonoisotopicMass),
+			ReagentSmiles:    product.CxSmiles,
+			Mw:               product.MolecularWeight,
+			MonoisotopicMass: product.MonoisotopicMass,
 			Formula:          product.Formula,
 			ReagentRole:      "product",
 			Cxsmiles:         product.CxSmiles,
@@ -226,6 +250,20 @@ func SaveRxnToServer(c *gin.Context) {
 			utils.InternalRequestErr(c, err)
 			return
 		}
+		reagentImg, err := RenderCompound(indigoInit, product.CxSmiles)
+		if err != nil {
+			utils.InternalRequestErr(c, err)
+			return
+		}
+		compounds = append(compounds, &types.ReagentTableDataStruct{
+			ReagentId:     elnReagent.ReagentId,
+			ReagentName:   elnReagent.ReagentName,
+			ReagentSmiles: elnReagent.ReagentSmiles,
+			Mw:            elnReagent.Mw,
+			ReagentRole:   elnReagent.ReagentRole,
+			Formula:       elnReagent.Formula,
+			ReagentImg:    reagentImg,
+		})
 	}
 
 	// Save reagents
@@ -235,9 +273,9 @@ func SaveRxnToServer(c *gin.Context) {
 			ReagentId:        reagentId,
 			ReactionId:       rxn.ReactionId,
 			ReagentName:      reagent.Name,
-			ReagentSmiles:    reagent.Name, // Name is SMILES
-			Mw:               float32(reagent.MolecularWeight),
-			MonoisotopicMass: float32(reagent.MonoisotopicMass),
+			ReagentSmiles:    reagent.CxSmiles,
+			Mw:               reagent.MolecularWeight,
+			MonoisotopicMass: reagent.MonoisotopicMass,
 			Formula:          reagent.Formula,
 			ReagentRole:      "reagent",
 			Cxsmiles:         reagent.CxSmiles,
@@ -251,10 +289,25 @@ func SaveRxnToServer(c *gin.Context) {
 			utils.InternalRequestErr(c, err)
 			return
 		}
+		reagentImg, err := RenderCompound(indigoInit, reagent.CxSmiles)
+		if err != nil {
+			utils.InternalRequestErr(c, err)
+			return
+		}
+		compounds = append(compounds, &types.ReagentTableDataStruct{
+			ReagentId:     elnReagent.ReagentId,
+			ReagentName:   elnReagent.ReagentName,
+			ReagentSmiles: elnReagent.ReagentSmiles,
+			Mw:            elnReagent.Mw,
+			ReagentRole:   elnReagent.ReagentRole,
+			Formula:       elnReagent.Formula,
+			ReagentImg:    reagentImg,
+		})
 	}
 
 	utils.SuccessWithData(c, "success", map[string]interface{}{
 		"reactionId": rxn.ReactionId,
 		"imageSvg":   rxn.ImageSvg,
+		"compounds":  compounds,
 	})
 }

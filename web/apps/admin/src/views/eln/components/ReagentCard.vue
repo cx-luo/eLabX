@@ -1,5 +1,5 @@
 <template>
-  <div v-for="(item, index) in store.formData" :key="item.reagentId || index" class="mb-4">
+  <div v-for="(item, idx) in compoundsToDisplay" :key="item.reagentId || idx" class="mb-4">
     <div 
       class="bg-card text-card-foreground border-border rounded-xl border shadow-sm card-hover reagent-card-container"
       :style="{ borderLeft: `6px solid ${getRoleColor(item.reagentRole)}` }"
@@ -28,7 +28,7 @@
               </el-select>
             </el-popover>
           </div>
-          <span class="text-sm font-medium text-muted-foreground">#{{ index + 1 }}</span>
+          <span class="text-sm font-medium text-muted-foreground">#{{ (props.index !== undefined ? props.index : idx) + 1 }}</span>
         </div>
       </div>
 
@@ -88,7 +88,7 @@
                 :active-value="1"
                 :inactive-value="0"
                 :disabled="store.isReadonly"
-                @change="handleSwitchChange(index, item.isLimiting)"
+                @change="handleSwitchChange(props.index !== undefined ? props.index : idx, item.isLimiting)"
               />
             </div>
 
@@ -106,7 +106,7 @@
           <div class="flex justify-center lg:justify-end">
             <div class="relative">
               <el-image
-                :src="item.reagentImg"
+                :src='`data:image/svg+xml;base64,${item.reagentImg}`'
                 class="w-32 h-32 rounded-lg border border-border object-cover"
                 :preview-src-list="[item.reagentImg]"
               />
@@ -247,7 +247,7 @@
         <!-- Action Buttons -->
         <div v-if="!store.isReadonly" class="mt-6 flex justify-end space-x-2">
           <button
-            @click="saveAdditionalInfoToDB(reagentFormRef[index], item)"
+            @click="saveAdditionalInfoToDB(reagentFormRef[props.index !== undefined ? props.index : idx], item)"
             :disabled="store.isReadonly"
             class="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground hover:bg-primary/90 h-9 px-3 action-button"
           >
@@ -270,11 +270,30 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
+import { ref, computed } from 'vue';
 import { elnStore } from '#/store';
+import type { TableDataStruct } from '#/types';
+
+interface Props {
+  compound?: TableDataStruct;
+  index?: number;
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  compound: undefined,
+  index: undefined,
+});
 
 // Store
 const store = elnStore();
+
+// Get compounds to display
+const compoundsToDisplay = computed(() => {
+  if (props.compound) {
+    return [props.compound];
+  }
+  return store.formData || [];
+});
 
 // Refs
 const reagentFormRef = ref();

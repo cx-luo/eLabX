@@ -43,3 +43,33 @@ type Reaction struct {
 	Products       []Molecule `json:"products"`
 	Reagents       []Molecule `json:"reagents"`
 }
+
+type ReagentTableDataStruct struct {
+	ReagentId        int64   `json:"reagentId"`
+	ReagentName      string  `json:"reagentName"`
+	ReagentSmiles    string  `json:"reagentSmiles"`
+	Mw               float64 `json:"mw"`
+	ReagentRole      string  `json:"reagentRole"`
+	Formula          string  `json:"formula"`
+	Cas              string  `json:"cas"`
+	Eq               float64 `json:"eq"`
+	Purity           float64 `json:"purity"`
+	Quantity         float64 `json:"quantity"`
+	QuantityUnit     string  `json:"quantityUnit"`
+	Concentration    float64 `json:"concentration"`
+	Density          float64 `json:"density"`
+	DensityUnit      string  `json:"densityUnit"`
+	CompoundId       int64   `json:"compoundId"`
+	Yield            float64 `json:"yield"`
+	IsLimiting       int     `json:"isLimiting"`
+	IsChiral         int     `json:"isChiral"`
+	StereoCentersCnt int     `json:"stereoCentersCnt"`
+	ChiralDescriptor string  `json:"chiralDescriptor"`
+	ReagentImg       []byte  `json:"reagentImg"`
+	ProductAlias     string  `json:"productAlias"`
+	Moles            float64 `json:"moles"`
+	MolesUnit        string  `json:"molesUnit"`
+	Volume           float64 `json:"volume"`
+	VolumeUnit       string  `json:"volumeUnit"`
+	CdStructure      string  `json:"cdStructure,omitempty"`
+}
