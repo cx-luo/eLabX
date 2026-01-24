@@ -196,6 +196,7 @@ func (*ElnUserMessage) TableName() string {
 type ElnReaction struct {
 	ReactionId     int64     `json:"reactionId" gorm:"reaction_id"`
 	ReactionSmiles string    `json:"reactionSmiles" gorm:"reaction_smiles"`
+	CxSmiles       string    `json:"cxSmiles" gorm:"cx_smiles"`
 	CdStructure    string    `json:"cdStructure" gorm:"cd_structure"`
 	GmtCreate      time.Time `json:"gmtCreate" gorm:"gmt_create"`
 	GmtModified    time.Time `json:"gmtModified" gorm:"gmt_modified"`
@@ -213,7 +214,6 @@ type ElnRxnReagents struct {
 	ReagentName      string    `json:"reagentName" gorm:"reagent_name"`
 	ReagentSmiles    string    `json:"reagentSmiles" gorm:"reagent_smiles"`
 	Mw               float32   `json:"mw" gorm:"mw"`
-	Exactmass        float32   `json:"exactmass" gorm:"exactmass"`
 	MonoisotopicMass float32   `json:"monoisotopicMass" gorm:"monoisotopic_mass"`
 	Formula          string    `json:"formula" gorm:"formula"`
 	ReagentRole      string    `json:"reagentRole" gorm:"reagent_role"`    // role

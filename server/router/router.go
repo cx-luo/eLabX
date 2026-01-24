@@ -10,7 +10,6 @@ package router
 import (
 	_ "eLabX/docs"
 	"eLabX/middleware"
-	"eLabX/src/api/casbin"
 
 	"github.com/gin-gonic/gin"
 	swaggerFiles "github.com/swaggo/files"
@@ -42,25 +41,17 @@ func NewRouter(outputPath string, loglevel string) *gin.Engine {
 	// 注册用户相关路由
 	registerUserRoutes(router)
 
-	registerCasbinRoutes(router)
-
 	// 注册其他路由
 	registerSystemRoutes(router)
-
+	// 注册实验笔记相关路由
+	registerEnoteRoutes(router)
+	// 注册其他路由
 	registerOtherRoutes(router)
-
+	// 注册ETL路由
 	registerEtlRoutes(router)
-
+	// 注册管理员路由
 	registerAdminRoutes(router)
-
 	return router
-}
-
-func registerCasbinRoutes(r *gin.Engine) {
-	casbinGroup := r.Group("/api/casbin")
-	{
-		casbinGroup.POST("/add", casbin.AddPolicy)
-	}
 }
 
 // 其他路由

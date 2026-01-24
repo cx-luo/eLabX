@@ -21,7 +21,6 @@ type Molecule struct {
 	InChiKey          string  `json:"inChiKey"`
 	Formula           string  `json:"formula"`
 	CxSmiles          string  `json:"cxSmiles"`
-	ExactMass         float64 `json:"exactMass"`
 	MolecularWeight   float64 `json:"molecularWeight"`
 	MostAbundantMass  float64 `json:"mostAbundantMass"`
 	MonoisotopicMass  float64 `json:"monoisotopicMass"`
@@ -39,6 +38,7 @@ type Reaction struct {
 	ReactionSmiles string     `json:"reactionSmiles"`
 	CdStructure    string     `json:"cdStructure"`
 	CxSmiles       string     `json:"cxSmiles"`
+	ImageSvg       []byte     `json:"imageSvg"`
 	Reactants      []Molecule `json:"reactants"`
 	Products       []Molecule `json:"products"`
 	Reagents       []Molecule `json:"reagents"`

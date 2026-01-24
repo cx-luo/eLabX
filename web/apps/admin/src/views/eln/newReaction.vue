@@ -116,30 +116,24 @@ async function saveNewReactionNoteToDatabase(formEl: FormInstance | undefined) {
   }
 
   isLoading.value = true;
-
+  const reactionId = ref<number | null>(null);
   try {
     const smiles = await ketcher.getSmiles(true); 
     reactionSmiles.value = smiles;
     console.log('获取到的 SMILES:', smiles);
-    ketcher
-      .calculate({
-        properties: ['molecular-weight', 'gross'],
-        struct: reactionSmiles.value,
-      })
-      .then((res) => {
-        console.log(res.gross);
-      });
 
     // 此处可添加保存到后端的逻辑
     const response = await store.saveRxnToServer(reactionSmiles.value);
-    if (response && response.statusCode === 200) {
+    if (response) {
       ElNotification.success('Reaction saved successfully');
+      imgUrl.value = 'data:image/svg+xml;base64,' + response.imageSvg;
+      reactionId.value = response.reactionId;
     } else {
       ElNotification.error('Failed to save reaction');
     }
-    
-    imgUrl.value = await generateImgUrl(ketcher, reactionSmiles.value);
-    ElNotification.success('Structure successfully retrieved');
+
+    // imgUrl.value = await generateImgUrl(ketcher, reactionSmiles.value);
+    // ElNotification.success('Structure successfully retrieved');
   } catch (error) {
     console.error('Failed to get SMILES:', error);
     ElNotification.error('Failed to get structure, please try again');

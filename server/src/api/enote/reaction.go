@@ -11,7 +11,7 @@ import (
 	"eLabX/src/dao"
 	"eLabX/src/types"
 	"eLabX/src/utils"
-	"strconv"
+	"time"
 
 	"github.com/cx-luo/go-indigo/core"
 	"github.com/gin-gonic/gin"
@@ -42,7 +42,6 @@ func parseMolecule(indigoInit *core.Indigo, indigoInchi *core.IndigoInchi, molHa
 		Formula:           formula,
 		InChi:             inchi,
 		InChiKey:          inchiKey,
-		ExactMass:         monoisotopicMass,
 		MolecularWeight:   molecularWeight,
 		CxSmiles:          cxSmiles,
 		MostAbundantMass:  mostAbundantMass,
@@ -62,6 +61,7 @@ func parseReaction(rxnSmiles string) (*types.Reaction, error) {
 		ReactionSmiles: rxnSmiles,
 		CdStructure:    "",
 		CxSmiles:       "",
+		ImageSvg:       []byte(""),
 		Reactants:      make([]types.Molecule, 0),
 		Products:       make([]types.Molecule, 0),
 		Reagents:       make([]types.Molecule, 0),
@@ -87,20 +87,32 @@ func parseReaction(rxnSmiles string) (*types.Reaction, error) {
 	if err != nil {
 		return nil, err
 	}
+
 	reaction.CdStructure = cdStructure
 	cxSmiles, err := indigoReaction.ToCXSmiles()
 	if err != nil {
 		return nil, err
 	}
+
 	reaction.CxSmiles = cxSmiles
+
+	imageSvg, err := RenderReaction(indigoInit, rxnSmiles)
+	if err != nil {
+		return nil, err
+	}
+
+	reaction.ImageSvg = imageSvg
+
 	reactants, err := indigoReaction.GetAllReactants()
 	if err != nil {
 		return nil, err
 	}
+
 	products, err := indigoReaction.GetAllProducts()
 	if err != nil {
 		return nil, err
 	}
+
 	reagents, err := indigoReaction.GetAllCatalysts()
 	if err != nil {
 		return nil, err
@@ -149,33 +161,100 @@ func SaveRxnToServer(c *gin.Context) {
 		return
 	}
 
-	err = dao.OBCursor.Model(&types.ElnReaction{}).Create(rxn).Error
+	// Convert types.Reaction to types.ElnReaction
+	now := time.Now()
+	elnRxn := &types.ElnReaction{
+		ReactionId:     rxn.ReactionId,
+		ReactionSmiles: rxn.ReactionSmiles,
+		CxSmiles:       rxn.CxSmiles,
+		CdStructure:    rxn.CdStructure,
+		GmtCreate:      now,
+		GmtModified:    now,
+	}
+
+	err = dao.OBCursor.Model(&types.ElnReaction{}).Create(elnRxn).Error
 	if err != nil {
 		utils.InternalRequestErr(c, err)
 		return
 	}
 
+	// Save reactants
 	for _, reactant := range rxn.Reactants {
-		err = dao.OBCursor.Model(&types.ElnRxnReagents{ReagentRole: "reactant"}).Create(reactant).Error
-		if err != nil {
-			utils.InternalRequestErr(c, err)
-			return
+		reagentId := utils.GenerateSnowflakeID()
+		elnReagent := &types.ElnRxnReagents{
+			ReagentId:        reagentId,
+			ReactionId:       rxn.ReactionId,
+			ReagentName:      reactant.Name,
+			ReagentSmiles:    reactant.Name, // Name is SMILES
+			Mw:               float32(reactant.MolecularWeight),
+			MonoisotopicMass: float32(reactant.MonoisotopicMass),
+			Formula:          reactant.Formula,
+			ReagentRole:      "reactant",
+			Cxsmiles:         reactant.CxSmiles,
+			Inchi:            reactant.InChi,
+			Inchikey:         reactant.InChiKey,
+			GmtCreate:        now,
+			GmtModified:      now,
 		}
-	}
-	for _, product := range rxn.Products {
-		err = dao.OBCursor.Model(&types.ElnRxnReagents{ReagentRole: "product"}).Create(product).Error
-		if err != nil {
-			utils.InternalRequestErr(c, err)
-			return
-		}
-	}
-	for _, reagent := range rxn.Reagents {
-		err = dao.OBCursor.Model(&types.ElnRxnReagents{ReagentRole: "reagent"}).Create(reagent).Error
+		err = dao.OBCursor.Model(&types.ElnRxnReagents{}).Create(elnReagent).Error
 		if err != nil {
 			utils.InternalRequestErr(c, err)
 			return
 		}
 	}
 
-	utils.Success(c, strconv.FormatInt(rxn.ReactionId, 10))
+	// Save products
+	for _, product := range rxn.Products {
+		reagentId := utils.GenerateSnowflakeID()
+		elnReagent := &types.ElnRxnReagents{
+			ReagentId:        reagentId,
+			ReactionId:       rxn.ReactionId,
+			ReagentName:      product.Name,
+			ReagentSmiles:    product.Name, // Name is SMILES
+			Mw:               float32(product.MolecularWeight),
+			MonoisotopicMass: float32(product.MonoisotopicMass),
+			Formula:          product.Formula,
+			ReagentRole:      "product",
+			Cxsmiles:         product.CxSmiles,
+			Inchi:            product.InChi,
+			Inchikey:         product.InChiKey,
+			GmtCreate:        now,
+			GmtModified:      now,
+		}
+		err = dao.OBCursor.Model(&types.ElnRxnReagents{}).Create(elnReagent).Error
+		if err != nil {
+			utils.InternalRequestErr(c, err)
+			return
+		}
+	}
+
+	// Save reagents
+	for _, reagent := range rxn.Reagents {
+		reagentId := utils.GenerateSnowflakeID()
+		elnReagent := &types.ElnRxnReagents{
+			ReagentId:        reagentId,
+			ReactionId:       rxn.ReactionId,
+			ReagentName:      reagent.Name,
+			ReagentSmiles:    reagent.Name, // Name is SMILES
+			Mw:               float32(reagent.MolecularWeight),
+			MonoisotopicMass: float32(reagent.MonoisotopicMass),
+			Formula:          reagent.Formula,
+			ReagentRole:      "reagent",
+			Cxsmiles:         reagent.CxSmiles,
+			Inchi:            reagent.InChi,
+			Inchikey:         reagent.InChiKey,
+			GmtCreate:        now,
+			GmtModified:      now,
+		}
+		err = dao.OBCursor.Model(&types.ElnRxnReagents{}).Create(elnReagent).Error
+		if err != nil {
+			utils.InternalRequestErr(c, err)
+			return
+		}
+	}
+
+	utils.SuccessWithData(c, "success", map[string]interface{}{
+		"reactionId": rxn.ReactionId,
+		"imageSvg":   rxn.ImageSvg,
+	})
 }
