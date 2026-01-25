@@ -8,261 +8,254 @@
       <div class="flex flex-col gap-y-1.5 p-5 border-b border-border/50">
         <div class="flex items-center justify-between">
           <div class="flex items-center gap-2">
-            <span 
-              class="role-badge"
-              :style="{ backgroundColor: getRoleColor(item.reagentRole) }"
+            <el-tag
+              :style="{ backgroundColor: getRoleColor(item.reagentRole), borderColor: getRoleColor(item.reagentRole) }"
+              effect="dark"
+              size="small"
             >
               {{ item.reagentRole }}
-            </span>
+            </el-tag>
             <el-popover v-if="item.reagentRole !== 'product'" placement="right" :width="100" trigger="click">
               <template #reference>
-                <button 
+                <el-button 
                   v-if="!store.isReadonly" 
-                  class="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 hover:bg-accent hover:text-accent-foreground h-8 w-8"
+                  circle
+                  size="small"
+                  type="default"
                 >
-                  <el-icon class="h-4 w-4"><Edit /></el-icon>
-                </button>
+                  <Edit :size="16" />
+                </el-button>
               </template>
               <el-select v-model="item.reagentRole" size="small" :disabled="store.isReadonly">
                 <el-option v-for="role in compoundRole" :key="role.value" :label="role.value" :value="role.value" />
               </el-select>
             </el-popover>
           </div>
-          <span class="text-sm font-medium text-muted-foreground">#{{ (props.index !== undefined ? props.index : idx) + 1 }}</span>
+          <el-text size="small" type="info">#{{ (props.index !== undefined ? props.index : idx) + 1 }}</el-text>
         </div>
       </div>
 
       <!-- Card Content -->
       <div class="p-6 pt-0">
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <el-row :gutter="24">
           <!-- Compound Information -->
-          <div class="lg:col-span-2 space-y-4">
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div class="space-y-2">
-                <label class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-                  Compound Name
-                </label>
-                <p class="text-sm text-muted-foreground break-words">{{ item.reagentName }}</p>
-              </div>
-              <div class="space-y-2">
-                <label class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-                  SMILES
-                </label>
-                <p class="text-sm text-muted-foreground break-words font-mono">{{ item.reagentSmiles }}</p>
-              </div>
-            </div>
-            
-            <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
-              <div class="space-y-2">
-                <label class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-                  Formula
-                </label>
-                <p class="text-sm text-muted-foreground">{{ item.formula }}</p>
-              </div>
-              <div class="space-y-2">
-                <label class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-                  Mol.Wt
-                </label>
-                <p class="text-sm text-muted-foreground">{{ item.mw }}</p>
-              </div>
-              <div class="space-y-2">
-                <label class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-                  Chiral
-                </label>
-                <p class="text-sm text-muted-foreground">{{ item.isChiral === 1 ? 'Yes' : 'No' }}</p>
-              </div>
-              <div v-if="item.isChiral === 1" class="space-y-2">
-                <label class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-                  Stereo Centers
-                </label>
-                <p class="text-sm text-muted-foreground">{{ item.stereoCentersCnt }}</p>
-              </div>
-            </div>
+          <el-col :xs="24" :sm="24" :md="16" :lg="16" :xl="16">
+            <el-form
+              :model="item"
+              label-width="120px"
+              class="compound-info-form"
+            >
+              <el-row :gutter="16">
+                <el-col :xs="24" :sm="12" :md="12" :lg="12" :xl="12">
+                  <el-form-item label="Compound Name" class="form-item-inline">
+                    <el-text size="small" class="break-words">{{ item.reagentName }}</el-text>
+                  </el-form-item>
+                </el-col>
+                <el-col :xs="24" :sm="12" :md="12" :lg="12" :xl="12">
+                  <el-form-item label="SMILES" class="form-item-inline">
+                    <el-text size="small" class="break-words" style="font-family: monospace;">{{ item.reagentSmiles }}</el-text>
+                  </el-form-item>
+                </el-col>
+              </el-row>
+              
+              <el-row :gutter="16" class="mt-4">
+                <el-col :xs="12" :sm="6" :md="6" :lg="6" :xl="6">
+                  <el-form-item label="Formula" class="form-item-inline">
+                    <el-text size="small">{{ item.formula }}</el-text>
+                  </el-form-item>
+                </el-col>
+                <el-col :xs="12" :sm="6" :md="6" :lg="6" :xl="6">
+                  <el-form-item label="Mol.Wt" class="form-item-inline">
+                    <el-text size="small">{{ item.mw }}</el-text>
+                  </el-form-item>
+                </el-col>
+                <el-col :xs="12" :sm="6" :md="6" :lg="6" :xl="6">
+                  <el-form-item label="Chiral" class="form-item-inline">
+                    <el-text size="small">{{ item.isChiral === 1 ? 'Yes' : 'No' }}</el-text>
+                  </el-form-item>
+                </el-col>
+                <el-col v-if="item.isChiral === 1" :xs="12" :sm="6" :md="6" :lg="6" :xl="6">
+                  <el-form-item label="Stereo Centers" class="form-item-inline">
+                    <el-text size="small">{{ item.stereoCentersCnt }}</el-text>
+                  </el-form-item>
+                </el-col>
+              </el-row>
 
-            <div v-if="item.reagentRole === 'reactant'" class="flex items-center space-x-2">
-              <label class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-                Limiting
-              </label>
-              <el-switch
-                v-model="item.isLimiting"
-                :active-value="1"
-                :inactive-value="0"
-                :disabled="store.isReadonly"
-                @change="handleSwitchChange(props.index !== undefined ? props.index : idx, item.isLimiting)"
-              />
-            </div>
+              <el-form-item v-if="item.reagentRole === 'reactant'" label="Limiting" class="form-item-inline mt-4">
+                <el-switch
+                  v-model="item.isLimiting"
+                  :active-value="1"
+                  :inactive-value="0"
+                  :disabled="store.isReadonly"
+                  @change="handleSwitchChange(props.index !== undefined ? props.index : idx, item.isLimiting)"
+                />
+              </el-form-item>
 
-            <div v-if="item.isChiral === 1" class="flex items-center space-x-2">
-              <label class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-                Chiral Descriptor
-              </label>
-              <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-secondary text-secondary-foreground">
-                {{ item.chiralDescriptor }}
-              </span>
-            </div>
-          </div>
+              <el-form-item v-if="item.isChiral === 1" label="Chiral Descriptor" class="form-item-inline mt-4">
+                <el-tag size="small" type="info">{{ item.chiralDescriptor }}</el-tag>
+              </el-form-item>
+            </el-form>
+          </el-col>
 
           <!-- Compound Image -->
-          <div class="flex justify-center lg:justify-end">
-            <div class="relative">
-              <el-image
-                :src='`data:image/svg+xml;base64,${item.reagentImg}`'
-                class="w-32 h-32 rounded-lg border border-border object-cover"
-                :preview-src-list="[item.reagentImg]"
-              />
+          <el-col :xs="24" :sm="24" :md="8" :lg="8" :xl="8">
+            <div class="flex justify-center md:justify-end">
+              <div class="relative">
+                <el-image
+                  :src='`data:image/svg+xml;base64,${item.reagentImg}`'
+                  class="w-32 h-32 rounded-lg border border-border object-cover"
+                  :preview-src-list="[item.reagentImg]"
+                />
+              </div>
             </div>
-          </div>
-        </div>
+          </el-col>
+        </el-row>
 
         <!-- Instructions -->
-        <div class="mt-6 p-4 bg-muted/50 rounded-lg border border-border/50">
-          <p class="text-sm font-medium text-foreground">
-            <span v-if="item.reagentRole === 'solvent'">Purity - Volume - Density</span>
-            <span v-else>
-              Limiting - Equiv - Purity - Quantity - Density/Conc. Use
-              <span class="text-destructive font-semibold">-1</span> to indicate excessive amount.
-            </span>
-          </p>
-        </div>
+        <el-alert
+          :title="item.reagentRole === 'solvent' ? 'Purity - Volume - Density' : 'Limiting - Equiv - Purity - Quantity - Density/Conc. Use -1 to indicate excessive amount.'"
+          type="info"
+          :closable="false"
+          show-icon
+          class="mt-6"
+        />
 
         <!-- Input Fields -->
         <div class="mt-6">
-          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            <div class="space-y-2">
-              <label class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-                Equiv.
-              </label>
-              <el-input
-                v-model="item.eq"
-                size="small"
-                :disabled="item.isLimiting === 1 || store.isReadonly"
-                @input="calcMolesByEqLocal(item)"
-                class="w-full form-input"
-              />
-            </div>
+          <el-form
+            :model="item"
+            label-width="120px"
+            class="reagent-form"
+          >
+            <el-row :gutter="16">
+              <el-col :xs="24" :sm="12" :md="6" :lg="6" :xl="6">
+                <el-form-item label="Equiv." class="form-item-inline">
+                  <el-input
+                    v-model="item.eq"
+                    size="small"
+                    :disabled="item.isLimiting === 1 || store.isReadonly"
+                    @input="calcMolesByEqLocal(item)"
+                    class="w-full form-input"
+                  />
+                </el-form-item>
+              </el-col>
 
-            <div class="space-y-2">
-              <label class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-                Purity (%)
-              </label>
-              <el-tooltip content="Purity of the Reactant/Product/Reagent" placement="top">
-                <el-input
-                  v-model="item.purity"
-                  size="small"
-                  :disabled="store.isReadonly"
-                  @input="calcQuantityByMoles(item)"
-                  class="w-full"
-                />
-              </el-tooltip>
-            </div>
+              <el-col :xs="24" :sm="12" :md="6" :lg="6" :xl="6">
+                <el-form-item label="Purity (%)" class="form-item-inline">
+                  <el-tooltip content="Purity of the Reactant/Product/Reagent" placement="top">
+                    <el-input
+                      v-model="item.purity"
+                      size="small"
+                      :disabled="store.isReadonly"
+                      @input="calcQuantityByMoles(item)"
+                      class="w-full"
+                    />
+                  </el-tooltip>
+                </el-form-item>
+              </el-col>
 
-            <div class="space-y-2">
-              <label class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-                Quantity
-              </label>
-              <el-tooltip content="Mass of the Reactant/Product/Reagent" placement="top">
-                <el-input
-                  v-model="item.quantity"
-                  size="small"
-                  :disabled="store.isReadonly"
-                  @input="calcMoles(item)"
-                  class="w-full"
-                >
-                  <template #append>
-                    <el-select v-model="item.quantityUnit" size="small" :disabled="store.isReadonly" @change="calcMoles(item)">
-                      <el-option v-for="unit in unitList" :key="unit.value" :label="unit.value" :value="unit.value" />
-                    </el-select>
-                  </template>
-                </el-input>
-              </el-tooltip>
-            </div>
+              <el-col :xs="24" :sm="12" :md="6" :lg="6" :xl="6">
+                <el-form-item label="Quantity" class="form-item-inline">
+                  <el-tooltip content="Mass of the Reactant/Product/Reagent" placement="top">
+                    <el-input
+                      v-model="item.quantity"
+                      size="small"
+                      :disabled="store.isReadonly"
+                      @input="calcMoles(item)"
+                      class="w-full"
+                    >
+                      <template #append>
+                        <el-select v-model="item.quantityUnit" size="small" :disabled="store.isReadonly" @change="calcMoles(item)">
+                          <el-option v-for="unit in unitList" :key="unit.value" :label="unit.value" :value="unit.value" />
+                        </el-select>
+                      </template>
+                    </el-input>
+                  </el-tooltip>
+                </el-form-item>
+              </el-col>
 
-            <div class="space-y-2">
-              <label class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-                Moles
-              </label>
-              <el-input v-model="item.moles" size="small" :disabled="store.isReadonly" readonly class="w-full">
-                <template #append>
-                  <span class="inline-flex items-center px-2 py-1 text-xs font-medium bg-secondary text-secondary-foreground rounded">
-                    {{ item.molesUnit }}
-                  </span>
-                </template>
-              </el-input>
-            </div>
+              <el-col :xs="24" :sm="12" :md="6" :lg="6" :xl="6">
+                <el-form-item label="Moles" class="form-item-inline">
+                  <el-input v-model="item.moles" size="small" :disabled="store.isReadonly" readonly class="w-full">
+                    <template #append>
+                      <span class="inline-flex items-center px-2 py-1 text-xs font-medium bg-secondary text-secondary-foreground rounded">
+                        {{ item.molesUnit }}
+                      </span>
+                    </template>
+                  </el-input>
+                </el-form-item>
+              </el-col>
 
-            <div class="space-y-2">
-              <label class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-                Density (g/mL)
-              </label>
-              <el-input
-                v-model="item.density"
-                size="small"
-                :disabled="store.isReadonly"
-                @input="calcVolume(item)"
-                class="w-full"
-              />
-            </div>
+              <el-col :xs="24" :sm="12" :md="6" :lg="6" :xl="6">
+                <el-form-item label="Density (g/mL)" class="form-item-inline">
+                  <el-input
+                    v-model="item.density"
+                    size="small"
+                    :disabled="store.isReadonly"
+                    @input="calcVolume(item)"
+                    class="w-full"
+                  />
+                </el-form-item>
+              </el-col>
 
-            <div class="space-y-2">
-              <label class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-                Conc. (mol/L)
-              </label>
-              <el-input
-                v-model="item.concentration"
-                size="small"
-                :disabled="store.isReadonly"
-                @input="calcVolume(item)"
-                class="w-full"
-              />
-            </div>
+              <el-col :xs="24" :sm="12" :md="6" :lg="6" :xl="6">
+                <el-form-item label="Conc. (mol/L)" class="form-item-inline">
+                  <el-input
+                    v-model="item.concentration"
+                    size="small"
+                    :disabled="store.isReadonly"
+                    @input="calcVolume(item)"
+                    class="w-full"
+                  />
+                </el-form-item>
+              </el-col>
 
-            <div class="space-y-2">
-              <label class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-                Volume
-              </label>
-              <el-input
-                v-model="item.volume"
-                size="small"
-                :disabled="store.isReadonly"
-                @input="calcMolesByVolume(item)"
-                class="w-full"
-              >
-                <template #append>
-                  <el-select v-model="item.volumeUnit" size="small" :disabled="store.isReadonly" @change="calcMolesByVolume(item)">
-                    <el-option v-for="unit in volumeUnitList" :key="unit.value" :label="unit.value" :value="unit.value" />
-                  </el-select>
-                </template>
-              </el-input>
-            </div>
+              <el-col :xs="24" :sm="12" :md="6" :lg="6" :xl="6">
+                <el-form-item label="Volume" class="form-item-inline">
+                  <el-input
+                    v-model="item.volume"
+                    size="small"
+                    :disabled="store.isReadonly"
+                    @input="calcMolesByVolume(item)"
+                    class="w-full"
+                  >
+                    <template #append>
+                      <el-select v-model="item.volumeUnit" size="small" :disabled="store.isReadonly" @change="calcMolesByVolume(item)">
+                        <el-option v-for="unit in volumeUnitList" :key="unit.value" :label="unit.value" :value="unit.value" />
+                      </el-select>
+                    </template>
+                  </el-input>
+                </el-form-item>
+              </el-col>
 
-            <div class="space-y-2">
-              <label class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-                CAS#
-              </label>
-              <el-input v-model="item.cas" size="small" :disabled="store.isReadonly" class="w-full" />
-            </div>
-          </div>
+              <el-col :xs="24" :sm="12" :md="6" :lg="6" :xl="6">
+                <el-form-item label="CAS#" class="form-item-inline">
+                  <el-input v-model="item.cas" size="small" :disabled="store.isReadonly" class="w-full" />
+                </el-form-item>
+              </el-col>
+            </el-row>
+          </el-form>
         </div>
 
         <!-- Action Buttons -->
         <div v-if="!store.isReadonly" class="mt-6 flex justify-end space-x-2">
-          <button
+          <el-button
+            type="primary"
             @click="saveAdditionalInfoToDB(reagentFormRef[props.index !== undefined ? props.index : idx], item)"
             :disabled="store.isReadonly"
-            class="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground hover:bg-primary/90 h-9 px-3 action-button"
           >
-            <el-icon class="mr-2 h-4 w-4"><Save /></el-icon>
+            <Save :size="16" class="mr-1" />
             Save
-          </button>
-          <button
+          </el-button>
+          <el-button
             v-if="showDeleteOption(item.reagentRole)"
+            type="danger"
             @click="deleteRow(String(item.reagentId))"
             :disabled="store.isReadonly"
-            class="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-destructive text-destructive-foreground hover:bg-destructive/90 h-9 px-3 action-button"
           >
-            <el-icon class="mr-2 h-4 w-4"><Delete /></el-icon>
+            <Trash2 :size="16" class="mr-1" />
             Delete
-          </button>
+          </el-button>
         </div>
       </div>
     </div>
@@ -271,6 +264,7 @@
 
 <script setup lang="ts">
 import { ref, computed } from 'vue';
+import { Edit, Save, Trash2 } from 'lucide-vue-next';
 import { elnStore } from '#/store';
 import type { TableDataStruct } from '#/types';
 
@@ -420,6 +414,55 @@ const deleteRow = (_reagentId: string) => {
   &:hover {
     box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
     transform: translateY(-0.25rem);
+  }
+}
+
+// Form item inline layout - label and input on same line
+.reagent-form,
+.compound-info-form {
+  :deep(.el-form-item) {
+    margin-bottom: 18px;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    
+    .el-form-item__label {
+      font-weight: bold;
+      line-height: 32px;
+      padding-bottom: 0;
+      padding-right: 12px;
+      text-align: left;
+      flex-shrink: 0;
+      white-space: nowrap;
+    }
+    
+    .el-form-item__content {
+      line-height: 32px;
+      flex: 1;
+      margin-left: 0 !important;
+    }
+  }
+}
+
+// Responsive adjustments for form items
+@media (max-width: 768px) {
+  .reagent-form,
+  .compound-info-form {
+    :deep(.el-form-item) {
+      margin-bottom: 16px;
+      flex-direction: column;
+      align-items: flex-start;
+      
+      .el-form-item__label {
+        width: 100%;
+        padding-bottom: 8px;
+        padding-right: 0;
+      }
+      
+      .el-form-item__content {
+        width: 100%;
+      }
+    }
   }
 }
 
