@@ -155,14 +155,12 @@ func SaveRxnToServer(c *gin.Context) {
 		return
 	}
 
-	rxnSmiles := param.RxnSmiles
-	rxn, err := parseReaction(rxnSmiles)
+	rxn, err := parseReaction(param.RxnSmiles)
 	if err != nil {
 		utils.InternalRequestErr(c, err)
 		return
 	}
 
-	// Convert types.Reaction to types.ElnReaction
 	now := time.Now()
 	elnRxn := &types.ElnReaction{
 		ReactionId:     rxn.ReactionId,
@@ -173,8 +171,7 @@ func SaveRxnToServer(c *gin.Context) {
 		GmtModified:    now,
 	}
 
-	err = dao.OBCursor.Model(&types.ElnReaction{}).Create(elnRxn).Error
-	if err != nil {
+	if err := dao.OBCursor.Model(&types.ElnReaction{}).Create(elnRxn).Error; err != nil {
 		utils.InternalRequestErr(c, err)
 		return
 	}
@@ -185,124 +182,56 @@ func SaveRxnToServer(c *gin.Context) {
 		return
 	}
 
-	compounds := make([]*types.ReagentTableDataStruct, 0)
-
-	// Save reactants
-	for _, reactant := range rxn.Reactants {
-
-		reagentId := utils.GenerateSnowflakeID()
-		elnReagent := &types.ElnRxnReagents{
-			ReagentId:        reagentId,
-			ReactionId:       rxn.ReactionId,
-			ReagentName:      reactant.Name,
-			ReagentSmiles:    reactant.CxSmiles,
-			Mw:               reactant.MolecularWeight,
-			MonoisotopicMass: reactant.MonoisotopicMass,
-			Formula:          reactant.Formula,
-			ReagentRole:      "reactant",
-			Cxsmiles:         reactant.CxSmiles,
-			Inchi:            reactant.InChi,
-			Inchikey:         reactant.InChiKey,
-			GmtCreate:        now,
-			GmtModified:      now,
-		}
-		err = dao.OBCursor.Model(&types.ElnRxnReagents{}).Create(elnReagent).Error
-		if err != nil {
-			utils.InternalRequestErr(c, err)
-			return
-		}
-		reagentImg, err := RenderCompound(indigoInit, reactant.CxSmiles)
-		if err != nil {
-			utils.InternalRequestErr(c, err)
-			return
-		}
-		compounds = append(compounds, &types.ReagentTableDataStruct{
-			ReagentId:     elnReagent.ReagentId,
-			ReagentName:   elnReagent.ReagentName,
-			ReagentSmiles: elnReagent.ReagentSmiles,
-			Mw:            elnReagent.Mw,
-			ReagentRole:   elnReagent.ReagentRole,
-			Formula:       elnReagent.Formula,
-			ReagentImg:    reagentImg,
-		})
+	type moleculeRole struct {
+		Mols []types.Molecule
+		Role string
 	}
 
-	// Save products
-	for _, product := range rxn.Products {
-		reagentId := utils.GenerateSnowflakeID()
-		elnReagent := &types.ElnRxnReagents{
-			ReagentId:        reagentId,
-			ReactionId:       rxn.ReactionId,
-			ReagentName:      product.Name,
-			ReagentSmiles:    product.CxSmiles,
-			Mw:               product.MolecularWeight,
-			MonoisotopicMass: product.MonoisotopicMass,
-			Formula:          product.Formula,
-			ReagentRole:      "product",
-			Cxsmiles:         product.CxSmiles,
-			Inchi:            product.InChi,
-			Inchikey:         product.InChiKey,
-			GmtCreate:        now,
-			GmtModified:      now,
-		}
-		err = dao.OBCursor.Model(&types.ElnRxnReagents{}).Create(elnReagent).Error
-		if err != nil {
-			utils.InternalRequestErr(c, err)
-			return
-		}
-		reagentImg, err := RenderCompound(indigoInit, product.CxSmiles)
-		if err != nil {
-			utils.InternalRequestErr(c, err)
-			return
-		}
-		compounds = append(compounds, &types.ReagentTableDataStruct{
-			ReagentId:     elnReagent.ReagentId,
-			ReagentName:   elnReagent.ReagentName,
-			ReagentSmiles: elnReagent.ReagentSmiles,
-			Mw:            elnReagent.Mw,
-			ReagentRole:   elnReagent.ReagentRole,
-			Formula:       elnReagent.Formula,
-			ReagentImg:    reagentImg,
-		})
+	roles := []moleculeRole{
+		{rxn.Reactants, "reactant"},
+		{rxn.Products, "product"},
+		{rxn.Reagents, "reagent"},
 	}
 
-	// Save reagents
-	for _, reagent := range rxn.Reagents {
-		reagentId := utils.GenerateSnowflakeID()
-		elnReagent := &types.ElnRxnReagents{
-			ReagentId:        reagentId,
-			ReactionId:       rxn.ReactionId,
-			ReagentName:      reagent.Name,
-			ReagentSmiles:    reagent.CxSmiles,
-			Mw:               reagent.MolecularWeight,
-			MonoisotopicMass: reagent.MonoisotopicMass,
-			Formula:          reagent.Formula,
-			ReagentRole:      "reagent",
-			Cxsmiles:         reagent.CxSmiles,
-			Inchi:            reagent.InChi,
-			Inchikey:         reagent.InChiKey,
-			GmtCreate:        now,
-			GmtModified:      now,
+	var compounds []*types.ReagentTableDataStruct
+
+	for _, role := range roles {
+		for _, mol := range role.Mols {
+			reagentId := utils.GenerateSnowflakeID()
+			elnReagent := &types.ElnRxnReagents{
+				ReagentId:        reagentId,
+				ReactionId:       rxn.ReactionId,
+				ReagentName:      mol.Name,
+				ReagentSmiles:    mol.CxSmiles,
+				Mw:               mol.MolecularWeight,
+				MonoisotopicMass: mol.MonoisotopicMass,
+				Formula:          mol.Formula,
+				ReagentRole:      role.Role,
+				Cxsmiles:         mol.CxSmiles,
+				Inchi:            mol.InChi,
+				Inchikey:         mol.InChiKey,
+				GmtCreate:        now,
+				GmtModified:      now,
+			}
+			if err := dao.OBCursor.Model(&types.ElnRxnReagents{}).Create(elnReagent).Error; err != nil {
+				utils.InternalRequestErr(c, err)
+				return
+			}
+			reagentImg, err := RenderCompound(indigoInit, mol.CxSmiles)
+			if err != nil {
+				utils.InternalRequestErr(c, err)
+				return
+			}
+			compounds = append(compounds, &types.ReagentTableDataStruct{
+				ReagentId:     elnReagent.ReagentId,
+				ReagentName:   elnReagent.ReagentName,
+				ReagentSmiles: elnReagent.ReagentSmiles,
+				Mw:            elnReagent.Mw,
+				ReagentRole:   elnReagent.ReagentRole,
+				Formula:       elnReagent.Formula,
+				ReagentImg:    reagentImg,
+			})
 		}
-		err = dao.OBCursor.Model(&types.ElnRxnReagents{}).Create(elnReagent).Error
-		if err != nil {
-			utils.InternalRequestErr(c, err)
-			return
-		}
-		reagentImg, err := RenderCompound(indigoInit, reagent.CxSmiles)
-		if err != nil {
-			utils.InternalRequestErr(c, err)
-			return
-		}
-		compounds = append(compounds, &types.ReagentTableDataStruct{
-			ReagentId:     elnReagent.ReagentId,
-			ReagentName:   elnReagent.ReagentName,
-			ReagentSmiles: elnReagent.ReagentSmiles,
-			Mw:            elnReagent.Mw,
-			ReagentRole:   elnReagent.ReagentRole,
-			Formula:       elnReagent.Formula,
-			ReagentImg:    reagentImg,
-		})
 	}
 
 	utils.SuccessWithData(c, "success", map[string]interface{}{
